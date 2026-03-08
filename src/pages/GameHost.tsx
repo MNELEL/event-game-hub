@@ -62,7 +62,7 @@ const GameHost = () => {
 
       <AnimatePresence mode="wait">
         {gameState.status === "lobby" && (
-          <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }} transition={{ duration: 0.4 }}>
             <GameLobby
               gameCode={gameState.gameCode}
               players={gameState.players}
@@ -77,7 +77,13 @@ const GameHost = () => {
         )}
 
         {gameState.status === "question" && (
-          <motion.div key="question" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+          <motion.div
+            key={`question-${gameState.currentQuestionIndex}`}
+            initial={{ opacity: 0, x: 100, rotateY: 15 }}
+            animate={{ opacity: 1, x: 0, rotateY: 0 }}
+            exit={{ opacity: 0, x: -100, rotateY: -15 }}
+            transition={{ type: "spring", stiffness: 100, damping: 18 }}
+          >
             <GameQuestionDisplay
               question={gameState.questions[gameState.currentQuestionIndex]}
               questionNumber={gameState.currentQuestionIndex + 1}
@@ -89,7 +95,13 @@ const GameHost = () => {
         )}
 
         {gameState.status === "results" && (
-          <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="results"
+            initial={{ opacity: 0, scale: 1.1, filter: "blur(8px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -50, scale: 0.95 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <GameResults
               question={gameState.questions[gameState.currentQuestionIndex]}
               players={gameState.players}
@@ -106,7 +118,13 @@ const GameHost = () => {
         )}
 
         {gameState.status === "leaderboard" && (
-          <motion.div key="leaderboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="leaderboard"
+            initial={{ opacity: 0, y: 80, scale: 0.85 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -60, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 120, damping: 16 }}
+          >
             <GameLeaderboard
               players={gameState.players}
               onNext={() => {
@@ -121,7 +139,13 @@ const GameHost = () => {
         )}
 
         {gameState.status === "finished" && (
-          <motion.div key="finished" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="finished"
+            initial={{ opacity: 0, scale: 0.8, filter: "blur(12px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
             <GameFinished
               players={gameState.players}
               questions={gameState.questions}
