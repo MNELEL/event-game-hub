@@ -1,37 +1,57 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useGameStore } from "@/hooks/useGameStore";
+import { useSupabaseQuestions } from "@/hooks/useSupabaseQuestions";
+import { useRealtimeGame } from "@/hooks/useRealtimeGame";
 import { GameLobby } from "@/components/game/GameLobby";
 import { GameQuestionDisplay } from "@/components/game/GameQuestionDisplay";
 import { GameResults } from "@/components/game/GameResults";
 import { GameLeaderboard } from "@/components/game/GameLeaderboard";
 import { GameFinished } from "@/components/game/GameFinished";
-import { Home, ArrowRight } from "lucide-react";
+import { Home, Loader2 } from "lucide-react";
 
 const GameHost = () => {
   const navigate = useNavigate();
-  const store = useGameStore();
-  const { gameState } = store;
+  const { questions, settings, loading: questionsLoading } = useSupabaseQuestions();
+  const game = useRealtimeGame(questions, settings);
+  const { gameState } = game;
+  const [gameCreated, setGameCreated] = useState(false);
+
+  // Create game session when questions are loaded
+  useEffect(() => {
+    if (!questionsLoading && questions.length > 0 && !gameCreated) {
+      game.createGame().then(() => setGameCreated(true));
+    }
+  }, [questionsLoading, questions.length, gameCreated]);
 
   // Timer
   useEffect(() => {
     if (gameState.status !== "question" || gameState.timeRemaining <= 0) return;
-    const interval = setInterval(() => store.tick(), 1000);
+    const interval = setInterval(() => game.tick(), 1000);
     return () => clearInterval(interval);
-  }, [gameState.status, gameState.timeRemaining, store.tick]);
+  }, [gameState.status, gameState.timeRemaining, game.tick]);
 
   // Auto show results when timer ends
   useEffect(() => {
     if (gameState.status === "question" && gameState.timeRemaining <= 0) {
-      store.showResults();
+      game.showResults();
     }
   }, [gameState.timeRemaining, gameState.status]);
 
+  if (questionsLoading || !gameCreated) {
+    return (
+      <div className="min-h-screen game-gradient flex items-center justify-center" dir="rtl">
+        <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Loader2 className="w-12 h-12 text-game-gold animate-spin mx-auto mb-4" />
+          <p className="text-primary-foreground/60 font-display text-xl">מכין את המשחק...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen game-gradient relative overflow-hidden" dir="rtl">
-      {/* Minimal top bar */}
       <div className="absolute top-4 left-4 z-50 flex gap-2">
         <Button variant="ghost" size="icon" className="text-primary-foreground/50 hover:text-primary-foreground" onClick={() => navigate("/")}>
           <Home className="w-5 h-5" />
@@ -44,12 +64,12 @@ const GameHost = () => {
             <GameLobby
               gameCode={gameState.gameCode}
               players={gameState.players}
-              onAddPlayer={store.addPlayer}
+              onAddPlayer={game.addPlayer}
               onStart={() => {
-                store.startGame();
-                setTimeout(() => store.showQuestion(), 100);
+                game.startGame();
+                setTimeout(() => game.showQuestion(), 100);
               }}
-              questionsCount={store.questions.length}
+              questionsCount={gameState.questions.length}
             />
           </motion.div>
         )}
@@ -61,7 +81,7 @@ const GameHost = () => {
               questionNumber={gameState.currentQuestionIndex + 1}
               totalQuestions={gameState.questions.length}
               timeRemaining={gameState.timeRemaining}
-              onTimeUp={store.showResults}
+              onTimeUp={game.showResults}
             />
           </motion.div>
         )}
@@ -73,10 +93,10 @@ const GameHost = () => {
               players={gameState.players}
               onNext={() => {
                 if (gameState.settings.showLeaderboardAfterEach) {
-                  store.showLeaderboard();
+                  game.showLeaderboard();
                 } else {
-                  store.nextQuestion();
-                  setTimeout(() => store.showQuestion(), 100);
+                  game.nextQuestion();
+                  setTimeout(() => game.showQuestion(), 100);
                 }
               }}
             />
@@ -88,9 +108,9 @@ const GameHost = () => {
             <GameLeaderboard
               players={gameState.players}
               onNext={() => {
-                store.nextQuestion();
+                game.nextQuestion();
                 setTimeout(() => {
-                  if (store.gameState.status !== "finished") store.showQuestion();
+                  if (game.gameState.status !== "finished") game.showQuestion();
                 }, 100);
               }}
               isFinal={false}
@@ -102,7 +122,10 @@ const GameHost = () => {
           <motion.div key="finished" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <GameFinished
               players={gameState.players}
-              onRestart={store.resetGame}
+              onRestart={() => {
+                setGameCreated(false);
+                game.resetGame();
+              }}
               onHome={() => navigate("/")}
             />
           </motion.div>
