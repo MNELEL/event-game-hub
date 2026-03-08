@@ -25,6 +25,14 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
     fireConfetti();
   }, []);
 
+  if (showStats) {
+    return (
+      <div className="min-h-screen game-gradient" dir="rtl">
+        <GameStatsPanel players={players} questions={questions} onClose={() => setShowStats(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Floating golden leaves */}
