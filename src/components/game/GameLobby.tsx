@@ -18,6 +18,12 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
 
+  // Start lobby background music on mount
+  useEffect(() => {
+    SoundEffects.startMusic('lobby');
+    return () => SoundEffects.stopMusic();
+  }, []);
+
   useEffect(() => {
     if (players.length > prevCount.current) {
       SoundEffects.playerJoin();

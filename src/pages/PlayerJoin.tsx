@@ -131,6 +131,7 @@ const PlayerJoin = () => {
                   className={`${answerClasses[i]} rounded-2xl h-28 text-4xl font-display font-bold text-white shadow-lg active:scale-95 transition-transform border border-white/20`}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
+                    SoundEffects.answerSelect();
                     setSelectedAnswer(i);
                     submitAnswer(i, "", state.timeRemaining);
                   }}
