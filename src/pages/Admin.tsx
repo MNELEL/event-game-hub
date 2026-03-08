@@ -75,10 +75,7 @@ const Admin = () => {
               settings={store.settings}
               onUpdate={store.updateSettings}
               questions={store.questions}
-              onResetQuestions={() => {
-                const { defaultQuestions } = require("@/data/defaultQuestions");
-                store.updateQuestions(defaultQuestions);
-              }}
+              onResetQuestions={() => store.updateQuestions(defaultQuestions)}
             />
           </TabsContent>
         </Tabs>
