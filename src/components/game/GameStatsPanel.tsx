@@ -315,19 +315,31 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
         </Tabs>
 
         <motion.div
-          className="flex justify-center mt-6"
+          className="flex flex-wrap justify-center gap-3 mt-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button variant="gold" size="lg" onClick={exportAsImage} className="gap-2">
+              <Image className="w-4 h-4" />
+              שמור כתמונה
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button variant="gold" size="lg" onClick={exportAsPDF} className="gap-2">
+              <Download className="w-4 h-4" />
+              הדפס / PDF
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
-              variant="gold"
-              size="xl"
+              variant="outline"
+              size="lg"
               onClick={() => { SoundEffects.click(); onClose(); }}
-              className="gap-3"
+              className="gap-2 border-game-border-gold text-game-dark-gold hover:bg-game-cream"
             >
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
               חזרה לתוצאות
             </Button>
           </motion.div>
