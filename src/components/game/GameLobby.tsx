@@ -176,7 +176,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
-                megabrain.app/{gameCode}
+                {window.location.host}/playlay
               </motion.div>
             </motion.div>
 
@@ -212,7 +212,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
                 <QRCodeSVG
-                  value={`${window.location.origin}/join?code=${gameCode}`}
+                  value={`${window.location.origin}/play?code=${gameCode}`}
                   size={120}
                   bgColor="transparent"
                   fgColor="hsl(35, 60%, 25%)"
