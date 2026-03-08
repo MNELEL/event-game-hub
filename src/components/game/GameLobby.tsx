@@ -38,30 +38,113 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
-      <motion.div
-        className="text-center max-w-2xl w-full"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        {/* Decorative leaf ornaments */}
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Floating leaves background */}
+      {[...Array(8)].map((_, i) => (
         <motion.div
-          className="text-5xl mb-2 opacity-60"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          key={`leaf-${i}`}
+          className="absolute text-2xl pointer-events-none select-none"
+          style={{ left: `${10 + i * 12}%`, top: `-5%` }}
+          animate={{
+            y: ["0vh", "110vh"],
+            x: [0, (i % 2 === 0 ? 1 : -1) * 30, 0],
+            rotate: [0, 180, 360],
+            opacity: [0, 0.5, 0.3, 0],
+          }}
+          transition={{
+            duration: 8 + i * 1.5,
+            repeat: Infinity,
+            delay: i * 1.2,
+            ease: "linear",
+          }}
         >
-          🌿
+          {["🍂", "🌿", "🍃", "🌱"][i % 4]}
         </motion.div>
+      ))}
 
-        {/* Title */}
-        <motion.h1
-          className="font-serif text-6xl md:text-7xl font-bold text-game-dark-gold text-shadow-game mb-2"
-          animate={{ scale: [1, 1.01, 1] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      <motion.div
+        className="text-center max-w-2xl w-full relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Grand entrance animation */}
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, scale: 0.3, rotate: -20 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 120, damping: 12, duration: 1 }}
         >
-          🧠 מגה מוח
-        </motion.h1>
-        <div className="w-40 mx-auto border-t-2 border-double border-game-border-gold my-4" />
+          {/* Decorative top ornament */}
+          <motion.div
+            className="text-4xl mb-3 opacity-50"
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 0.5 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+          >
+            ✦ 🌿 ✦
+          </motion.div>
+
+          {/* Brain icon with glow pulse */}
+          <motion.div
+            className="text-8xl md:text-9xl mb-2 inline-block"
+            initial={{ scale: 0, rotateY: 180 }}
+            animate={{ scale: 1, rotateY: 0 }}
+            transition={{ type: "spring", stiffness: 150, damping: 15, delay: 0.2 }}
+          >
+            <motion.span
+              className="inline-block"
+              animate={{
+                filter: [
+                  "drop-shadow(0 0 8px hsl(35 55% 53% / 0.3))",
+                  "drop-shadow(0 0 25px hsl(35 55% 53% / 0.6))",
+                  "drop-shadow(0 0 8px hsl(35 55% 53% / 0.3))",
+                ],
+              }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              🧠
+            </motion.span>
+          </motion.div>
+
+          {/* Title with letter-by-letter reveal */}
+          <motion.h1
+            className="font-serif text-6xl md:text-8xl font-bold text-game-dark-gold text-shadow-game"
+            initial={{ opacity: 0, y: 30, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
+          >
+            מגה מוח
+          </motion.h1>
+
+          {/* Subtitle reveal */}
+          <motion.p
+            className="font-serif text-xl text-game-gold/70 mt-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.6 }}
+          >
+            חידון ידע אינטראקטיבי
+          </motion.p>
+
+          {/* Gold ornamental line */}
+          <motion.div
+            className="flex items-center justify-center gap-3 my-4"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 1.1, duration: 0.6, ease: "easeOut" }}
+          >
+            <div className="h-px w-16 bg-gradient-to-r from-transparent to-game-border-gold" />
+            <motion.span
+              className="text-game-gold text-lg"
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            >
+              ✦
+            </motion.span>
+            <div className="h-px w-16 bg-gradient-to-l from-transparent to-game-border-gold" />
+          </motion.div>
+        </motion.div>
 
         {/* Connection instructions */}
         <motion.div
