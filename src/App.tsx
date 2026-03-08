@@ -27,6 +27,7 @@ const AppRoutes = () => (
     <Route path="/admin" element={<Admin />} />
     <Route path="/host" element={<GameHost />} />
     <Route path="/play" element={<PlayerJoin />} />
+    <Route path="/join" element={<JoinRedirect />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
