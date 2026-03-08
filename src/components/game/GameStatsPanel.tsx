@@ -144,7 +144,7 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
     <div className="min-h-screen flex flex-col items-center justify-start p-4 md:p-6">
       <motion.div
         className="w-full max-w-5xl"
-        initial={{ opacity: 0, y: 30 }}
+        ref={statsRef}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 150 }}
       >
