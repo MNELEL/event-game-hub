@@ -14,7 +14,219 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_settings: {
+        Row: {
+          created_at: string
+          default_time_limit: number
+          id: string
+          questions_per_game: number
+          selected_categories: string[]
+          show_leaderboard_after_each: boolean
+          shuffle_questions: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_time_limit?: number
+          id?: string
+          questions_per_game?: number
+          selected_categories?: string[]
+          show_leaderboard_after_each?: boolean
+          shuffle_questions?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_time_limit?: number
+          id?: string
+          questions_per_game?: number
+          selected_categories?: string[]
+          show_leaderboard_after_each?: boolean
+          shuffle_questions?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      games: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          current_question_index: number
+          id: string
+          question_ids: string[]
+          settings: Json
+          status: string
+          time_remaining: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_question_index?: number
+          id?: string
+          question_ids?: string[]
+          settings?: Json
+          status?: string
+          time_remaining?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_question_index?: number
+          id?: string
+          question_ids?: string[]
+          settings?: Json
+          status?: string
+          time_remaining?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      player_answers: {
+        Row: {
+          answer: number
+          correct: boolean
+          created_at: string
+          game_id: string
+          id: string
+          player_id: string
+          points_earned: number
+          question_id: string
+          time_taken: number
+        }
+        Insert: {
+          answer: number
+          correct?: boolean
+          created_at?: string
+          game_id: string
+          id?: string
+          player_id: string
+          points_earned?: number
+          question_id: string
+          time_taken?: number
+        }
+        Update: {
+          answer?: number
+          correct?: boolean
+          created_at?: string
+          game_id?: string
+          id?: string
+          player_id?: string
+          points_earned?: number
+          question_id?: string
+          time_taken?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_answers_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_answers_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          connected: boolean
+          created_at: string
+          game_id: string
+          id: string
+          name: string
+          score: number
+        }
+        Insert: {
+          connected?: boolean
+          created_at?: string
+          game_id: string
+          id?: string
+          name: string
+          score?: number
+        }
+        Update: {
+          connected?: boolean
+          created_at?: string
+          game_id?: string
+          id?: string
+          name?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          category: string
+          correct_answer: number
+          created_at: string
+          id: string
+          media_type: string | null
+          media_url: string | null
+          options: Json
+          order_index: number
+          points: number
+          text: string
+          time_limit: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          correct_answer?: number
+          created_at?: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          options?: Json
+          order_index?: number
+          points?: number
+          text: string
+          time_limit?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          correct_answer?: number
+          created_at?: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          options?: Json
+          order_index?: number
+          points?: number
+          text?: string
+          time_limit?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
