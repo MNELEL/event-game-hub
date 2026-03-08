@@ -83,6 +83,7 @@ const Admin = () => {
               <QuestionImportExport
                 questions={store.questions}
                 onImport={(imported) => store.updateQuestions([...store.questions, ...imported])}
+                onReplace={(imported) => store.updateQuestions(imported)}
               />
             </div>
             <QuestionList
