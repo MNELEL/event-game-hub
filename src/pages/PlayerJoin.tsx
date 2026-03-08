@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,9 +17,15 @@ const answerClasses = [
 const answerLabels = ["1", "2", "3", "4"];
 
 const PlayerJoin = () => {
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState("");
   const [gameCode, setGameCode] = useState("");
   const [joining, setJoining] = useState(false);
+
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (code) setGameCode(code.toUpperCase());
+  }, [searchParams]);
   const { state, joinGame, submitAnswer } = usePlayerGame();
   const { toast } = useToast();
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
