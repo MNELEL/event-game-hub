@@ -49,6 +49,13 @@ const Admin = () => {
               <HelpCircle className="w-4 h-4 ml-1" />
               הדרכה
             </Button>
+            <Button variant="outline" size="sm" onClick={() => {
+              exportStandaloneHTML(store.questions, store.settings.title);
+              toast.success("קובץ HTML נוצר בהצלחה!");
+            }}>
+              <FileDown className="w-4 h-4 ml-1" />
+              ייצוא HTML
+            </Button>
             <Button variant="default" size="sm" onClick={() => navigate("/host")}>
               <Play className="w-4 h-4 ml-1" />
               הפעלת משחק
