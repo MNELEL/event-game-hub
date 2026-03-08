@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { defaultQuestions } from "@/data/defaultQuestions";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSupabaseQuestions } from "@/hooks/useSupabaseQuestions";
@@ -10,7 +11,8 @@ import { QuestionList } from "@/components/game/QuestionList";
 import { GameSettingsPanel } from "@/components/game/GameSettingsPanel";
 import { TutorialDialog } from "@/components/game/TutorialDialog";
 import { QuestionImportExport } from "@/components/game/QuestionImportExport";
-import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2 } from "lucide-react";
+import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
+import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -47,6 +49,13 @@ const Admin = () => {
               <HelpCircle className="w-4 h-4 ml-1" />
               הדרכה
             </Button>
+            <Button variant="outline" size="sm" onClick={() => {
+              exportStandaloneHTML(store.questions, store.settings.title);
+              toast.success("קובץ HTML נוצר בהצלחה!");
+            }}>
+              <FileDown className="w-4 h-4 ml-1" />
+              ייצוא HTML
+            </Button>
             <Button variant="default" size="sm" onClick={() => navigate("/host")}>
               <Play className="w-4 h-4 ml-1" />
               הפעלת משחק
@@ -81,6 +90,7 @@ const Admin = () => {
               <QuestionImportExport
                 questions={store.questions}
                 onImport={(imported) => store.updateQuestions([...store.questions, ...imported])}
+                onReplace={(imported) => store.updateQuestions(imported)}
               />
             </div>
             <QuestionList
