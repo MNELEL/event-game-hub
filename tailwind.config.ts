@@ -66,8 +66,12 @@ export default {
           surface: "hsl(var(--game-surface))",
           glow: "hsl(var(--game-glow))",
           gold: "hsl(var(--game-gold))",
+          "dark-gold": "hsl(var(--game-dark-gold))",
           correct: "hsl(var(--game-correct))",
           wrong: "hsl(var(--game-wrong))",
+          cream: "hsl(var(--game-cream))",
+          parchment: "hsl(var(--game-parchment))",
+          "border-gold": "hsl(var(--game-border-gold))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
