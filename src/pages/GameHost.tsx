@@ -44,7 +44,7 @@ const GameHost = () => {
       <div className="min-h-screen game-gradient flex items-center justify-center" dir="rtl">
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <Loader2 className="w-12 h-12 text-game-gold animate-spin mx-auto mb-4" />
-          <p className="text-primary-foreground/60 font-display text-xl">מכין את המשחק...</p>
+          <p className="text-game-dark-gold/60 font-serif text-xl">מכין את המשחק...</p>
         </motion.div>
       </div>
     );
