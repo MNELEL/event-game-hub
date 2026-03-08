@@ -1,26 +1,37 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Player } from "@/types/game";
-import { Trophy, RotateCcw, Home, Sparkles } from "lucide-react";
+import { Player, Question } from "@/types/game";
+import { Trophy, RotateCcw, Home, Sparkles, BarChart3 } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { fireConfetti } from "@/hooks/useConfetti";
+import { GameStatsPanel } from "./GameStatsPanel";
 
 type Props = {
   players: Player[];
+  questions: Question[];
   onRestart: () => void;
   onHome: () => void;
 };
 
-export function GameFinished({ players, onRestart, onHome }: Props) {
+export function GameFinished({ players, questions, onRestart, onHome }: Props) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const medals = ["🥇", "🥈", "🥉"];
+  const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
     SoundEffects.victory();
     fireConfetti();
   }, []);
+
+  if (showStats) {
+    return (
+      <div className="min-h-screen game-gradient" dir="rtl">
+        <GameStatsPanel players={players} questions={questions} onClose={() => setShowStats(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -119,11 +130,17 @@ export function GameFinished({ players, onRestart, onHome }: Props) {
       )}
 
       <motion.div
-        className="flex gap-4 relative z-10"
+        className="flex flex-wrap gap-4 relative z-10 justify-center"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.5 }}
       >
+        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
+          <Button variant="gold" size="xl" onClick={() => { SoundEffects.click(); setShowStats(true); }} className="gap-3">
+            <BarChart3 className="w-5 h-5" />
+            סטטיסטיקות
+          </Button>
+        </motion.div>
         <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
           <Button variant="gold" size="xl" onClick={() => { SoundEffects.click(); onRestart(); }} className="gap-3">
             <RotateCcw className="w-5 h-5" />
