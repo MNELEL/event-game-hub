@@ -57,7 +57,6 @@ const GameHost = () => {
           <Home className="w-5 h-5" />
         </Button>
       </div>
-      </div>
 
       <AnimatePresence mode="wait">
         {gameState.status === "lobby" && (
