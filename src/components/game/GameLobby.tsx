@@ -9,7 +9,7 @@ import { SoundEffects } from "@/hooks/useSoundEffects";
 type Props = {
   gameCode: string;
   players: Player[];
-  onAddPlayer: (name: string) => Player;
+  onAddPlayer: (name: string) => Player | Promise<Player | null>;
   onStart: () => void;
   questionsCount: number;
 };
