@@ -104,8 +104,11 @@
 
 @layer utilities {
   .game-gradient {
-    background: linear-gradient(160deg, hsl(40 55% 96%), hsl(38 45% 90%), hsl(35 40% 85%));
-    background-image: linear-gradient(160deg, hsl(40 55% 96%), hsl(38 45% 90%), hsl(35 40% 85%));
+    background-color: hsl(40 55% 96%);
+    background-image: url('@/assets/parchment-texture.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
   .gold-gradient {
     background: linear-gradient(135deg, hsl(35 55% 53%), hsl(30 50% 45%));
