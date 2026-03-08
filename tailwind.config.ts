@@ -16,6 +16,8 @@ export default {
       fontFamily: {
         display: ["Fredoka", "Rubik", "sans-serif"],
         body: ["Rubik", "sans-serif"],
+        serif: ['"Frank Ruhl Libre"', "serif"],
+        hebrew: ["Assistant", "Rubik", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
