@@ -36,12 +36,16 @@
     --warning: 35 95% 55%;
     --warning-foreground: 30 50% 15%;
 
-    --game-bg: 250 60% 20%;
-    --game-surface: 250 50% 30%;
-    --game-glow: 250 80% 65%;
-    --game-gold: 45 100% 50%;
-    --game-correct: 145 70% 50%;
-    --game-wrong: 0 80% 55%;
+    --game-bg: 38 50% 94%;
+    --game-surface: 38 40% 88%;
+    --game-glow: 35 60% 50%;
+    --game-gold: 35 55% 53%;
+    --game-dark-gold: 30 40% 43%;
+    --game-correct: 145 70% 40%;
+    --game-wrong: 0 70% 50%;
+    --game-cream: 40 60% 97%;
+    --game-parchment: 38 45% 92%;
+    --game-border-gold: 35 45% 56%;
 
     --border: 220 20% 88%;
     --input: 220 20% 88%;
