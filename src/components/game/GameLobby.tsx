@@ -149,9 +149,9 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
         {/* Connection instructions */}
         <motion.div
           className="parchment-card rounded-2xl p-8 mb-8 relative watercolor-corners overflow-hidden"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
+          initial={{ opacity: 0, y: 40, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 1.3, type: "spring", stiffness: 80 }}
         >
           <h2 className="font-serif text-2xl text-game-dark-gold mb-6">הצטרפו למשחק!</h2>
 
