@@ -9,6 +9,7 @@ import { GameQuestionDisplay } from "@/components/game/GameQuestionDisplay";
 import { GameResults } from "@/components/game/GameResults";
 import { GameLeaderboard } from "@/components/game/GameLeaderboard";
 import { GameFinished } from "@/components/game/GameFinished";
+import { SoundControlPanel } from "@/components/game/SoundControlPanel";
 import { Home, Loader2 } from "lucide-react";
 
 const GameHost = () => {
@@ -52,10 +53,11 @@ const GameHost = () => {
 
   return (
     <div className="min-h-screen game-gradient relative overflow-hidden" dir="rtl">
-      <div className="absolute top-4 left-4 z-50 flex gap-2">
+      <div className="absolute top-4 left-4 z-50 flex gap-2 items-start">
         <Button variant="ghost" size="icon" className="text-game-dark-gold/50 hover:text-game-dark-gold" onClick={() => navigate("/")}>
           <Home className="w-5 h-5" />
         </Button>
+        <SoundControlPanel />
       </div>
 
       <AnimatePresence mode="wait">
