@@ -77,6 +77,12 @@ const Admin = () => {
           </TabsList>
 
           <TabsContent value="questions">
+            <div className="flex justify-end mb-4">
+              <QuestionImportExport
+                questions={store.questions}
+                onImport={(imported) => store.updateQuestions([...store.questions, ...imported])}
+              />
+            </div>
             <QuestionList
               questions={store.questions}
               onRemove={store.removeQuestion}
