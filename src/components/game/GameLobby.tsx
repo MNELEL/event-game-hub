@@ -44,101 +44,91 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        {/* Animated title */}
+        {/* Decorative leaf ornaments */}
+        <motion.div
+          className="text-5xl mb-2 opacity-60"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          🌿
+        </motion.div>
+
+        {/* Title */}
         <motion.h1
-          className="font-display text-6xl md:text-7xl font-bold text-game-gold text-shadow-game mb-4"
-          animate={{ scale: [1, 1.02, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="font-serif text-6xl md:text-7xl font-bold text-game-dark-gold text-shadow-game mb-2"
+          animate={{ scale: [1, 1.01, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
           🧠 מגה מוח
         </motion.h1>
-
-        {/* Floating particles effect */}
-        <div className="relative">
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 rounded-full bg-game-gold/30"
-              style={{ left: `${15 + i * 15}%`, top: -20 }}
-              animate={{
-                y: [0, -30, 0],
-                opacity: [0.3, 0.8, 0.3],
-              }}
-              transition={{
-                duration: 2 + i * 0.3,
-                repeat: Infinity,
-                delay: i * 0.4,
-              }}
-            />
-          ))}
-        </div>
+        <div className="w-40 mx-auto border-t-2 border-double border-game-border-gold my-4" />
 
         {/* Connection instructions */}
         <motion.div
-          className="bg-game-surface/60 backdrop-blur-md rounded-3xl p-8 mb-8 border border-game-glow/30"
+          className="parchment-card rounded-2xl p-8 mb-8 relative watercolor-corners overflow-hidden"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="font-display text-2xl text-primary-foreground mb-6">הצטרפו למשחק!</h2>
+          <h2 className="font-serif text-2xl text-game-dark-gold mb-6">הצטרפו למשחק!</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <motion.div
-              className="bg-game-bg/50 rounded-2xl p-6 border border-game-glow/20"
-              whileHover={{ scale: 1.03, borderColor: "hsl(250 80% 65% / 0.5)" }}
+              className="bg-game-cream rounded-xl p-6 border border-game-border-gold/30"
+              whileHover={{ scale: 1.02, borderColor: "hsl(35 45% 56%)" }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <Monitor className="w-10 h-10 text-game-gold mx-auto mb-3" />
-              <h3 className="font-display text-lg text-primary-foreground mb-2">דרך האינטרנט</h3>
-              <p className="text-primary-foreground/60 text-sm mb-3">היכנסו לכתובת:</p>
+              <h3 className="font-serif text-lg text-game-dark-gold mb-2">דרך האינטרנט</h3>
+              <p className="text-game-dark-gold/60 text-sm mb-3">היכנסו לכתובת:</p>
               <motion.div
-                className="bg-game-bg rounded-xl p-3 font-mono text-game-gold text-lg"
-                animate={{ boxShadow: ["0 0 10px hsl(45 100% 50% / 0.2)", "0 0 25px hsl(45 100% 50% / 0.4)", "0 0 10px hsl(45 100% 50% / 0.2)"] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                className="bg-white/70 rounded-lg p-3 font-mono text-game-dark-gold text-lg border border-game-border-gold/40"
+                animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
               >
                 megabrain.app/{gameCode}
               </motion.div>
             </motion.div>
 
             <motion.div
-              className="bg-game-bg/50 rounded-2xl p-6 border border-game-glow/20"
-              whileHover={{ scale: 1.03, borderColor: "hsl(250 80% 65% / 0.5)" }}
+              className="bg-game-cream rounded-xl p-6 border border-game-border-gold/30"
+              whileHover={{ scale: 1.02, borderColor: "hsl(35 45% 56%)" }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <Phone className="w-10 h-10 text-game-gold mx-auto mb-3" />
-              <h3 className="font-display text-lg text-primary-foreground mb-2">דרך הטלפון</h3>
-              <p className="text-primary-foreground/60 text-sm mb-3">חייגו למספר:</p>
+              <h3 className="font-serif text-lg text-game-dark-gold mb-2">דרך הטלפון</h3>
+              <p className="text-game-dark-gold/60 text-sm mb-3">חייגו למספר:</p>
               <motion.div
-                className="bg-game-bg rounded-xl p-3 font-mono text-game-gold text-lg direction-ltr"
-                animate={{ boxShadow: ["0 0 10px hsl(45 100% 50% / 0.2)", "0 0 25px hsl(45 100% 50% / 0.4)", "0 0 10px hsl(45 100% 50% / 0.2)"] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                className="bg-white/70 rounded-lg p-3 font-mono text-game-dark-gold text-lg border border-game-border-gold/40 direction-ltr"
+                animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
               >
                 03-7737970
               </motion.div>
             </motion.div>
           </div>
 
-          <p className="text-primary-foreground/40 text-xs mt-4">
+          <p className="text-game-dark-gold/50 text-xs mt-4">
             קוד משחק: <span className="text-game-gold font-bold text-lg">{gameCode}</span>
           </p>
         </motion.div>
 
         {/* Add players manually */}
-        <div className="bg-game-surface/40 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-game-glow/10">
+        <div className="parchment-card rounded-xl p-6 mb-6">
           <div className="flex gap-3 items-center mb-4">
             <Input
               value={newPlayerName}
               onChange={e => setNewPlayerName(e.target.value)}
               placeholder="הוסיפו שחקן..."
-              className="bg-game-bg/50 border-game-glow/30 text-primary-foreground h-11"
+              className="bg-white/60 border-game-border-gold/40 text-game-dark-gold h-11"
               onKeyDown={e => e.key === "Enter" && handleAdd()}
             />
-            <Button variant="game" size="default" onClick={handleAdd} disabled={!newPlayerName.trim()}>
+            <Button variant="gold" size="default" onClick={handleAdd} disabled={!newPlayerName.trim()}>
               <UserPlus className="w-4 h-4" />
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 text-primary-foreground/60">
+          <div className="flex items-center gap-2 text-game-dark-gold/60">
             <Users className="w-4 h-4" />
             <span className="text-sm">{players.length} שחקנים מחוברים</span>
           </div>
@@ -146,16 +136,16 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
           <AnimatePresence>
             {players.length > 0 && (
               <motion.div className="flex flex-wrap gap-2 mt-3" layout>
-                {players.map((p, i) => (
+                {players.map((p) => (
                   <motion.span
                     key={p.id}
-                    className="bg-game-glow/20 text-primary-foreground px-3 py-1 rounded-full text-sm font-medium"
+                    className="bg-game-gold/20 text-game-dark-gold px-3 py-1 rounded-full text-sm font-medium border border-game-border-gold/30"
                     initial={{ opacity: 0, scale: 0, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0 }}
                     transition={{ type: "spring", stiffness: 400 }}
                   >
-                    {p.name}
+                    🌱 {p.name}
                   </motion.span>
                 ))}
               </motion.div>
@@ -176,7 +166,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
           </Button>
         </motion.div>
 
-        <p className="text-primary-foreground/40 text-sm mt-3">{questionsCount} שאלות מוכנות</p>
+        <p className="text-game-dark-gold/50 text-sm mt-3">{questionsCount} שאלות מוכנות</p>
       </motion.div>
     </div>
   );

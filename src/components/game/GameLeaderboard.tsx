@@ -32,19 +32,20 @@ export function GameLeaderboard({ players, onNext, isFinal }: Props) {
         >
           <Trophy className="w-16 h-16 text-game-gold mx-auto mb-3" />
         </motion.div>
-        <h2 className="font-display text-4xl text-primary-foreground text-shadow-game">
+        <h2 className="font-serif text-4xl text-game-dark-gold text-shadow-game">
           {isFinal ? "תוצאות סופיות!" : "טבלת דירוג"}
         </h2>
+        <div className="w-32 mx-auto border-t-2 border-double border-game-border-gold mt-3" />
       </motion.div>
 
       <div className="w-full max-w-lg space-y-3 mb-10">
         {sorted.length === 0 ? (
-          <p className="text-center text-primary-foreground/60 font-display text-lg">אין שחקנים עדיין</p>
+          <p className="text-center text-game-dark-gold/60 font-serif text-lg">אין שחקנים עדיין</p>
         ) : (
           sorted.map((player, i) => (
             <motion.div
               key={player.id}
-              className={`bg-game-surface/60 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4 border ${i === 0 ? "border-game-gold/50 glow-gold" : "border-game-glow/20"}`}
+              className={`parchment-card rounded-xl p-4 flex items-center gap-4 ${i === 0 ? "parchment-border-double glow-gold" : ""}`}
               initial={{ opacity: 0, x: 60, scale: 0.8 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ delay: i * 0.2, type: "spring", stiffness: 200 }}
@@ -56,9 +57,9 @@ export function GameLeaderboard({ players, onNext, isFinal }: Props) {
               >
                 {medals[i] || `${i + 1}`}
               </motion.span>
-              <span className="font-display text-xl text-primary-foreground flex-1">{player.name}</span>
+              <span className="font-serif text-xl text-game-dark-gold flex-1">{player.name}</span>
               <motion.span
-                className="font-display text-2xl text-game-gold font-bold"
+                className="font-serif text-2xl text-game-gold font-bold"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.2 + 0.3 }}

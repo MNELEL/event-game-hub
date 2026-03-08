@@ -24,25 +24,29 @@ export function GameFinished({ players, onRestart, onHome }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Animated background sparkles */}
-      {[...Array(12)].map((_, i) => (
+      {/* Floating golden leaves */}
+      {[...Array(10)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-1 h-1 bg-game-gold/40 rounded-full"
+          className="absolute text-2xl pointer-events-none"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
           }}
           animate={{
-            opacity: [0, 1, 0],
-            scale: [0, 1.5, 0],
+            opacity: [0, 0.6, 0],
+            y: [0, -40, -80],
+            x: [0, (Math.random() - 0.5) * 40],
+            rotate: [0, 180, 360],
           }}
           transition={{
-            duration: 2 + Math.random() * 2,
+            duration: 3 + Math.random() * 2,
             repeat: Infinity,
             delay: Math.random() * 3,
           }}
-        />
+        >
+          🍂
+        </motion.div>
       ))}
 
       <motion.div
@@ -59,12 +63,13 @@ export function GameFinished({ players, onRestart, onHome }: Props) {
         </motion.div>
 
         <motion.h1
-          className="font-display text-5xl md:text-6xl text-game-gold text-shadow-game mb-2"
+          className="font-serif text-5xl md:text-6xl text-game-dark-gold text-shadow-game mb-2"
           animate={{ scale: [1, 1.03, 1] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
           סיום המשחק! 🎉
         </motion.h1>
+        <div className="w-40 mx-auto border-t-2 border-double border-game-border-gold my-4" />
 
         {winner && (
           <motion.div
@@ -74,8 +79,8 @@ export function GameFinished({ players, onRestart, onHome }: Props) {
             className="flex items-center justify-center gap-2"
           >
             <Sparkles className="w-6 h-6 text-game-gold" />
-            <p className="font-display text-3xl text-primary-foreground">
-              🏆 המנצח: <span className="text-game-gold">{winner.name}</span> - {winner.score} נקודות!
+            <p className="font-serif text-3xl text-game-dark-gold">
+              🏆 המנצח: <span className="text-game-gold font-bold">{winner.name}</span> - {winner.score} נקודות!
             </p>
             <Sparkles className="w-6 h-6 text-game-gold" />
           </motion.div>
@@ -87,7 +92,7 @@ export function GameFinished({ players, onRestart, onHome }: Props) {
           {sorted.map((player, i) => (
             <motion.div
               key={player.id}
-              className={`bg-game-surface/60 rounded-2xl p-4 flex items-center gap-4 border ${i === 0 ? "border-game-gold/50 glow-gold" : "border-game-glow/20"}`}
+              className={`parchment-card rounded-xl p-4 flex items-center gap-4 ${i === 0 ? "parchment-border-double glow-gold" : ""}`}
               initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50, scale: 0.8 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ delay: 0.8 + i * 0.15, type: "spring", stiffness: 200 }}
@@ -99,9 +104,9 @@ export function GameFinished({ players, onRestart, onHome }: Props) {
               >
                 {medals[i] || `${i + 1}`}
               </motion.span>
-              <span className="font-display text-xl text-primary-foreground flex-1">{player.name}</span>
+              <span className="font-serif text-xl text-game-dark-gold flex-1">{player.name}</span>
               <motion.span
-                className="font-display text-xl text-game-gold font-bold"
+                className="font-serif text-xl text-game-gold font-bold"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1 + i * 0.15, type: "spring" }}
@@ -126,7 +131,7 @@ export function GameFinished({ players, onRestart, onHome }: Props) {
           </Button>
         </motion.div>
         <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
-          <Button variant="game" size="xl" onClick={() => { SoundEffects.click(); onHome(); }} className="gap-3">
+          <Button variant="outline" size="xl" onClick={() => { SoundEffects.click(); onHome(); }} className="gap-3 border-game-border-gold text-game-dark-gold hover:bg-game-cream">
             <Home className="w-5 h-5" />
             דף הבית
           </Button>

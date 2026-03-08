@@ -44,7 +44,7 @@ const GameHost = () => {
       <div className="min-h-screen game-gradient flex items-center justify-center" dir="rtl">
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <Loader2 className="w-12 h-12 text-game-gold animate-spin mx-auto mb-4" />
-          <p className="text-primary-foreground/60 font-display text-xl">מכין את המשחק...</p>
+          <p className="text-game-dark-gold/60 font-serif text-xl">מכין את המשחק...</p>
         </motion.div>
       </div>
     );
@@ -53,7 +53,7 @@ const GameHost = () => {
   return (
     <div className="min-h-screen game-gradient relative overflow-hidden" dir="rtl">
       <div className="absolute top-4 left-4 z-50 flex gap-2">
-        <Button variant="ghost" size="icon" className="text-primary-foreground/50 hover:text-primary-foreground" onClick={() => navigate("/")}>
+        <Button variant="ghost" size="icon" className="text-game-dark-gold/50 hover:text-game-dark-gold" onClick={() => navigate("/")}>
           <Home className="w-5 h-5" />
         </Button>
       </div>
