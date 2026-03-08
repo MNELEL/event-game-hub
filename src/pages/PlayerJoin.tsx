@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { usePlayerGame } from "@/hooks/usePlayerGame";
 import { Wifi, Loader2, CheckCircle, Clock, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { SoundEffects } from "@/hooks/useSoundEffects";
 
 const answerClasses = [
   "game-answer-1",
@@ -131,6 +132,7 @@ const PlayerJoin = () => {
                   className={`${answerClasses[i]} rounded-2xl h-28 text-4xl font-display font-bold text-white shadow-lg active:scale-95 transition-transform border border-white/20`}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
+                    SoundEffects.answerSelect();
                     setSelectedAnswer(i);
                     submitAnswer(i, "", state.timeRemaining);
                   }}
