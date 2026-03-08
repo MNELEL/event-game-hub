@@ -53,9 +53,10 @@ const GameHost = () => {
   return (
     <div className="min-h-screen game-gradient relative overflow-hidden" dir="rtl">
       <div className="absolute top-4 left-4 z-50 flex gap-2">
-        <Button variant="ghost" size="icon" className="text-primary-foreground/50 hover:text-primary-foreground" onClick={() => navigate("/")}>
+        <Button variant="ghost" size="icon" className="text-game-dark-gold/50 hover:text-game-dark-gold" onClick={() => navigate("/")}>
           <Home className="w-5 h-5" />
         </Button>
+      </div>
       </div>
 
       <AnimatePresence mode="wait">
