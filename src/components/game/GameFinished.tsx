@@ -130,11 +130,17 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
       )}
 
       <motion.div
-        className="flex gap-4 relative z-10"
+        className="flex flex-wrap gap-4 relative z-10 justify-center"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.5 }}
       >
+        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
+          <Button variant="gold" size="xl" onClick={() => { SoundEffects.click(); setShowStats(true); }} className="gap-3">
+            <BarChart3 className="w-5 h-5" />
+            סטטיסטיקות
+          </Button>
+        </motion.div>
         <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
           <Button variant="gold" size="xl" onClick={() => { SoundEffects.click(); onRestart(); }} className="gap-3">
             <RotateCcw className="w-5 h-5" />
