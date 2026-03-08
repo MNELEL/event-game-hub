@@ -9,6 +9,7 @@ import { QuestionEditor } from "@/components/game/QuestionEditor";
 import { QuestionList } from "@/components/game/QuestionList";
 import { GameSettingsPanel } from "@/components/game/GameSettingsPanel";
 import { TutorialDialog } from "@/components/game/TutorialDialog";
+import { QuestionImportExport } from "@/components/game/QuestionImportExport";
 import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2 } from "lucide-react";
 
 const Admin = () => {
