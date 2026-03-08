@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Player } from "@/types/game";
-import { Play, UserPlus, Users, Monitor, Phone } from "lucide-react";
+import { Play, UserPlus, Users, Monitor, Phone, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 
 type Props = {
@@ -161,7 +162,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
         >
           <h2 className="font-serif text-2xl text-game-dark-gold mb-6">הצטרפו למשחק!</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <motion.div
               className="bg-game-cream rounded-xl p-6 border border-game-border-gold/30"
               whileHover={{ scale: 1.02, borderColor: "hsl(35 45% 56%)" }}
@@ -193,6 +194,30 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
                 03-7737970
+              </motion.div>
+            </motion.div>
+
+            {/* QR Code */}
+            <motion.div
+              className="bg-game-cream rounded-xl p-6 border border-game-border-gold/30 flex flex-col items-center"
+              whileHover={{ scale: 1.02, borderColor: "hsl(35 45% 56%)" }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <QrCode className="w-10 h-10 text-game-gold mb-3" />
+              <h3 className="font-serif text-lg text-game-dark-gold mb-2">סרקו QR</h3>
+              <p className="text-game-dark-gold/60 text-sm mb-3">סרקו עם הטלפון:</p>
+              <motion.div
+                className="bg-white rounded-xl p-3 border border-game-border-gold/40 inline-block"
+                animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+              >
+                <QRCodeSVG
+                  value={`${window.location.origin}/join?code=${gameCode}`}
+                  size={120}
+                  bgColor="transparent"
+                  fgColor="hsl(35, 60%, 25%)"
+                  level="M"
+                />
               </motion.div>
             </motion.div>
           </div>

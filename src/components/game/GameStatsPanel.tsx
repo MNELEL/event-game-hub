@@ -1,11 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Player, Question } from "@/types/game";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
-import { ArrowRight, Target, Zap, Trophy, PieChart as PieIcon } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { ArrowRight, Target, Zap, Trophy, PieChart as PieIcon, Download, Image } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
+import html2canvas from "html2canvas";
 
 type Props = {
   players: Player[];
@@ -25,6 +26,52 @@ const CHART_COLORS = [
 ];
 
 export function GameStatsPanel({ players, questions, onClose }: Props) {
+  const statsRef = useRef<HTMLDivElement>(null);
+
+  const exportAsImage = useCallback(async () => {
+    if (!statsRef.current) return;
+    SoundEffects.click();
+    const canvas = await html2canvas(statsRef.current, {
+      backgroundColor: "#f5eed6",
+      scale: 2,
+      useCORS: true,
+    });
+    const link = document.createElement("a");
+    link.download = `mega-brain-stats-${Date.now()}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }, []);
+
+  const exportAsPDF = useCallback(async () => {
+    if (!statsRef.current) return;
+    SoundEffects.click();
+    const canvas = await html2canvas(statsRef.current, {
+      backgroundColor: "#f5eed6",
+      scale: 2,
+      useCORS: true,
+    });
+    const imgData = canvas.toDataURL("image/png");
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    // Create a simple PDF using a print window
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html dir="rtl">
+          <head><title>סטטיסטיקות מגה מוח</title>
+            <style>
+              body { margin: 0; display: flex; justify-content: center; background: #f5eed6; }
+              img { max-width: 100%; height: auto; }
+              @media print { body { margin: 0; } }
+            </style>
+          </head>
+          <body><img src="${imgData}" /></body>
+        </html>
+      `);
+      printWindow.document.close();
+      setTimeout(() => printWindow.print(), 500);
+    }
+  }, []);
   const correctAnswersData = useMemo(() => {
     return players.map((p, i) => ({
       name: p.name,
@@ -97,6 +144,7 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
     <div className="min-h-screen flex flex-col items-center justify-start p-4 md:p-6">
       <motion.div
         className="w-full max-w-5xl"
+        ref={statsRef}
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 150 }}
@@ -267,19 +315,31 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
         </Tabs>
 
         <motion.div
-          className="flex justify-center mt-6"
+          className="flex flex-wrap justify-center gap-3 mt-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button variant="gold" size="lg" onClick={exportAsImage} className="gap-2">
+              <Image className="w-4 h-4" />
+              שמור כתמונה
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button variant="gold" size="lg" onClick={exportAsPDF} className="gap-2">
+              <Download className="w-4 h-4" />
+              הדפס / PDF
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
-              variant="gold"
-              size="xl"
+              variant="outline"
+              size="lg"
               onClick={() => { SoundEffects.click(); onClose(); }}
-              className="gap-3"
+              className="gap-2 border-game-border-gold text-game-dark-gold hover:bg-game-cream"
             >
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
               חזרה לתוצאות
             </Button>
           </motion.div>
