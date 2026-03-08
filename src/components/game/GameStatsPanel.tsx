@@ -1,11 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Player, Question } from "@/types/game";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
-import { ArrowRight, Target, Zap, Trophy, PieChart as PieIcon } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { ArrowRight, Target, Zap, Trophy, PieChart as PieIcon, Download, Image } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
+import html2canvas from "html2canvas";
 
 type Props = {
   players: Player[];
