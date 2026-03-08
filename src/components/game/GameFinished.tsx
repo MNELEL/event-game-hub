@@ -1,13 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Player } from "@/types/game";
-import { Trophy, RotateCcw, Home, Sparkles } from "lucide-react";
+import { Player, Question } from "@/types/game";
+import { Trophy, RotateCcw, Home, Sparkles, BarChart3 } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { fireConfetti } from "@/hooks/useConfetti";
+import { GameStatsPanel } from "./GameStatsPanel";
 
 type Props = {
   players: Player[];
+  questions: Question[];
   onRestart: () => void;
   onHome: () => void;
 };
