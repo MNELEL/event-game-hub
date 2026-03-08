@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Player } from "@/types/game";
-import { Play, UserPlus, Users, Monitor, Phone } from "lucide-react";
+import { Play, UserPlus, Users, Monitor, Phone, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 
 type Props = {
