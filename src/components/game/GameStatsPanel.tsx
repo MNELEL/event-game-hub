@@ -149,8 +149,6 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 150 }}
       >
-        transition={{ type: "spring", stiffness: 150 }}
-      >
         <div className="text-center mb-6">
           <h1 className="font-serif text-4xl md:text-5xl text-game-dark-gold text-shadow-game mb-2">
             📊 סטטיסטיקות המשחק
