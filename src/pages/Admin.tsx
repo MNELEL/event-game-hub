@@ -11,7 +11,8 @@ import { QuestionList } from "@/components/game/QuestionList";
 import { GameSettingsPanel } from "@/components/game/GameSettingsPanel";
 import { TutorialDialog } from "@/components/game/TutorialDialog";
 import { QuestionImportExport } from "@/components/game/QuestionImportExport";
-import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2 } from "lucide-react";
+import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
+import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
