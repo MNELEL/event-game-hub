@@ -14,10 +14,11 @@ type Props = {
   onHome: () => void;
 };
 
-export function GameFinished({ players, onRestart, onHome }: Props) {
+export function GameFinished({ players, questions, onRestart, onHome }: Props) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const medals = ["🥇", "🥈", "🥉"];
+  const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
     SoundEffects.victory();
