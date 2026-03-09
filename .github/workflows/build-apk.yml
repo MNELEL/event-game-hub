@@ -29,12 +29,51 @@ jobs:
         run: npm install
 
       - name: Downgrade Capacitor to v6
-        run: |
-          npm install @capacitor/core@6 @capacitor/android@6 @capacitor/cli@6
+        run: npm install @capacitor/core@6 @capacitor/android@6 @capacitor/cli@6
 
       - name: Build Vite
         run: npm run build
 
+      - name: Capacitor add & sync
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Add Netzfree CA certificate
+        run: |
+          # Copy certificate into Android res folder
+          mkdir -p android/app/src/main/res/raw
+          cp public/root_ca_bundle.crt android/app/src/main/res/raw/netzfree_ca.crt
+
+          # Create network security config
+          mkdir -p android/app/src/main/res/xml
+          cat > android/app/src/main/res/xml/network_security_config.xml << 'XMLEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <network-security-config>
+              <base-config>
+                  <trust-anchors>
+                      <certificates src="system" />
+                      <certificates src="@raw/netzfree_ca" />
+                  </trust-anchors>
+              </base-config>
+          </network-security-config>
+          XMLEOF
+
+          # Add networkSecurityConfig to AndroidManifest.xml
+          sed -i 's/<application/<application android:networkSecurityConfig="@xml\/network_security_config"/' android/app/src/main/AndroidManifest.xml
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Build Debug APK
+        run: cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
       - name: Capacitor add & sync
         run: |
           npx cap add android
