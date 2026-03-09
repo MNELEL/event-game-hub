@@ -9,6 +9,7 @@ import Admin from "./pages/Admin";
 import GameHost from "./pages/GameHost";
 import PlayerJoin from "./pages/PlayerJoin";
 import Login from "./pages/Login";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 function JoinRedirect() {
