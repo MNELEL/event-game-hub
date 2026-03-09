@@ -28,24 +28,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Downgrade Capacitor to v6
+        run: |
+          npm install @capacitor/core@6 @capacitor/android@6 @capacitor/cli@6
+
       - name: Build Vite
         run: npm run build
-
-      - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli
 
       - name: Capacitor add & sync
         run: |
           npx cap add android
           npx cap sync android
-
-      - name: Downgrade Capacitor Android to fix bcprov bug
-        run: |
-          sed -i "s/classpath 'com.android.tools.build:gradle:[^']*'/classpath 'com.android.tools.build:gradle:8.2.1'/" android/build.gradle
-          sed -i "s/id 'com.android.application' version '[^']*'/id 'com.android.application' version '8.2.1'/" android/app/build.gradle
-          # Fix bcprov by forcing a newer bouncycastle version
-          echo "" >> android/build.gradle
-          echo "allprojects { configurations.all { resolutionStrategy { force 'org.bouncycastle:bcprov-jdk18on:1.78.1' } } }" >> android/build.gradle
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
