@@ -9,6 +9,7 @@ import Admin from "./pages/Admin";
 import GameHost from "./pages/GameHost";
 import PlayerJoin from "./pages/PlayerJoin";
 import Login from "./pages/Login";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 function JoinRedirect() {
@@ -34,6 +35,7 @@ const AppRoutes = () => (
     <Route path="/host" element={<GameHost />} />
     <Route path="/play" element={<PlayerJoin />} />
     <Route path="/join" element={<JoinRedirect />} />
+    <Route path="/install" element={<Install />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
