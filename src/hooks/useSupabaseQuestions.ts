@@ -87,14 +87,16 @@ export function useSupabaseQuestions() {
       .single();
     
     if (data) {
-      setSettings({
+      const loaded: GameSettings = {
         title: data.title,
         questionsPerGame: data.questions_per_game,
         defaultTimeLimit: data.default_time_limit,
         selectedCategories: data.selected_categories || [],
         showLeaderboardAfterEach: data.show_leaderboard_after_each,
         shuffleQuestions: data.shuffle_questions,
-      });
+      };
+      setSettings(loaded);
+      syncCache(undefined, loaded);
     }
   }, []);
 
