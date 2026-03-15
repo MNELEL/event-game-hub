@@ -184,6 +184,7 @@ export function useSupabaseQuestions() {
     }
     setSettings(newSettings);
     syncCache(undefined, newSettings);
+  }, []);
 
   return {
     questions, settings, loading,
