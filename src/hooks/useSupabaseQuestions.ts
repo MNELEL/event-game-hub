@@ -131,7 +131,7 @@ export function useSupabaseQuestions() {
 
   const removeQuestion = useCallback(async (questionId: string) => {
     await supabase.from("questions").delete().eq("id", questionId);
-    setQuestions(prev => prev.filter(q => q.id !== questionId));
+    setQuestions(prev => { const u = prev.filter(q => q.id !== questionId); syncCache(u); return u; });
   }, []);
 
   const updateQuestion = useCallback(async (questionId: string, updates: Partial<Question>) => {
