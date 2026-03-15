@@ -104,11 +104,14 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     }
     gameQuestions = gameQuestions.slice(0, settings.questionsPerGame);
 
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { data, error } = await supabase.from("games").insert({
       code,
       status: "lobby",
       settings: JSON.parse(JSON.stringify(settings)),
       question_ids: gameQuestions.map(q => q.id),
+      created_by: user?.id || null,
     }).select().single();
 
     if (data) {
