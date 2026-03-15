@@ -3,6 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Question, GameSettings } from "@/types/game";
 import { defaultQuestions } from "@/data/defaultQuestions";
 
+const CACHE_KEY = "megabrain_data";
+
+function cacheToLocal(questions: Question[], settings: GameSettings) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ questions, settings }));
+  } catch {}
+}
+
 // Convert DB row to app Question type
 function dbToQuestion(row: any): Question {
   return {
