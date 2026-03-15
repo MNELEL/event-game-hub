@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
-      {/* Background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <motion.div
@@ -21,15 +19,8 @@ const Index = () => {
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 4 + 3,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
+            animate={{ y: [0, -30, 0], opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: Math.random() * 4 + 3, repeat: Infinity, delay: Math.random() * 2 }}
           />
         ))}
       </div>
@@ -40,11 +31,7 @@ const Index = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <motion.div
-          className="mb-6"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        >
+        <motion.div className="mb-6" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}>
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
             🧠 מגה מוח
           </h1>
@@ -92,11 +79,11 @@ const Index = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.75 }}
         >
-          <Button variant="outline" size="lg" onClick={() => navigate("/install")} className="gap-2 border-2 border-game-dark-gold/60 text-game-dark-gold bg-game-cream/60 hover:bg-game-cream hover:border-game-dark-gold font-bold">
+          <Button variant="outline" size="lg" onClick={() => navigate("/install")} className="gap-2">
             <Download className="w-5 h-5" />
             התקן אפליקציה
           </Button>
-          <Button variant="outline" size="lg" onClick={() => navigate("/offline")} className="gap-2 border-2 border-game-dark-gold/60 text-game-dark-gold bg-game-cream/60 hover:bg-game-cream hover:border-game-dark-gold font-bold">
+          <Button variant="outline" size="lg" onClick={() => navigate("/offline")} className="gap-2">
             <WifiOff className="w-5 h-5" />
             משחק אופליין
           </Button>
