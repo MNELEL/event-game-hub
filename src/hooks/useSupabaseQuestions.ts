@@ -71,7 +71,9 @@ export function useSupabaseQuestions() {
       .order("order_index");
     
     if (!error && data && data.length > 0) {
-      setQuestions(data.map(dbToQuestion));
+      const loaded = data.map(dbToQuestion);
+      setQuestions(loaded);
+      syncCache(loaded);
     } else if (!error && (!data || data.length === 0)) {
       // Seed default questions if DB is empty
       await seedDefaultQuestions();
