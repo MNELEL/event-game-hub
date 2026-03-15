@@ -44,15 +44,24 @@ function questionToDb(q: Question, index: number) {
 
 export function useSupabaseQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [settings, setSettings] = useState<GameSettings>({
+  const defaultSettings: GameSettings = {
     title: "מגה מוח",
     questionsPerGame: 10,
     defaultTimeLimit: 15,
     selectedCategories: [],
     showLeaderboardAfterEach: true,
     shuffleQuestions: true,
-  });
+  };
+  const [settings, setSettings] = useState<GameSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
+  const questionsRef = { current: questions };
+  questionsRef.current = questions;
+  const settingsRef = { current: settings };
+  settingsRef.current = settings;
+
+  const syncCache = (q?: Question[], s?: GameSettings) => {
+    cacheToLocal(q ?? questionsRef.current, s ?? settingsRef.current);
+  };
 
   // Load questions from DB
   const loadQuestions = useCallback(async () => {
