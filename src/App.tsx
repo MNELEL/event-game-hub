@@ -11,6 +11,7 @@ import GameHost from "./pages/GameHost";
 import PlayerJoin from "./pages/PlayerJoin";
 import Login from "./pages/Login";
 import Install from "./pages/Install";
+import OfflineGame from "./pages/OfflineGame";
 import NotFound from "./pages/NotFound";
 
 function JoinRedirect() {
