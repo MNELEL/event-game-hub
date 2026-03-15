@@ -146,7 +146,7 @@ export function useSupabaseQuestions() {
     if (updates.type !== undefined) dbUpdates.media_type = updates.type === "text" ? "none" : updates.type;
 
     await supabase.from("questions").update(dbUpdates).eq("id", questionId);
-    setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, ...updates } : q));
+    setQuestions(prev => { const u = prev.map(q => q.id === questionId ? { ...q, ...updates } : q); syncCache(u); return u; });
   }, []);
 
   const updateQuestions = useCallback(async (newQuestions: Question[]) => {
