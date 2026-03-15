@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, Settings, BookOpen, Sparkles, Users, Zap, Download, WifiOff } from "lucide-react";
+import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -65,19 +65,25 @@ const Index = () => {
         </motion.p>
 
         <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+          className="flex flex-col gap-4 items-center justify-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <Button variant="gold" size="xl" onClick={() => navigate("/admin")} className="gap-3">
-            <Settings className="w-6 h-6" />
-            ממשק ניהול
+          <Button variant="game" size="xl" onClick={() => navigate("/play")} className="gap-3 w-full sm:w-auto text-2xl px-12 py-6">
+            <Users className="w-7 h-7" />
+            הצטרף למשחק
           </Button>
-          <Button variant="game" size="xl" onClick={() => navigate("/host")} className="gap-3">
-            <Gamepad2 className="w-6 h-6" />
-            הפעלת משחק
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="gold" size="lg" onClick={() => navigate("/host")} className="gap-2">
+              <Gamepad2 className="w-5 h-5" />
+              הפעלת משחק
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => navigate("/admin")} className="gap-2 border-game-glow/30 text-primary-foreground/70 hover:text-primary-foreground hover:border-game-glow/60">
+              <Settings className="w-5 h-5" />
+              ממשק ניהול
+            </Button>
+          </div>
         </motion.div>
 
         <motion.div
