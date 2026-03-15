@@ -79,7 +79,7 @@ const Index = () => {
               <Gamepad2 className="w-5 h-5" />
               הפעלת משחק
             </Button>
-            <Button variant="outline" size="lg" onClick={() => navigate("/admin")} className="gap-2 border-game-glow/30 text-primary-foreground/70 hover:text-primary-foreground hover:border-game-glow/60">
+            <Button variant="outline" size="lg" onClick={() => navigate("/admin")} className="gap-2">
               <Settings className="w-5 h-5" />
               ממשק ניהול
             </Button>
