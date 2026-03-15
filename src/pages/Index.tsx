@@ -87,16 +87,16 @@ const Index = () => {
         </motion.div>
 
         <motion.div
-          className="mt-4 flex justify-center"
+          className="mt-4 flex gap-3 justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.75 }}
         >
-          <Button variant="outline" size="lg" onClick={() => navigate("/install")} className="gap-2 border-game-glow/30 text-primary-foreground/70 hover:text-primary-foreground hover:border-game-glow/60">
+          <Button variant="outline" size="lg" onClick={() => navigate("/install")} className="gap-2 border-2 border-game-dark-gold/60 text-game-dark-gold bg-game-cream/60 hover:bg-game-cream hover:border-game-dark-gold font-bold">
             <Download className="w-5 h-5" />
             התקן אפליקציה
           </Button>
-          <Button variant="outline" size="lg" onClick={() => navigate("/offline")} className="gap-2 border-game-glow/30 text-primary-foreground/70 hover:text-primary-foreground hover:border-game-glow/60">
+          <Button variant="outline" size="lg" onClick={() => navigate("/offline")} className="gap-2 border-2 border-game-dark-gold/60 text-game-dark-gold bg-game-cream/60 hover:bg-game-cream hover:border-game-dark-gold font-bold">
             <WifiOff className="w-5 h-5" />
             משחק אופליין
           </Button>
