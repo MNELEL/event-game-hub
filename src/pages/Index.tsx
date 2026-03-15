@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, Settings, BookOpen, Sparkles, Users, Zap, Download } from "lucide-react";
+import { Gamepad2, Settings, BookOpen, Sparkles, Users, Zap, Download, WifiOff } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -89,6 +89,10 @@ const Index = () => {
           <Button variant="outline" size="lg" onClick={() => navigate("/install")} className="gap-2 border-game-glow/30 text-primary-foreground/70 hover:text-primary-foreground hover:border-game-glow/60">
             <Download className="w-5 h-5" />
             התקן אפליקציה
+          </Button>
+          <Button variant="outline" size="lg" onClick={() => navigate("/offline")} className="gap-2 border-game-glow/30 text-primary-foreground/70 hover:text-primary-foreground hover:border-game-glow/60">
+            <WifiOff className="w-5 h-5" />
+            משחק אופליין
           </Button>
         </motion.div>
 
