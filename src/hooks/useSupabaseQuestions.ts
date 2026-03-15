@@ -3,6 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Question, GameSettings } from "@/types/game";
 import { defaultQuestions } from "@/data/defaultQuestions";
 
+const CACHE_KEY = "megabrain_data";
+
+function cacheToLocal(questions: Question[], settings: GameSettings) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ questions, settings }));
+  } catch {}
+}
+
 // Convert DB row to app Question type
 function dbToQuestion(row: any): Question {
   return {
@@ -36,15 +44,24 @@ function questionToDb(q: Question, index: number) {
 
 export function useSupabaseQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [settings, setSettings] = useState<GameSettings>({
+  const defaultSettings: GameSettings = {
     title: "מגה מוח",
     questionsPerGame: 10,
     defaultTimeLimit: 15,
     selectedCategories: [],
     showLeaderboardAfterEach: true,
     shuffleQuestions: true,
-  });
+  };
+  const [settings, setSettings] = useState<GameSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
+  const questionsRef = { current: questions };
+  questionsRef.current = questions;
+  const settingsRef = { current: settings };
+  settingsRef.current = settings;
+
+  const syncCache = (q?: Question[], s?: GameSettings) => {
+    cacheToLocal(q ?? questionsRef.current, s ?? settingsRef.current);
+  };
 
   // Load questions from DB
   const loadQuestions = useCallback(async () => {
@@ -54,7 +71,9 @@ export function useSupabaseQuestions() {
       .order("order_index");
     
     if (!error && data && data.length > 0) {
-      setQuestions(data.map(dbToQuestion));
+      const loaded = data.map(dbToQuestion);
+      setQuestions(loaded);
+      syncCache(loaded);
     } else if (!error && (!data || data.length === 0)) {
       // Seed default questions if DB is empty
       await seedDefaultQuestions();
@@ -70,14 +89,16 @@ export function useSupabaseQuestions() {
       .single();
     
     if (data) {
-      setSettings({
+      const loaded: GameSettings = {
         title: data.title,
         questionsPerGame: data.questions_per_game,
         defaultTimeLimit: data.default_time_limit,
         selectedCategories: data.selected_categories || [],
         showLeaderboardAfterEach: data.show_leaderboard_after_each,
         shuffleQuestions: data.shuffle_questions,
-      });
+      };
+      setSettings(loaded);
+      syncCache(undefined, loaded);
     }
   }, []);
 
@@ -105,13 +126,14 @@ export function useSupabaseQuestions() {
     const { id, ...rest } = row;
     const { data, error } = await supabase.from("questions").insert(rest).select().single();
     if (!error && data) {
-      setQuestions(prev => [...prev, dbToQuestion(data)]);
+      const newQ = dbToQuestion(data);
+      setQuestions(prev => { const u = [...prev, newQ]; syncCache(u); return u; });
     }
   }, [questions.length]);
 
   const removeQuestion = useCallback(async (questionId: string) => {
     await supabase.from("questions").delete().eq("id", questionId);
-    setQuestions(prev => prev.filter(q => q.id !== questionId));
+    setQuestions(prev => { const u = prev.filter(q => q.id !== questionId); syncCache(u); return u; });
   }, []);
 
   const updateQuestion = useCallback(async (questionId: string, updates: Partial<Question>) => {
@@ -126,7 +148,7 @@ export function useSupabaseQuestions() {
     if (updates.type !== undefined) dbUpdates.media_type = updates.type === "text" ? "none" : updates.type;
 
     await supabase.from("questions").update(dbUpdates).eq("id", questionId);
-    setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, ...updates } : q));
+    setQuestions(prev => { const u = prev.map(q => q.id === questionId ? { ...q, ...updates } : q); syncCache(u); return u; });
   }, []);
 
   const updateQuestions = useCallback(async (newQuestions: Question[]) => {
@@ -138,7 +160,9 @@ export function useSupabaseQuestions() {
     });
     const { data } = await supabase.from("questions").insert(rows).select();
     if (data) {
-      setQuestions(data.map(dbToQuestion));
+      const loaded = data.map(dbToQuestion);
+      setQuestions(loaded);
+      syncCache(loaded);
     }
   }, []);
 
@@ -159,6 +183,7 @@ export function useSupabaseQuestions() {
       await supabase.from("game_settings").insert(dbSettings);
     }
     setSettings(newSettings);
+    syncCache(undefined, newSettings);
   }, []);
 
   return {
