@@ -124,7 +124,8 @@ export function useSupabaseQuestions() {
     const { id, ...rest } = row;
     const { data, error } = await supabase.from("questions").insert(rest).select().single();
     if (!error && data) {
-      setQuestions(prev => [...prev, dbToQuestion(data)]);
+      const newQ = dbToQuestion(data);
+      setQuestions(prev => { const u = [...prev, newQ]; syncCache(u); return u; });
     }
   }, [questions.length]);
 
