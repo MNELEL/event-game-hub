@@ -70,24 +70,51 @@ export function useSupabaseQuestions() {
       .select("*")
       .order("order_index");
     
-    if (!error && data && data.length > 0) {
+    if (error) {
+      // fallback to cache or defaults on DB/RLS error
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.questions?.length > 0) {
+            setQuestions(parsed.questions);
+            return;
+          }
+        }
+      } catch {}
+      setQuestions(defaultQuestions);
+      return;
+    }
+
+    if (data && data.length > 0) {
       const loaded = data.map(dbToQuestion);
       setQuestions(loaded);
       syncCache(loaded);
-    } else if (!error && (!data || data.length === 0)) {
-      // Seed default questions if DB is empty
+    } else if (!data || data.length === 0) {
       await seedDefaultQuestions();
     }
   }, []);
 
   // Load settings from DB
   const loadSettings = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("game_settings")
       .select("*")
       .limit(1)
       .single();
     
+    if (error) {
+      // fallback to cache on error
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.settings) setSettings(parsed.settings);
+        }
+      } catch {}
+      return;
+    }
+
     if (data) {
       const loaded: GameSettings = {
         title: data.title,
