@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, Settings, BookOpen, Sparkles, Users, Zap, Download } from "lucide-react";
+import { Gamepad2, Settings, BookOpen, Sparkles, Users, Zap, Download, WifiOff } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
