@@ -38,6 +38,7 @@ const AppRoutes = () => (
     <Route path="/play" element={<PlayerJoin />} />
     <Route path="/join" element={<JoinRedirect />} />
     <Route path="/install" element={<Install />} />
+    <Route path="/offline" element={<OfflineGame />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

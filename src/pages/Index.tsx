@@ -90,6 +90,10 @@ const Index = () => {
             <Download className="w-5 h-5" />
             התקן אפליקציה
           </Button>
+          <Button variant="outline" size="lg" onClick={() => navigate("/offline")} className="gap-2 border-game-glow/30 text-primary-foreground/70 hover:text-primary-foreground hover:border-game-glow/60">
+            <WifiOff className="w-5 h-5" />
+            משחק אופליין
+          </Button>
         </motion.div>
 
         <motion.div
