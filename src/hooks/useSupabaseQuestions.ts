@@ -158,7 +158,9 @@ export function useSupabaseQuestions() {
     });
     const { data } = await supabase.from("questions").insert(rows).select();
     if (data) {
-      setQuestions(data.map(dbToQuestion));
+      const loaded = data.map(dbToQuestion);
+      setQuestions(loaded);
+      syncCache(loaded);
     }
   }, []);
 
