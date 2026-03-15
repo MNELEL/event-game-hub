@@ -181,7 +181,7 @@ export function useSupabaseQuestions() {
       await supabase.from("game_settings").insert(dbSettings);
     }
     setSettings(newSettings);
-  }, []);
+    syncCache(undefined, newSettings);
 
   return {
     questions, settings, loading,
