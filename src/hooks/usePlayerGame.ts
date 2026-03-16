@@ -9,6 +9,8 @@ type PlayerGameState = {
   playerName: string;
   gameStatus: GameStatus;
   currentQuestionIndex: number;
+  currentQuestionId: string | null;
+  questionIds: string[];
   timeRemaining: number;
   questionCount: number;
   connected: boolean;
@@ -22,6 +24,8 @@ export function usePlayerGame() {
     playerName: "",
     gameStatus: "lobby",
     currentQuestionIndex: 0,
+    currentQuestionId: null,
+    questionIds: [],
     timeRemaining: 15,
     questionCount: 0,
     connected: false,
@@ -48,6 +52,7 @@ export function usePlayerGame() {
 
     if (error || !player) return { error: "שגיאה בהצטרפות" };
 
+    const questionIds = (game.question_ids as string[]) || [];
     setState(prev => ({
       ...prev,
       gameId: game.id,
@@ -55,8 +60,10 @@ export function usePlayerGame() {
       playerName: name,
       gameStatus: game.status as GameStatus,
       currentQuestionIndex: game.current_question_index,
+      currentQuestionId: questionIds[game.current_question_index] || null,
+      questionIds,
       timeRemaining: game.time_remaining,
-      questionCount: (game.question_ids as string[]).length,
+      questionCount: questionIds.length,
       connected: true,
       answerSubmitted: false,
     }));
@@ -79,6 +86,7 @@ export function usePlayerGame() {
             ...prev,
             gameStatus: game.status as GameStatus,
             currentQuestionIndex: game.current_question_index,
+            currentQuestionId: prev.questionIds[game.current_question_index] || null,
             timeRemaining: game.time_remaining,
             // Reset answer submitted when new question starts
             answerSubmitted: game.status === "question" && game.current_question_index !== prev.currentQuestionIndex
