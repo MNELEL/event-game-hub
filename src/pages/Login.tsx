@@ -27,9 +27,8 @@ const Login = () => {
 
     if (error) {
       toast({ title: "שגיאה", description: error.message, variant: "destructive" });
-    } else if (isSignUp) {
-      toast({ title: "נרשמת בהצלחה!", description: "בדוק את המייל לאישור החשבון" });
     } else {
+      toast({ title: isSignUp ? "נרשמת בהצלחה! 🎉" : "ברוך הבא!", description: "מועבר לממשק הניהול..." });
       navigate("/admin");
     }
   };
