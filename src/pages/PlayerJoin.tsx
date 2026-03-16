@@ -141,7 +141,7 @@ const PlayerJoin = () => {
                   onClick={() => {
                     SoundEffects.answerSelect();
                     setSelectedAnswer(i);
-                    submitAnswer(i, "", state.timeRemaining);
+                    submitAnswer(i, state.currentQuestionId || "", state.timeRemaining);
                   }}
                 >
                   {label}
