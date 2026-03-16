@@ -111,8 +111,12 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
       status: "lobby",
       settings: JSON.parse(JSON.stringify(settings)),
       question_ids: gameQuestions.map(q => q.id),
-      created_by: user?.id || null,
+      created_by: user?.id ?? null,
     }).select().single();
+
+    if (error) {
+      console.error("createGame error:", error);
+    }
 
     if (data) {
       setGameDbId(data.id);
@@ -225,7 +229,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
 
   const resetGame = useCallback(async () => {
     if (gameDbId) {
-      await supabase.from("games").update({ status: "finished" }).eq("id", gameDbId);
+      await supabase.from("games").update({ status: "finished" }).eq("id", gameDbId).catch(() => {});
     }
     const code = generateGameCode();
     setGameDbId(null);
