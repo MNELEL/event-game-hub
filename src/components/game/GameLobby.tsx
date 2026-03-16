@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Player } from "@/types/game";
-import { Play, UserPlus, Users, Monitor, Phone, QrCode } from "lucide-react";
+import { Play, UserPlus, Users, Monitor, Phone, QrCode, Copy, Check } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 
@@ -18,6 +18,13 @@ type Props = {
 export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCount }: Props) {
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
+  const [copied, setCopied] = useState(false);
+
+  const copyGameCode = () => {
+    navigator.clipboard.writeText(gameCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Start lobby background music on mount
   useEffect(() => {
@@ -176,7 +183,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
-                {window.location.host}/playlay
+                {window.location.host}/play
               </motion.div>
             </motion.div>
 
@@ -222,8 +229,15 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             </motion.div>
           </div>
 
-          <p className="text-game-dark-gold/50 text-xs mt-4">
+          <p className="text-game-dark-gold/50 text-xs mt-4 flex items-center justify-center gap-2">
             קוד משחק: <span className="text-game-gold font-bold text-lg">{gameCode}</span>
+            <button
+              onClick={copyGameCode}
+              className="inline-flex items-center gap-1 bg-game-gold/20 hover:bg-game-gold/40 text-game-dark-gold text-xs px-2 py-1 rounded-lg transition-colors border border-game-border-gold/30"
+            >
+              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              {copied ? "הועתק!" : "העתק"}
+            </button>
           </p>
         </motion.div>
 
