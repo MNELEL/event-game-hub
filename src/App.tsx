@@ -33,8 +33,8 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/login" element={<Login />} />
-    <Route path="/admin" element={<Admin />} />
-    <Route path="/host" element={<GameHost />} />
+    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+    <Route path="/host" element={<ProtectedRoute><GameHost /></ProtectedRoute>} />
     <Route path="/play" element={<PlayerJoin />} />
     <Route path="/join" element={<JoinRedirect />} />
     <Route path="/install" element={<Install />} />
