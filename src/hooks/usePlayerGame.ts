@@ -96,16 +96,15 @@ export function usePlayerGame() {
   const submitAnswer = useCallback(async (answer: number, questionId: string, timeTaken: number) => {
     if (!state.gameId || !state.playerId || state.answerSubmitted) return;
 
-    // We don't know the correct answer client-side, so we send it
-    // and let the host calculate points. For now, insert raw answer.
-    await supabase.from("player_answers").insert({
-      player_id: state.playerId,
-      game_id: state.gameId,
-      question_id: questionId,
-      answer,
-      time_taken: timeTaken,
-      correct: false, // Will be updated by host
-      points_earned: 0,
+    // Use server-side edge function for answer validation and scoring
+    await supabase.functions.invoke("submit-answer", {
+      body: {
+        player_id: state.playerId,
+        game_id: state.gameId,
+        question_id: questionId,
+        answer,
+        time_taken: timeTaken,
+      },
     });
 
     setState(prev => ({ ...prev, answerSubmitted: true }));
