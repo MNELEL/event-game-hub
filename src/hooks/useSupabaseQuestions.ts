@@ -91,7 +91,11 @@ export function useSupabaseQuestions() {
       setQuestions(loaded);
       syncCache(loaded);
     } else if (!data || data.length === 0) {
-      await seedDefaultQuestions();
+      // Try to seed DB (requires auth), fallback to local defaults
+      const seeded = await seedDefaultQuestions();
+      if (!seeded) {
+        setQuestions(defaultQuestions);
+      }
     }
   }, []);
 
@@ -129,14 +133,16 @@ export function useSupabaseQuestions() {
     }
   }, []);
 
-  const seedDefaultQuestions = async () => {
+  const seedDefaultQuestions = async (): Promise<boolean> => {
     const rows = defaultQuestions.map((q, i) => questionToDb(q, i));
     // Remove id field so DB generates UUIDs
     const cleanRows = rows.map(({ id, ...rest }) => rest);
     const { error } = await supabase.from("questions").insert(cleanRows);
     if (!error) {
       await loadQuestions();
+      return true;
     }
+    return false;
   };
 
   useEffect(() => {
