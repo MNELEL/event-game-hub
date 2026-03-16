@@ -149,9 +149,9 @@ const GameHost = () => {
             <GameFinished
               players={gameState.players}
               questions={gameState.questions}
-              onRestart={() => {
+              onRestart={async () => {
+                await game.resetGame();
                 setGameCreated(false);
-                game.resetGame();
               }}
               onHome={() => navigate("/")}
             />
