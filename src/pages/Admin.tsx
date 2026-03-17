@@ -109,6 +109,10 @@ const Admin = () => {
             <QuestionEditor onAdd={store.addQuestion} />
           </TabsContent>
 
+          <TabsContent value="games">
+            <ActiveGamesList />
+          </TabsContent>
+
           <TabsContent value="settings">
             <GameSettingsPanel
               settings={store.settings}
