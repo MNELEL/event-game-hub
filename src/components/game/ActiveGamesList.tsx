@@ -155,6 +155,16 @@ export function ActiveGamesList() {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleDuplicate(game)}
+                className="gap-1"
+                title="שכפל משחק"
+              >
+                <Copy className="w-4 h-4" />
+                שכפול
+              </Button>
               {isActive && (
                 <Button
                   size="sm"
