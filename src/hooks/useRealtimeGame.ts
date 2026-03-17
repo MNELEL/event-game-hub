@@ -240,9 +240,49 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     });
   }, [gameDbId, settings]);
 
+  // Resume an existing game from DB
+  const resumeGame = useCallback(async (gameId: string, allQuestions: Question[]) => {
+    const { data: gameData } = await supabase.from("games").select("*").eq("id", gameId).single();
+    if (!gameData) return null;
+
+    // Rebuild questions from question_ids
+    const questionMap = new Map(allQuestions.map(q => [q.id, q]));
+    const gameQuestions = (gameData.question_ids as string[])
+      .map(id => questionMap.get(id))
+      .filter(Boolean) as Question[];
+
+    // Load players with their answers
+    const { data: playersData } = await supabase.from("players").select("*").eq("game_id", gameId);
+    const { data: answersData } = await supabase.from("player_answers").select("*").eq("game_id", gameId);
+
+    const players: Player[] = (playersData || []).map(p => ({
+      id: p.id,
+      name: p.name,
+      score: p.score,
+      answers: (answersData || [])
+        .filter(a => a.player_id === p.id)
+        .map(a => ({ questionId: a.question_id, answer: a.answer, correct: a.correct, time: a.time_taken })),
+    }));
+
+    const parsedSettings = gameData.settings as unknown as GameSettings;
+
+    setGameDbId(gameId);
+    setGameState({
+      status: gameData.status as GameState["status"],
+      currentQuestionIndex: gameData.current_question_index,
+      questions: gameQuestions,
+      players,
+      settings: parsedSettings || settings,
+      timeRemaining: gameData.time_remaining,
+      gameCode: gameData.code,
+    });
+
+    return gameData;
+  }, [settings]);
+
   return {
     gameState, setGameState, gameDbId,
-    createGame, startGame, showQuestion, showResults, showLeaderboard,
+    createGame, resumeGame, startGame, showQuestion, showResults, showLeaderboard,
     nextQuestion, tick, addPlayer, resetGame,
   };
 }
