@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { player_id, game_id, question_id, answer, time_taken } = await req.json();
+    const { player_id, game_id, question_id, answer, time_taken, session_token } = await req.json();
 
     if (!player_id || !game_id || !question_id || answer === undefined || time_taken === undefined) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -29,13 +29,21 @@ Deno.serve(async (req) => {
     // Verify the player belongs to this game
     const { data: player, error: playerError } = await supabase
       .from("players")
-      .select("id, game_id")
+      .select("id, game_id, session_token")
       .eq("id", player_id)
       .eq("game_id", game_id)
       .single();
 
     if (playerError || !player) {
       return new Response(JSON.stringify({ error: "Invalid player or game" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify session token if player has one stored
+    if (player.session_token && session_token !== player.session_token) {
+      return new Response(JSON.stringify({ error: "Unauthorized: invalid session token" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -75,12 +83,10 @@ Deno.serve(async (req) => {
     let points_earned = 0;
 
     if (correct) {
-      // Time bonus: faster answers get more points
       const timeRatio = Math.max(0, 1 - time_taken / question.time_limit);
       points_earned = Math.round(question.points * (0.5 + 0.5 * timeRatio));
     }
 
-    // Insert the validated answer with server-calculated score
     const { data: inserted, error: insertError } = await supabase
       .from("player_answers")
       .insert({
@@ -102,19 +108,25 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Update the player's score directly (service role key bypasses RLS)
     if (points_earned > 0) {
-      const { data: currentPlayer } = await supabase
-        .from("players")
-        .select("score")
-        .eq("id", player_id)
-        .single();
-      if (currentPlayer) {
-        await supabase
-          .from("players")
-          .update({ score: currentPlayer.score + points_earned })
-          .eq("id", player_id);
-      }
+      await supabase.rpc("increment_player_score" as any, {
+        p_player_id: player_id,
+        p_points: points_earned,
+      }).then(async ({ error: rpcError }) => {
+        if (rpcError) {
+          const { data: currentPlayer } = await supabase
+            .from("players")
+            .select("score")
+            .eq("id", player_id)
+            .single();
+          if (currentPlayer) {
+            await supabase
+              .from("players")
+              .update({ score: currentPlayer.score + points_earned })
+              .eq("id", player_id);
+          }
+        }
+      });
     }
 
     return new Response(
