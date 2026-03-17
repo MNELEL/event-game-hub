@@ -6,6 +6,7 @@ type GameStatus = "lobby" | "playing" | "question" | "results" | "leaderboard" |
 type PlayerGameState = {
   gameId: string | null;
   playerId: string | null;
+  sessionToken: string | null;
   playerName: string;
   gameStatus: GameStatus;
   currentQuestionIndex: number;
@@ -21,6 +22,7 @@ export function usePlayerGame() {
   const [state, setState] = useState<PlayerGameState>({
     gameId: null,
     playerId: null,
+    sessionToken: null,
     playerName: "",
     gameStatus: "lobby",
     currentQuestionIndex: 0,
@@ -44,9 +46,11 @@ export function usePlayerGame() {
 
     if (game.status === "finished") return { error: "המשחק כבר הסתיים" };
 
+    const sessionToken = crypto.randomUUID();
+
     const { data: player, error } = await supabase
       .from("players")
-      .insert({ game_id: game.id, name })
+      .insert({ game_id: game.id, name, session_token: sessionToken })
       .select()
       .single();
 
@@ -57,6 +61,7 @@ export function usePlayerGame() {
       ...prev,
       gameId: game.id,
       playerId: player.id,
+      sessionToken: sessionToken,
       playerName: name,
       gameStatus: game.status as GameStatus,
       currentQuestionIndex: game.current_question_index,
@@ -112,6 +117,7 @@ export function usePlayerGame() {
         question_id: questionId,
         answer,
         time_taken: timeTaken,
+        session_token: state.sessionToken,
       },
     });
 
