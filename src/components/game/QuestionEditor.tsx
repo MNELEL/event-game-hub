@@ -26,7 +26,7 @@ export function QuestionEditor({ onAdd }: Props) {
       type, category, text,
       options: [...options],
       correctAnswer, timeLimit, points,
-      mediaUrl: mediaUrl || undefined,
+      mediaUrl: mediaUrl && /^https?:\/\//.test(mediaUrl) ? mediaUrl : undefined,
     });
     setText("");
     setOptions(["", "", "", ""]);
