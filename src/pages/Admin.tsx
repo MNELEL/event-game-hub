@@ -71,7 +71,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <Tabs defaultValue="questions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 h-12">
+          <TabsList className="grid w-full grid-cols-4 h-12">
             <TabsTrigger value="questions" className="gap-2 font-display">
               <List className="w-4 h-4" />
               שאלות ({store.questions.length})
@@ -79,6 +79,10 @@ const Admin = () => {
             <TabsTrigger value="add" className="gap-2 font-display">
               <Plus className="w-4 h-4" />
               הוספת שאלה
+            </TabsTrigger>
+            <TabsTrigger value="games" className="gap-2 font-display">
+              <Gamepad2 className="w-4 h-4" />
+              משחקים
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2 font-display">
               <Settings className="w-4 h-4" />
