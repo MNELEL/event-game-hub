@@ -41,6 +41,28 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Verify game is in "question" status and question_id is the active question
+    const { data: game, error: gameError } = await supabase
+      .from("games")
+      .select("status, question_ids, current_question_index")
+      .eq("id", game_id)
+      .single();
+
+    if (gameError || !game || game.status !== "question") {
+      return new Response(JSON.stringify({ error: "Question not active" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const activeQuestionId = (game.question_ids as string[])[game.current_question_index];
+    if (activeQuestionId !== question_id) {
+      return new Response(JSON.stringify({ error: "Wrong question" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Check if answer already submitted for this question
     const { data: existing } = await supabase
       .from("player_answers")
@@ -71,11 +93,18 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate time_taken
+    if (time_taken < 0 || time_taken > question.time_limit) {
+      return new Response(JSON.stringify({ error: "Invalid time" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const correct = answer === question.correct_answer;
     let points_earned = 0;
 
     if (correct) {
-      // Time bonus: faster answers get more points
       const timeRatio = Math.max(0, 1 - time_taken / question.time_limit);
       points_earned = Math.round(question.points * (0.5 + 0.5 * timeRatio));
     }
@@ -96,7 +125,8 @@ Deno.serve(async (req) => {
       .single();
 
     if (insertError) {
-      return new Response(JSON.stringify({ error: insertError.message }), {
+      console.error('Insert error:', insertError);
+      return new Response(JSON.stringify({ error: "Failed to record answer" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -108,7 +138,6 @@ Deno.serve(async (req) => {
         p_player_id: player_id,
         p_points: points_earned,
       }).then(async ({ error: rpcError }) => {
-        // Fallback if RPC doesn't exist yet
         if (rpcError) {
           const { data: currentPlayer } = await supabase
             .from("players")
@@ -130,7 +159,8 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
+    console.error('Unhandled error:', err);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
