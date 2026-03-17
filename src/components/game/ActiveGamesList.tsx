@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Users, Clock, Trash2, Loader2 } from "lucide-react";
+import { Play, Users, Clock, Trash2, Loader2, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 type GameRow = {
