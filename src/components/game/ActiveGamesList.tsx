@@ -81,6 +81,27 @@ export function ActiveGamesList() {
     toast.success("המשחק סומן כהסתיים");
   };
 
+  const handleDuplicate = async (game: GameRow) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const { data, error } = await supabase.from("games").insert({
+      code: newCode,
+      status: "lobby",
+      settings: game.settings,
+      question_ids: game.question_ids,
+      created_by: user.id,
+    }).select().single();
+
+    if (data) {
+      toast.success(`משחק שוכפל בהצלחה! קוד חדש: ${newCode}`);
+      loadGames();
+    } else {
+      toast.error("שגיאה בשכפול המשחק");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
