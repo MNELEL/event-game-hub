@@ -54,7 +54,7 @@ export function QuestionImportExport({ questions, onImport, onReplace }: Props) 
           correctAnswer: q.correctAnswer,
           timeLimit: q.timeLimit || 15,
           points: q.points || 100,
-          mediaUrl: q.mediaUrl,
+          mediaUrl: q.mediaUrl && /^https?:\/\//.test(q.mediaUrl) ? q.mediaUrl : undefined,
         }));
         setPendingImport(normalized);
       } catch {
