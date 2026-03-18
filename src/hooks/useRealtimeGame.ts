@@ -168,8 +168,22 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
 
   const showResults = useCallback(async () => {
     await updateGameInDb("results");
+    // Reload player scores from DB to ensure accuracy
+    if (gameDbId) {
+      const { data } = await supabase.from("players").select("*").eq("game_id", gameDbId).order("score", { ascending: false });
+      if (data) {
+        const updatedPlayers = data.map(p => ({
+          id: p.id,
+          name: p.name,
+          score: p.score,
+          answers: gameState.players.find(gp => gp.id === p.id)?.answers || [],
+        }));
+        setGameState(prev => ({ ...prev, status: "results", players: updatedPlayers }));
+        return;
+      }
+    }
     setGameState(prev => ({ ...prev, status: "results" }));
-  }, [updateGameInDb]);
+  }, [updateGameInDb, gameDbId, gameState.players]);
 
   const showLeaderboard = useCallback(async () => {
     await updateGameInDb("leaderboard");
