@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Users, Clock, Trash2, Loader2, Copy } from "lucide-react";
+import { Play, Users, Clock, Trash2, Loader2, Copy, X } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type GameRow = {
   id: string;
@@ -75,10 +80,19 @@ export function ActiveGamesList() {
 
   useEffect(() => { loadGames(); }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleMarkFinished = async (id: string) => {
     await supabase.from("games").update({ status: "finished" }).eq("id", id);
     setGames(prev => prev.map(g => g.id === id ? { ...g, status: "finished" } : g));
     toast.success("המשחק סומן כהסתיים");
+  };
+
+  const handlePermanentDelete = async (id: string) => {
+    // Delete related data first, then the game
+    await supabase.from("player_answers").delete().eq("game_id", id);
+    await supabase.from("players").delete().eq("game_id", id);
+    await supabase.from("games").delete().eq("id", id);
+    setGames(prev => prev.filter(g => g.id !== id));
+    toast.success("המשחק נמחק לצמיתות");
   };
 
   const handleDuplicate = async (game: GameRow) => {
@@ -176,23 +190,54 @@ export function ActiveGamesList() {
                 </Button>
               )}
               {game.status === "finished" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => navigate(`/host?gameId=${game.id}`)}
-                  className="gap-1"
-                >
-                  צפייה
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/host?gameId=${game.id}`)}
+                    className="gap-1"
+                  >
+                    צפייה
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent dir="rtl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>מחיקת משחק לצמיתות</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          פעולה זו תמחק את המשחק ({game.code}) וכל הנתונים שלו לצמיתות. לא ניתן לשחזר.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>ביטול</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handlePermanentDelete(game.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          מחק לצמיתות
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
               )}
               {isActive && (
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => handleDelete(game.id)}
+                  onClick={() => handleMarkFinished(game.id)}
                   className="text-destructive hover:text-destructive"
+                  title="סיים משחק"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <X className="w-4 h-4" />
                 </Button>
               )}
             </div>
