@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Users, Clock, Trash2, Loader2, Copy, X } from "lucide-react";
+import { Play, Users, Clock, Trash2, Loader2, Copy, X, Gamepad2, Trophy, BarChart3 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
