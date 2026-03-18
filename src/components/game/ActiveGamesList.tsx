@@ -123,6 +123,17 @@ export function ActiveGamesList() {
   const finishedGames = games.filter(g => g.status === "finished");
   const activeGames = games.filter(g => g.status !== "finished");
 
+  const trendsData = useMemo(() => {
+    const dateMap: Record<string, { date: string; games: number; players: number }> = {};
+    games.forEach(g => {
+      const day = new Date(g.created_at).toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit" });
+      if (!dateMap[day]) dateMap[day] = { date: day, games: 0, players: 0 };
+      dateMap[day].games += 1;
+      dateMap[day].players += g.players_count || 0;
+    });
+    return Object.values(dateMap).reverse();
+  }, [games]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
