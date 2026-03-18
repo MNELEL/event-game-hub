@@ -80,10 +80,19 @@ export function ActiveGamesList() {
 
   useEffect(() => { loadGames(); }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleMarkFinished = async (id: string) => {
     await supabase.from("games").update({ status: "finished" }).eq("id", id);
     setGames(prev => prev.map(g => g.id === id ? { ...g, status: "finished" } : g));
     toast.success("המשחק סומן כהסתיים");
+  };
+
+  const handlePermanentDelete = async (id: string) => {
+    // Delete related data first, then the game
+    await supabase.from("player_answers").delete().eq("game_id", id);
+    await supabase.from("players").delete().eq("game_id", id);
+    await supabase.from("games").delete().eq("id", id);
+    setGames(prev => prev.filter(g => g.id !== id));
+    toast.success("המשחק נמחק לצמיתות");
   };
 
   const handleDuplicate = async (game: GameRow) => {
