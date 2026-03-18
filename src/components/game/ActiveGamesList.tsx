@@ -229,7 +229,7 @@ export function ActiveGamesList() {
             </div>
           </CardContent>
         </Card>
-      )
+      )}
       {games.map(game => {
         const isActive = game.status !== "finished";
         const date = new Date(game.created_at);
