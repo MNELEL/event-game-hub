@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Users, Clock, Trash2, Loader2, Copy, X, Gamepad2, Trophy, BarChart3 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Play, Users, Clock, Trash2, Loader2, Copy, X, Gamepad2, Trophy, TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo } from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -121,6 +123,17 @@ export function ActiveGamesList() {
   const finishedGames = games.filter(g => g.status === "finished");
   const activeGames = games.filter(g => g.status !== "finished");
 
+  const trendsData = useMemo(() => {
+    const dateMap: Record<string, { date: string; games: number; players: number }> = {};
+    games.forEach(g => {
+      const day = new Date(g.created_at).toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit" });
+      if (!dateMap[day]) dateMap[day] = { date: day, games: 0, players: 0 };
+      dateMap[day].games += 1;
+      dateMap[day].players += g.players_count || 0;
+    });
+    return Object.values(dateMap).reverse();
+  }, [games]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -185,6 +198,38 @@ export function ActiveGamesList() {
           </CardContent>
         </Card>
       </div>
+      {trendsData.length > 1 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              מגמות - משחקים ושחקנים לפי תאריך
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={trendsData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis allowDecimals={false} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      color: 'hsl(var(--foreground))',
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="games" name="משחקים" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="players" name="שחקנים" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {games.map(game => {
         const isActive = game.status !== "finished";
         const date = new Date(game.created_at);
