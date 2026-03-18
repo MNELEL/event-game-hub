@@ -117,6 +117,10 @@ export function ActiveGamesList() {
     }
   };
 
+  const totalPlayers = games.reduce((sum, g) => sum + (g.players_count || 0), 0);
+  const finishedGames = games.filter(g => g.status === "finished");
+  const activeGames = games.filter(g => g.status !== "finished");
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -134,7 +138,53 @@ export function ActiveGamesList() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Gamepad2 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{games.length}</p>
+              <p className="text-xs text-muted-foreground">סה״כ משחקים</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-500/10">
+              <Play className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{activeGames.length}</p>
+              <p className="text-xs text-muted-foreground">משחקים פעילים</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <Users className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{totalPlayers}</p>
+              <p className="text-xs text-muted-foreground">סה״כ שחקנים</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/10">
+              <Trophy className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{finishedGames.length}</p>
+              <p className="text-xs text-muted-foreground">משחקים שהסתיימו</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       {games.map(game => {
         const isActive = game.status !== "finished";
         const date = new Date(game.created_at);
