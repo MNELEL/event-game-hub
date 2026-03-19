@@ -16,6 +16,9 @@ type PlayerGameState = {
   questionCount: number;
   connected: boolean;
   answerSubmitted: boolean;
+  playerScore: number;
+  lastAnswerCorrect: boolean | null;
+  lastPointsEarned: number;
 };
 
 export function usePlayerGame() {
@@ -32,9 +35,11 @@ export function usePlayerGame() {
     questionCount: 0,
     connected: false,
     answerSubmitted: false,
+    playerScore: 0,
+    lastAnswerCorrect: null,
+    lastPointsEarned: 0,
   });
 
-  // Join a game by code
   const joinGame = useCallback(async (code: string, name: string) => {
     const { data: game } = await supabase
       .from("games")
@@ -43,11 +48,9 @@ export function usePlayerGame() {
       .single();
 
     if (!game) return { error: "משחק לא נמצא" };
-
     if (game.status === "finished") return { error: "המשחק כבר הסתיים" };
 
     const sessionToken = crypto.randomUUID();
-
     const { data: player, error } = await supabase
       .from("players")
       .insert({ game_id: game.id, name, session_token: sessionToken })
@@ -61,7 +64,7 @@ export function usePlayerGame() {
       ...prev,
       gameId: game.id,
       playerId: player.id,
-      sessionToken: sessionToken,
+      sessionToken,
       playerName: name,
       gameStatus: game.status as GameStatus,
       currentQuestionIndex: game.current_question_index,
@@ -71,6 +74,7 @@ export function usePlayerGame() {
       questionCount: questionIds.length,
       connected: true,
       answerSubmitted: false,
+      playerScore: player.score || 0,
     }));
 
     return { error: null };
@@ -79,7 +83,6 @@ export function usePlayerGame() {
   // Subscribe to game state changes
   useEffect(() => {
     if (!state.gameId) return;
-
     const channel = supabase
       .channel(`player-game-${state.gameId}`)
       .on(
@@ -93,24 +96,51 @@ export function usePlayerGame() {
             currentQuestionIndex: game.current_question_index,
             currentQuestionId: prev.questionIds[game.current_question_index] || null,
             timeRemaining: game.time_remaining,
-            // Reset answer submitted when new question starts
-            answerSubmitted: game.status === "question" && game.current_question_index !== prev.currentQuestionIndex
-              ? false
-              : prev.answerSubmitted,
+            answerSubmitted:
+              game.status === "question" &&
+              game.current_question_index !== prev.currentQuestionIndex
+                ? false
+                : prev.answerSubmitted,
+            lastAnswerCorrect:
+              game.status === "question" &&
+              game.current_question_index !== prev.currentQuestionIndex
+                ? null
+                : prev.lastAnswerCorrect,
           }));
         }
       )
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [state.gameId]);
 
-  // Submit answer
-  const submitAnswer = useCallback(async (answer: number, questionId: string, timeTaken: number) => {
-    if (!state.gameId || !state.playerId || state.answerSubmitted) return;
+  // Subscribe to own player score changes
+  useEffect(() => {
+    if (!state.playerId) return;
+    const channel = supabase
+      .channel(`player-score-${state.playerId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "players", filter: `id=eq.${state.playerId}` },
+        (payload) => {
+          setState(prev => ({
+            ...prev,
+            playerScore: payload.new.score ?? prev.playerScore,
+          }));
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [state.playerId]);
 
-    // Use server-side edge function for answer validation and scoring
-    await supabase.functions.invoke("submit-answer", {
+  const submitAnswer = useCallback(async (
+    answer: number,
+    questionId: string,
+    timeTaken: number
+  ) => {
+    if (!state.gameId || !state.playerId || state.answerSubmitted) return;
+    setState(prev => ({ ...prev, answerSubmitted: true }));
+
+    const { data } = await supabase.functions.invoke("submit-answer", {
       body: {
         player_id: state.playerId,
         game_id: state.gameId,
@@ -121,8 +151,18 @@ export function usePlayerGame() {
       },
     });
 
-    setState(prev => ({ ...prev, answerSubmitted: true }));
-  }, [state.gameId, state.playerId, state.answerSubmitted]);
+    if (data) {
+      setState(prev => ({
+        ...prev,
+        lastAnswerCorrect: data.correct ?? null,
+        lastPointsEarned: data.points_earned ?? 0,
+        playerScore: data.correct
+          ? prev.playerScore + (data.points_earned ?? 0)
+          : prev.playerScore,
+      }));
+    }
+  }, [state.gameId, state.playerId, state.answerSubmitted, state.sessionToken]);
 
   return { state, joinGame, submitAnswer };
 }
+
