@@ -3,7 +3,8 @@ import { Question, DEFAULT_CATEGORIES } from "@/types/game";
 export function exportStandaloneHTML(questions: Question[], title: string) {
   const getCategoryName = (id: string) => DEFAULT_CATEGORIES.find(c => c.id === id)?.name || id;
 
-  const questionsJSON = JSON.stringify(questions);
+  const safeTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const questionsJSON = JSON.stringify(questions).replace(/<\/script>/gi, '<\\/script>');
 
   const html = `<!DOCTYPE html>
 <html lang="he" dir="rtl">
