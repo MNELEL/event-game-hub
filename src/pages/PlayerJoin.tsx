@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ const PlayerJoin = () => {
   const [name, setName] = useState("");
   const [gameCode, setGameCode] = useState("");
   const [joining, setJoining] = useState(false);
+  const [localTimer, setLocalTimer] = useState<number | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const code = searchParams.get("code");
@@ -28,6 +30,44 @@ const PlayerJoin = () => {
   }, [searchParams]);
   const { state, joinGame, submitAnswer } = usePlayerGame();
   const { toast } = useToast();
+
+  // Sync local timer with server time and run local countdown
+  useEffect(() => {
+    if (state.gameStatus === "question") {
+      setLocalTimer(state.timeRemaining);
+    } else {
+      setLocalTimer(null);
+    }
+  }, [state.timeRemaining, state.gameStatus]);
+
+  // Local countdown every second
+  useEffect(() => {
+    if (state.gameStatus !== "question" || localTimer === null) {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      return;
+    }
+
+    timerIntervalRef.current = setInterval(() => {
+      setLocalTimer(prev => {
+        if (prev === null || prev <= 0) return 0;
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [state.gameStatus, state.currentQuestionIndex]);
+
+  const displayTimer = localTimer ?? state.timeRemaining;
+  const timerPercent = displayTimer / 15; // approximate; will be close enough
+  const isUrgent = displayTimer <= 5;
 
   const handleJoin = async () => {
     if (!name.trim() || !gameCode.trim()) return;
@@ -108,16 +148,36 @@ const PlayerJoin = () => {
 
   // Game in question mode - show answer buttons
   if (state.gameStatus === "question") {
-    // Calculate time taken: the question's time limit minus remaining time
-    // We get timeRemaining from the game state updates
     return (
       <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-4" dir="rtl">
         <motion.div className="w-full max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-serif text-xl text-game-dark-gold">שאלה {state.currentQuestionIndex + 1}</h2>
-            <div className="flex items-center gap-1 text-game-dark-gold/60">
-              <Clock className="w-4 h-4" />
-              <span className="font-mono">{state.timeRemaining}</span>
+          {/* Timer bar */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-serif text-xl text-game-dark-gold">שאלה {state.currentQuestionIndex + 1}</h2>
+              <motion.div
+                className={`flex items-center gap-1.5 font-mono text-2xl font-bold ${
+                  isUrgent ? "text-red-500" : "text-game-dark-gold"
+                }`}
+                animate={isUrgent ? { scale: [1, 1.15, 1] } : {}}
+                transition={isUrgent ? { duration: 0.5, repeat: Infinity } : {}}
+              >
+                <Clock className={`w-5 h-5 ${isUrgent ? "text-red-500" : "text-game-dark-gold/60"}`} />
+                {displayTimer}
+              </motion.div>
+            </div>
+            {/* Visual timer bar */}
+            <div className="w-full h-3 bg-game-dark-gold/10 rounded-full overflow-hidden">
+              <motion.div
+                className={`h-full rounded-full ${
+                  isUrgent
+                    ? "bg-gradient-to-r from-red-500 to-red-400"
+                    : "bg-gradient-to-r from-game-gold to-game-dark-gold"
+                }`}
+                initial={{ width: "100%" }}
+                animate={{ width: `${Math.max(0, timerPercent * 100)}%` }}
+                transition={{ duration: 0.3, ease: "linear" }}
+              />
             </div>
           </div>
 
@@ -141,9 +201,7 @@ const PlayerJoin = () => {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
                     SoundEffects.answerSelect();
-                    // time_taken = how much time has passed (timeLimit - timeRemaining)
-                    // We approximate using the initial time limit from the game
-                    const timeTaken = Math.max(0, 15 - state.timeRemaining);
+                    const timeTaken = Math.max(0, 15 - displayTimer);
                     submitAnswer(i, timeTaken);
                   }}
                 >
@@ -177,8 +235,15 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4" dir="rtl">
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h2 className="font-serif text-4xl text-game-dark-gold mb-4">🎉 המשחק נגמר!</h2>
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <span className="text-7xl">🎉</span>
+          </motion.div>
+          <h2 className="font-serif text-4xl text-game-dark-gold mb-4 mt-4">המשחק נגמר!</h2>
           <p className="text-game-dark-gold/60 text-lg">תודה שהשתתפת, {state.playerName}!</p>
+          <p className="text-game-dark-gold/40 text-sm mt-2">הסתכלו על המסך הראשי לתוצאות</p>
         </motion.div>
       </div>
     );
