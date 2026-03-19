@@ -48,6 +48,24 @@ const GameHost = () => {
     }
   }, [gameState.timeRemaining, gameState.status]);
 
+  const handleNextFromResults = async () => {
+    if (gameState.settings.showLeaderboardAfterEach) {
+      game.showLeaderboard();
+    } else {
+      const isFinished = await game.nextQuestion();
+      if (!isFinished) {
+        setTimeout(() => game.showQuestion(), 100);
+      }
+    }
+  };
+
+  const handleNextFromLeaderboard = async () => {
+    const isFinished = await game.nextQuestion();
+    if (!isFinished) {
+      setTimeout(() => game.showQuestion(), 100);
+    }
+  };
+
   if (questionsLoading || !gameReady) {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center" dir="rtl">
@@ -118,14 +136,7 @@ const GameHost = () => {
             <GameResults
               question={gameState.questions[gameState.currentQuestionIndex]}
               players={gameState.players}
-              onNext={() => {
-                if (gameState.settings.showLeaderboardAfterEach) {
-                  game.showLeaderboard();
-                } else {
-                  game.nextQuestion();
-                  setTimeout(() => game.showQuestion(), 100);
-                }
-              }}
+              onNext={handleNextFromResults}
             />
           </motion.div>
         )}
@@ -140,12 +151,7 @@ const GameHost = () => {
           >
             <GameLeaderboard
               players={gameState.players}
-              onNext={() => {
-                game.nextQuestion();
-                setTimeout(() => {
-                  if (game.gameState.status !== "finished") game.showQuestion();
-                }, 100);
-              }}
+              onNext={handleNextFromLeaderboard}
               isFinal={false}
             />
           </motion.div>
@@ -165,7 +171,6 @@ const GameHost = () => {
               onRestart={() => {
                 setGameReady(false);
                 game.resetGame();
-                // Clear gameId from URL
                 navigate("/host", { replace: true });
               }}
               onHome={() => navigate("/")}

@@ -16,6 +16,8 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
   });
   const [gameDbId, setGameDbId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
 
   // Subscribe to players joining in realtime
   useEffect(() => {
@@ -149,14 +151,15 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
   }, [updateGameInDb]);
 
   const showQuestion = useCallback(async () => {
-    const timeLimit = gameState.questions[gameState.currentQuestionIndex]?.timeLimit || 15;
-    await updateGameInDb("question", gameState.currentQuestionIndex);
+    const currentState = gameStateRef.current;
+    if (currentState.status === "finished") return;
     
-    // Also update time_remaining in DB for player sync
+    const timeLimit = currentState.questions[currentState.currentQuestionIndex]?.timeLimit || 15;
+    
     if (gameDbId) {
       await supabase.from("games").update({
         status: "question",
-        current_question_index: gameState.currentQuestionIndex,
+        current_question_index: currentState.currentQuestionIndex,
         time_remaining: timeLimit,
       }).eq("id", gameDbId);
     }
@@ -166,7 +169,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
       status: "question",
       timeRemaining: timeLimit,
     }));
-  }, [gameState.currentQuestionIndex, gameState.questions, gameDbId, updateGameInDb]);
+  }, [gameDbId]);
 
   const showResults = useCallback(async () => {
     await updateGameInDb("results");
@@ -178,26 +181,30 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     setGameState(prev => ({ ...prev, status: "leaderboard" }));
   }, [updateGameInDb]);
 
-  const nextQuestion = useCallback(async () => {
-    const nextIdx = gameState.currentQuestionIndex + 1;
-    if (nextIdx >= gameState.questions.length) {
+  // Returns true if game is finished after this call
+  const nextQuestion = useCallback(async (): Promise<boolean> => {
+    const currentState = gameStateRef.current;
+    const nextIdx = currentState.currentQuestionIndex + 1;
+    if (nextIdx >= currentState.questions.length) {
       await updateGameInDb("finished");
       setGameState(prev => ({ ...prev, status: "finished" }));
+      return true;
     } else {
       setGameState(prev => ({
         ...prev,
         currentQuestionIndex: nextIdx,
         timeRemaining: prev.questions[nextIdx]?.timeLimit || 15,
       }));
+      return false;
     }
-  }, [gameState.currentQuestionIndex, gameState.questions.length, updateGameInDb]);
+  }, [updateGameInDb]);
 
   const tick = useCallback(() => {
     setGameState(prev => {
       if (prev.timeRemaining <= 0) return prev;
       const newTime = prev.timeRemaining - 1;
-      // Update DB every 5 seconds for player sync
-      if (gameDbId && newTime % 5 === 0) {
+      // Update DB every second for player sync
+      if (gameDbId) {
         supabase.from("games").update({ time_remaining: newTime }).eq("id", gameDbId);
       }
       return { ...prev, timeRemaining: newTime };
@@ -206,7 +213,6 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
 
   const addPlayer = useCallback(async (name: string) => {
     if (!gameDbId) {
-      // Fallback: add locally
       const player: Player = {
         id: Math.random().toString(36).substring(2, 10),
         name,
@@ -250,13 +256,11 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     const { data: gameData } = await supabase.from("games").select("*").eq("id", gameId).single();
     if (!gameData) return null;
 
-    // Rebuild questions from question_ids
     const questionMap = new Map(allQuestions.map(q => [q.id, q]));
     const gameQuestions = (gameData.question_ids as string[])
       .map(id => questionMap.get(id))
       .filter(Boolean) as Question[];
 
-    // Load players with their answers
     const { data: playersData } = await supabase.from("players").select("*").eq("game_id", gameId);
     const { data: answersData } = await supabase.from("player_answers").select("*").eq("game_id", gameId);
 
