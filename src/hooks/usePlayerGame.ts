@@ -7,6 +7,7 @@ type PlayerGameState = {
   gameId: string | null;
   playerId: string | null;
   playerName: string;
+  secretToken: string | null;
   gameStatus: GameStatus;
   currentQuestionIndex: number;
   timeRemaining: number;
