@@ -104,15 +104,13 @@ export function usePlayerGame() {
 
   // Submit answer
   const submitAnswer = useCallback(async (answer: number, timeTaken: number) => {
-    if (!state.gameId || !state.playerId || state.answerSubmitted) return;
+    if (!state.gameId || !state.playerId || !state.secretToken || state.answerSubmitted) return;
 
     const questionId = state.questionIds[state.currentQuestionIndex];
     if (!questionId) return;
 
-    // Calculate actual time taken (timeLimit - timeRemaining)
     const actualTimeTaken = Math.max(0, timeTaken);
 
-    // Use server-side edge function for answer validation and scoring
     await supabase.functions.invoke("submit-answer", {
       body: {
         player_id: state.playerId,
@@ -120,11 +118,12 @@ export function usePlayerGame() {
         question_id: questionId,
         answer,
         time_taken: actualTimeTaken,
+        secret_token: state.secretToken,
       },
     });
 
     setState(prev => ({ ...prev, answerSubmitted: true }));
-  }, [state.gameId, state.playerId, state.answerSubmitted, state.questionIds, state.currentQuestionIndex]);
+  }, [state.gameId, state.playerId, state.secretToken, state.answerSubmitted, state.questionIds, state.currentQuestionIndex]);
 
   return { state, joinGame, submitAnswer };
 }
