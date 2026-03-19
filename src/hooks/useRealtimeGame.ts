@@ -179,19 +179,18 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
   }, [updateGameInDb]);
 
   const nextQuestion = useCallback(async () => {
-    setGameState(prev => {
-      const nextIdx = prev.currentQuestionIndex + 1;
-      if (nextIdx >= prev.questions.length) {
-        updateGameInDb("finished");
-        return { ...prev, status: "finished" };
-      }
-      return {
+    const nextIdx = gameState.currentQuestionIndex + 1;
+    if (nextIdx >= gameState.questions.length) {
+      await updateGameInDb("finished");
+      setGameState(prev => ({ ...prev, status: "finished" }));
+    } else {
+      setGameState(prev => ({
         ...prev,
         currentQuestionIndex: nextIdx,
-        timeRemaining: prev.questions[nextIdx].timeLimit,
-      };
-    });
-  }, [updateGameInDb]);
+        timeRemaining: prev.questions[nextIdx]?.timeLimit || 15,
+      }));
+    }
+  }, [gameState.currentQuestionIndex, gameState.questions.length, updateGameInDb]);
 
   const tick = useCallback(() => {
     setGameState(prev => {
