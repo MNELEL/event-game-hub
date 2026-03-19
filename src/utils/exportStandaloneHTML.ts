@@ -49,7 +49,7 @@ button.btn{padding:12px 32px;border:none;border-radius:12px;font-size:1rem;font-
 </head>
 <body>
 <div class="container">
-  <h1>🧠 ${title}</h1>
+  <h1>🧠 ${safeTitle}</h1>
   <div class="score-bar">ניקוד: <span id="score">0</span> | שאלה <span id="qnum">1</span> מתוך <span id="qtotal">0</span></div>
   <div class="progress" id="progress"></div>
   <div id="game"></div>
