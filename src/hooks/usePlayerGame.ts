@@ -11,6 +11,7 @@ type PlayerGameState = {
   currentQuestionIndex: number;
   timeRemaining: number;
   questionCount: number;
+  questionIds: string[];
   connected: boolean;
   answerSubmitted: boolean;
 };
@@ -24,6 +25,7 @@ export function usePlayerGame() {
     currentQuestionIndex: 0,
     timeRemaining: 15,
     questionCount: 0,
+    questionIds: [],
     connected: false,
     answerSubmitted: false,
   });
@@ -48,6 +50,8 @@ export function usePlayerGame() {
 
     if (error || !player) return { error: "שגיאה בהצטרפות" };
 
+    const questionIds = (game.question_ids as string[]) || [];
+
     setState(prev => ({
       ...prev,
       gameId: game.id,
@@ -56,7 +60,8 @@ export function usePlayerGame() {
       gameStatus: game.status as GameStatus,
       currentQuestionIndex: game.current_question_index,
       timeRemaining: game.time_remaining,
-      questionCount: (game.question_ids as string[]).length,
+      questionCount: questionIds.length,
+      questionIds,
       connected: true,
       answerSubmitted: false,
     }));
@@ -75,16 +80,18 @@ export function usePlayerGame() {
         { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${state.gameId}` },
         (payload) => {
           const game = payload.new;
-          setState(prev => ({
-            ...prev,
-            gameStatus: game.status as GameStatus,
-            currentQuestionIndex: game.current_question_index,
-            timeRemaining: game.time_remaining,
-            // Reset answer submitted when new question starts
-            answerSubmitted: game.status === "question" && game.current_question_index !== prev.currentQuestionIndex
-              ? false
-              : prev.answerSubmitted,
-          }));
+          setState(prev => {
+            const newQuestionIndex = game.current_question_index;
+            const isNewQuestion = game.status === "question" && newQuestionIndex !== prev.currentQuestionIndex;
+            return {
+              ...prev,
+              gameStatus: game.status as GameStatus,
+              currentQuestionIndex: newQuestionIndex,
+              timeRemaining: game.time_remaining,
+              // Reset answer submitted when new question starts
+              answerSubmitted: isNewQuestion ? false : prev.answerSubmitted,
+            };
+          });
         }
       )
       .subscribe();
@@ -93,8 +100,14 @@ export function usePlayerGame() {
   }, [state.gameId]);
 
   // Submit answer
-  const submitAnswer = useCallback(async (answer: number, questionId: string, timeTaken: number) => {
+  const submitAnswer = useCallback(async (answer: number, timeTaken: number) => {
     if (!state.gameId || !state.playerId || state.answerSubmitted) return;
+
+    const questionId = state.questionIds[state.currentQuestionIndex];
+    if (!questionId) return;
+
+    // Calculate actual time taken (timeLimit - timeRemaining)
+    const actualTimeTaken = Math.max(0, timeTaken);
 
     // Use server-side edge function for answer validation and scoring
     await supabase.functions.invoke("submit-answer", {
@@ -103,12 +116,12 @@ export function usePlayerGame() {
         game_id: state.gameId,
         question_id: questionId,
         answer,
-        time_taken: timeTaken,
+        time_taken: actualTimeTaken,
       },
     });
 
     setState(prev => ({ ...prev, answerSubmitted: true }));
-  }, [state.gameId, state.playerId, state.answerSubmitted]);
+  }, [state.gameId, state.playerId, state.answerSubmitted, state.questionIds, state.currentQuestionIndex]);
 
   return { state, joinGame, submitAnswer };
 }

@@ -28,7 +28,6 @@ const PlayerJoin = () => {
   }, [searchParams]);
   const { state, joinGame, submitAnswer } = usePlayerGame();
   const { toast } = useToast();
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
 
   const handleJoin = async () => {
     if (!name.trim() || !gameCode.trim()) return;
@@ -109,6 +108,8 @@ const PlayerJoin = () => {
 
   // Game in question mode - show answer buttons
   if (state.gameStatus === "question") {
+    // Calculate time taken: the question's time limit minus remaining time
+    // We get timeRemaining from the game state updates
     return (
       <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-4" dir="rtl">
         <motion.div className="w-full max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -140,8 +141,10 @@ const PlayerJoin = () => {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
                     SoundEffects.answerSelect();
-                    setSelectedAnswer(i);
-                    submitAnswer(i, "", state.timeRemaining);
+                    // time_taken = how much time has passed (timeLimit - timeRemaining)
+                    // We approximate using the initial time limit from the game
+                    const timeTaken = Math.max(0, 15 - state.timeRemaining);
+                    submitAnswer(i, timeTaken);
                   }}
                 >
                   {label}
