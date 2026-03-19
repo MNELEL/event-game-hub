@@ -7,6 +7,7 @@ type PlayerGameState = {
   gameId: string | null;
   playerId: string | null;
   playerName: string;
+  secretToken: string | null;
   gameStatus: GameStatus;
   currentQuestionIndex: number;
   timeRemaining: number;
@@ -21,6 +22,7 @@ export function usePlayerGame() {
     gameId: null,
     playerId: null,
     playerName: "",
+    secretToken: null,
     gameStatus: "lobby",
     currentQuestionIndex: 0,
     timeRemaining: 15,
@@ -45,7 +47,7 @@ export function usePlayerGame() {
     const { data: player, error } = await supabase
       .from("players")
       .insert({ game_id: game.id, name })
-      .select()
+      .select("id, secret_token")
       .single();
 
     if (error || !player) return { error: "שגיאה בהצטרפות" };
@@ -57,6 +59,7 @@ export function usePlayerGame() {
       gameId: game.id,
       playerId: player.id,
       playerName: name,
+      secretToken: player.secret_token,
       gameStatus: game.status as GameStatus,
       currentQuestionIndex: game.current_question_index,
       timeRemaining: game.time_remaining,
@@ -101,15 +104,13 @@ export function usePlayerGame() {
 
   // Submit answer
   const submitAnswer = useCallback(async (answer: number, timeTaken: number) => {
-    if (!state.gameId || !state.playerId || state.answerSubmitted) return;
+    if (!state.gameId || !state.playerId || !state.secretToken || state.answerSubmitted) return;
 
     const questionId = state.questionIds[state.currentQuestionIndex];
     if (!questionId) return;
 
-    // Calculate actual time taken (timeLimit - timeRemaining)
     const actualTimeTaken = Math.max(0, timeTaken);
 
-    // Use server-side edge function for answer validation and scoring
     await supabase.functions.invoke("submit-answer", {
       body: {
         player_id: state.playerId,
@@ -117,11 +118,12 @@ export function usePlayerGame() {
         question_id: questionId,
         answer,
         time_taken: actualTimeTaken,
+        secret_token: state.secretToken,
       },
     });
 
     setState(prev => ({ ...prev, answerSubmitted: true }));
-  }, [state.gameId, state.playerId, state.answerSubmitted, state.questionIds, state.currentQuestionIndex]);
+  }, [state.gameId, state.playerId, state.secretToken, state.answerSubmitted, state.questionIds, state.currentQuestionIndex]);
 
   return { state, joinGame, submitAnswer };
 }
