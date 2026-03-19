@@ -57,40 +57,46 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     return () => { supabase.removeChannel(channel); };
   }, [gameDbId]);
 
-  // Subscribe to player answers in realtime
+  // Subscribe to player answers in realtime (always active while game exists)
   useEffect(() => {
-    if (!gameDbId || gameState.status !== "question") return;
+    if (!gameDbId) return;
 
     const channel = supabase
-      .channel(`game-answers-${gameDbId}-${gameState.currentQuestionIndex}`)
+      .channel(`game-answers-${gameDbId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "player_answers", filter: `game_id=eq.${gameDbId}` },
         (payload) => {
           const ans = payload.new;
-          setGameState(prev => ({
-            ...prev,
-            players: prev.players.map(p =>
-              p.id === ans.player_id
-                ? {
-                    ...p,
-                    score: p.score + (ans.points_earned || 0),
-                    answers: [...p.answers, {
-                      questionId: ans.question_id,
-                      answer: ans.answer,
-                      correct: ans.correct,
-                      time: ans.time_taken,
-                    }],
-                  }
-                : p
-            ),
-          }));
+          setGameState(prev => {
+            // Avoid duplicate answers
+            const player = prev.players.find(p => p.id === ans.player_id);
+            if (player?.answers.some(a => a.questionId === ans.question_id)) return prev;
+
+            return {
+              ...prev,
+              players: prev.players.map(p =>
+                p.id === ans.player_id
+                  ? {
+                      ...p,
+                      score: p.score + (ans.points_earned || 0),
+                      answers: [...p.answers, {
+                        questionId: ans.question_id,
+                        answer: ans.answer,
+                        correct: ans.correct,
+                        time: ans.time_taken,
+                      }],
+                    }
+                  : p
+              ),
+            };
+          });
         }
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [gameDbId, gameState.status, gameState.currentQuestionIndex]);
+  }, [gameDbId]);
 
   // Create game session in DB
   const createGame = useCallback(async () => {
