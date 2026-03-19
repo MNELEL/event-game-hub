@@ -47,7 +47,7 @@ export function usePlayerGame() {
     const { data: player, error } = await supabase
       .from("players")
       .insert({ game_id: game.id, name })
-      .select()
+      .select("id, secret_token")
       .single();
 
     if (error || !player) return { error: "שגיאה בהצטרפות" };
@@ -59,6 +59,7 @@ export function usePlayerGame() {
       gameId: game.id,
       playerId: player.id,
       playerName: name,
+      secretToken: player.secret_token,
       gameStatus: game.status as GameStatus,
       currentQuestionIndex: game.current_question_index,
       timeRemaining: game.time_remaining,
