@@ -12,9 +12,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { player_id, game_id, question_id, answer, time_taken } = await req.json();
+    const { player_id, game_id, question_id, answer, time_taken, secret_token } = await req.json();
 
-    if (!player_id || !game_id || !question_id || answer === undefined || time_taken === undefined) {
+    if (!player_id || !game_id || !question_id || answer === undefined || time_taken === undefined || !secret_token) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -26,12 +26,13 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Verify the player belongs to this game
+    // Verify the player belongs to this game AND the secret token matches
     const { data: player, error: playerError } = await supabase
       .from("players")
-      .select("id, game_id")
+      .select("id, game_id, secret_token")
       .eq("id", player_id)
       .eq("game_id", game_id)
+      .eq("secret_token", secret_token)
       .single();
 
     if (playerError || !player) {
