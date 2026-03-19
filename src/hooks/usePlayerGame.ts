@@ -22,6 +22,7 @@ export function usePlayerGame() {
     gameId: null,
     playerId: null,
     playerName: "",
+    secretToken: null,
     gameStatus: "lobby",
     currentQuestionIndex: 0,
     timeRemaining: 15,
