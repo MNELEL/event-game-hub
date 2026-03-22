@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff } from "lucide-react";
+import { ThemeButton } from "@/components/game/ThemeButton";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const Index = () => {
   return (
     // 1. `main` landmark — fixes "Document does not have a main landmark"
     <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
+      <ThemeButton />
       {/* Decorative background — aria-hidden so screen readers skip it */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
         {[...Array(20)].map((_, i) => (
