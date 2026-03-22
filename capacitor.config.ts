@@ -2,12 +2,17 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.da95ce758d7a4902b98e2598818d5a75',
-  appName: 'A Lovable project',
+  appName: 'מגה מוח',
   webDir: 'dist',
-  server: {
-    url: 'https://da95ce75-8d7a-4902-b98e-2598818d5a75.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  }
+  // ✅ אין server.url → האפליקציה טוענת מ-dist המקומי = עובד offline
+  android: {
+    allowMixedContent: true, // מאפשר קריאות HTTPS ל-Supabase כשיש אינטרנט
+  },
+  plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
 };
 
 export default config;
