@@ -1,170 +1,328 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@400;700&family=Assistant:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@400;700&family=Assistant:wght@300;400;700&family=Heebo:wght@400;500;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 220 25% 97%;
-    --foreground: 220 30% 12%;
+/* ===================== THEME VARIABLES ===================== */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 30% 12%;
+/* Theme: Classic Parchment (default) */
+:root,
+[data-theme="parchment"] {
+  --background: 40 55% 96%;
+  --foreground: 30 40% 12%;
+  --card: 40 60% 98%;
+  --card-foreground: 30 40% 12%;
+  --popover: 40 60% 98%;
+  --popover-foreground: 30 40% 12%;
+  --primary: 250 70% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 45 95% 55%;
+  --secondary-foreground: 30 50% 15%;
+  --muted: 38 20% 88%;
+  --muted-foreground: 30 20% 45%;
+  --accent: 170 70% 45%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 75% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 145 65% 42%;
+  --success-foreground: 0 0% 100%;
+  --warning: 35 95% 55%;
+  --warning-foreground: 30 50% 15%;
+  --border: 35 25% 80%;
+  --input: 35 25% 82%;
+  --ring: 250 70% 55%;
+  --radius: 0.75rem;
+  --game-bg: 38 50% 94%;
+  --game-surface: 38 40% 88%;
+  --game-glow: 35 60% 50%;
+  --game-gold: 35 55% 53%;
+  --game-dark-gold: 30 40% 38%;
+  --game-correct: 145 70% 40%;
+  --game-wrong: 0 70% 50%;
+  --game-cream: 40 60% 97%;
+  --game-parchment: 38 45% 92%;
+  --game-border-gold: 35 45% 56%;
+  --theme-gradient-start: hsl(40, 55%, 96%);
+  --theme-gradient-end: hsl(35, 45%, 88%);
+  --theme-answer-1: linear-gradient(135deg, hsl(0 60% 52%), hsl(0 55% 42%));
+  --theme-answer-2: linear-gradient(135deg, hsl(215 60% 52%), hsl(215 55% 42%));
+  --theme-answer-3: linear-gradient(135deg, hsl(35 75% 52%), hsl(35 65% 42%));
+  --theme-answer-4: linear-gradient(135deg, hsl(145 55% 42%), hsl(145 50% 34%));
+  --theme-header-bg: linear-gradient(135deg, hsl(38 55% 93%), hsl(35 45% 87%));
+  --sidebar-background: 40 50% 96%;
+  --sidebar-foreground: 30 40% 20%;
+  --sidebar-primary: 35 55% 50%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 38 45% 90%;
+  --sidebar-accent-foreground: 30 40% 20%;
+  --sidebar-border: 35 30% 82%;
+  --sidebar-ring: 250 70% 55%;
+}
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 12%;
+/* Theme: Dark Space */
+[data-theme="dark"] {
+  --background: 220 30% 8%;
+  --foreground: 220 20% 95%;
+  --card: 220 25% 12%;
+  --card-foreground: 220 20% 95%;
+  --popover: 220 25% 12%;
+  --popover-foreground: 220 20% 95%;
+  --primary: 250 80% 68%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 45 95% 60%;
+  --secondary-foreground: 30 50% 10%;
+  --muted: 220 20% 18%;
+  --muted-foreground: 220 15% 60%;
+  --accent: 170 80% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 70% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 145 70% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 40 95% 58%;
+  --warning-foreground: 30 50% 10%;
+  --border: 220 20% 22%;
+  --input: 220 20% 20%;
+  --ring: 250 80% 65%;
+  --game-bg: 220 30% 8%;
+  --game-surface: 220 28% 14%;
+  --game-glow: 270 80% 65%;
+  --game-gold: 45 90% 60%;
+  --game-dark-gold: 45 80% 75%;
+  --game-correct: 145 75% 48%;
+  --game-wrong: 0 75% 58%;
+  --game-cream: 220 25% 16%;
+  --game-parchment: 220 22% 18%;
+  --game-border-gold: 45 70% 50%;
+  --theme-gradient-start: hsl(228, 35%, 9%);
+  --theme-gradient-end: hsl(250, 35%, 12%);
+  --theme-answer-1: linear-gradient(135deg, hsl(0 65% 48%), hsl(330 60% 38%));
+  --theme-answer-2: linear-gradient(135deg, hsl(200 75% 45%), hsl(220 70% 38%));
+  --theme-answer-3: linear-gradient(135deg, hsl(45 80% 50%), hsl(30 75% 42%));
+  --theme-answer-4: linear-gradient(135deg, hsl(270 65% 52%), hsl(250 60% 42%));
+  --theme-header-bg: linear-gradient(135deg, hsl(220 28% 14%), hsl(240 30% 18%));
+  --sidebar-background: 220 28% 10%;
+  --sidebar-foreground: 220 20% 90%;
+  --sidebar-primary: 250 80% 68%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 25% 16%;
+  --sidebar-accent-foreground: 220 20% 90%;
+  --sidebar-border: 220 20% 20%;
+  --sidebar-ring: 250 80% 65%;
+}
 
-    --primary: 250 70% 55%;
-    --primary-foreground: 0 0% 100%;
+/* Theme: Ocean Blue */
+[data-theme="ocean"] {
+  --background: 205 60% 97%;
+  --foreground: 210 50% 10%;
+  --card: 205 65% 99%;
+  --card-foreground: 210 50% 10%;
+  --popover: 205 65% 99%;
+  --popover-foreground: 210 50% 10%;
+  --primary: 205 85% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 175 75% 42%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 205 30% 90%;
+  --muted-foreground: 210 25% 45%;
+  --accent: 30 90% 55%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 52%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 160 65% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 40 90% 52%;
+  --warning-foreground: 30 50% 12%;
+  --border: 205 35% 82%;
+  --input: 205 35% 84%;
+  --ring: 205 85% 45%;
+  --game-bg: 205 60% 96%;
+  --game-surface: 205 50% 88%;
+  --game-glow: 205 80% 55%;
+  --game-gold: 205 75% 50%;
+  --game-dark-gold: 210 65% 32%;
+  --game-correct: 160 65% 40%;
+  --game-wrong: 0 70% 50%;
+  --game-cream: 205 65% 98%;
+  --game-parchment: 205 50% 93%;
+  --game-border-gold: 205 60% 60%;
+  --theme-gradient-start: hsl(205, 70%, 95%);
+  --theme-gradient-end: hsl(200, 60%, 85%);
+  --theme-answer-1: linear-gradient(135deg, hsl(0 65% 50%), hsl(350 60% 42%));
+  --theme-answer-2: linear-gradient(135deg, hsl(205 75% 45%), hsl(215 70% 38%));
+  --theme-answer-3: linear-gradient(135deg, hsl(175 65% 42%), hsl(160 60% 35%));
+  --theme-answer-4: linear-gradient(135deg, hsl(30 80% 52%), hsl(20 75% 44%));
+  --theme-header-bg: linear-gradient(135deg, hsl(205 65% 93%), hsl(200 55% 86%));
+  --sidebar-background: 205 55% 96%;
+  --sidebar-foreground: 210 50% 15%;
+  --sidebar-primary: 205 85% 45%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 205 45% 90%;
+  --sidebar-accent-foreground: 210 50% 15%;
+  --sidebar-border: 205 30% 80%;
+  --sidebar-ring: 205 85% 45%;
+}
 
-    --secondary: 45 95% 55%;
-    --secondary-foreground: 30 50% 15%;
+/* Theme: Forest Green */
+[data-theme="forest"] {
+  --background: 140 35% 96%;
+  --foreground: 140 45% 8%;
+  --card: 140 40% 98%;
+  --card-foreground: 140 45% 8%;
+  --popover: 140 40% 98%;
+  --popover-foreground: 140 45% 8%;
+  --primary: 140 60% 35%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 80 65% 40%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 140 20% 88%;
+  --muted-foreground: 140 20% 42%;
+  --accent: 50 85% 52%;
+  --accent-foreground: 30 50% 12%;
+  --destructive: 0 70% 52%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 140 65% 38%;
+  --success-foreground: 0 0% 100%;
+  --warning: 45 90% 52%;
+  --warning-foreground: 30 50% 12%;
+  --border: 140 25% 80%;
+  --input: 140 25% 82%;
+  --ring: 140 60% 35%;
+  --game-bg: 140 35% 95%;
+  --game-surface: 140 28% 86%;
+  --game-glow: 140 55% 45%;
+  --game-gold: 80 60% 42%;
+  --game-dark-gold: 140 50% 22%;
+  --game-correct: 140 65% 38%;
+  --game-wrong: 0 68% 48%;
+  --game-cream: 140 40% 97%;
+  --game-parchment: 140 30% 92%;
+  --game-border-gold: 80 50% 50%;
+  --theme-gradient-start: hsl(140, 35%, 95%);
+  --theme-gradient-end: hsl(130, 30%, 85%);
+  --theme-answer-1: linear-gradient(135deg, hsl(0 62% 48%), hsl(350 57% 40%));
+  --theme-answer-2: linear-gradient(135deg, hsl(140 58% 38%), hsl(150 52% 30%));
+  --theme-answer-3: linear-gradient(135deg, hsl(80 60% 40%), hsl(70 55% 33%));
+  --theme-answer-4: linear-gradient(135deg, hsl(50 78% 50%), hsl(40 72% 42%));
+  --theme-header-bg: linear-gradient(135deg, hsl(140 32% 93%), hsl(130 28% 86%));
+  --sidebar-background: 140 30% 95%;
+  --sidebar-foreground: 140 45% 12%;
+  --sidebar-primary: 140 60% 35%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 140 25% 89%;
+  --sidebar-accent-foreground: 140 45% 12%;
+  --sidebar-border: 140 20% 78%;
+  --sidebar-ring: 140 60% 35%;
+}
 
-    --muted: 220 20% 92%;
-    --muted-foreground: 220 15% 45%;
-
-    --accent: 170 70% 45%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 145 65% 42%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 35 95% 55%;
-    --warning-foreground: 30 50% 15%;
-
-    --game-bg: 38 50% 94%;
-    --game-surface: 38 40% 88%;
-    --game-glow: 35 60% 50%;
-    --game-gold: 35 55% 53%;
-    --game-dark-gold: 30 40% 43%;
-    --game-correct: 145 70% 40%;
-    --game-wrong: 0 70% 50%;
-    --game-cream: 40 60% 97%;
-    --game-parchment: 38 45% 92%;
-    --game-border-gold: 35 45% 56%;
-
-    --border: 220 20% 88%;
-    --input: 220 20% 88%;
-    --ring: 250 70% 55%;
-    --radius: 0.75rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 220 30% 8%;
-    --foreground: 220 20% 95%;
-    --card: 220 25% 12%;
-    --card-foreground: 220 20% 95%;
-    --popover: 220 25% 12%;
-    --popover-foreground: 220 20% 95%;
-    --primary: 250 70% 60%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 45 95% 55%;
-    --secondary-foreground: 30 50% 15%;
-    --muted: 220 20% 18%;
-    --muted-foreground: 220 15% 60%;
-    --accent: 170 70% 45%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 250 70% 60%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+/* Theme: Sunset Purple */
+[data-theme="sunset"] {
+  --background: 280 40% 97%;
+  --foreground: 280 50% 10%;
+  --card: 280 45% 99%;
+  --card-foreground: 280 50% 10%;
+  --popover: 280 45% 99%;
+  --popover-foreground: 280 50% 10%;
+  --primary: 280 70% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 330 75% 58%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 280 25% 88%;
+  --muted-foreground: 280 20% 45%;
+  --accent: 45 90% 55%;
+  --accent-foreground: 30 50% 12%;
+  --destructive: 0 72% 52%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 145 65% 42%;
+  --success-foreground: 0 0% 100%;
+  --warning: 40 90% 55%;
+  --warning-foreground: 30 50% 12%;
+  --border: 280 30% 82%;
+  --input: 280 30% 84%;
+  --ring: 280 70% 55%;
+  --game-bg: 280 40% 96%;
+  --game-surface: 280 30% 88%;
+  --game-glow: 300 70% 60%;
+  --game-gold: 330 70% 58%;
+  --game-dark-gold: 280 50% 30%;
+  --game-correct: 145 65% 42%;
+  --game-wrong: 0 68% 50%;
+  --game-cream: 280 45% 98%;
+  --game-parchment: 280 35% 93%;
+  --game-border-gold: 300 60% 62%;
+  --theme-gradient-start: hsl(280, 40%, 96%);
+  --theme-gradient-end: hsl(300, 35%, 88%);
+  --theme-answer-1: linear-gradient(135deg, hsl(0 65% 52%), hsl(330 70% 45%));
+  --theme-answer-2: linear-gradient(135deg, hsl(280 65% 52%), hsl(260 60% 44%));
+  --theme-answer-3: linear-gradient(135deg, hsl(45 80% 52%), hsl(35 75% 44%));
+  --theme-answer-4: linear-gradient(135deg, hsl(330 68% 52%), hsl(310 62% 44%));
+  --theme-header-bg: linear-gradient(135deg, hsl(280 40% 94%), hsl(300 35% 88%));
+  --sidebar-background: 280 35% 96%;
+  --sidebar-foreground: 280 50% 15%;
+  --sidebar-primary: 280 70% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 280 30% 90%;
+  --sidebar-accent-foreground: 280 50% 15%;
+  --sidebar-border: 280 25% 80%;
+  --sidebar-ring: 280 70% 55%;
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   body {
     @apply bg-background text-foreground font-body;
+    transition: background-color 0.4s ease, color 0.4s ease;
   }
 }
 
 @layer utilities {
   .game-gradient {
-    background-color: hsl(40 55% 96%);
+    background: linear-gradient(160deg, var(--theme-gradient-start) 0%, var(--theme-gradient-end) 100%);
+  }
+  [data-theme="parchment"] .game-gradient {
+    background-color: var(--theme-gradient-start);
     background-image: url('@/assets/parchment-texture.jpg');
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
   }
-  .gold-gradient {
-    background: linear-gradient(135deg, hsl(35 55% 53%), hsl(30 50% 45%));
-  }
-  .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--game-gold) / 0.3), 0 0 40px hsl(var(--game-gold) / 0.1);
-  }
-  .glow-gold {
-    box-shadow: 0 0 20px hsl(var(--game-gold) / 0.4), 0 0 50px hsl(var(--game-gold) / 0.15);
-  }
-  .glow-correct {
-    box-shadow: 0 0 20px hsl(var(--game-correct) / 0.4);
-  }
-  .glow-wrong {
-    box-shadow: 0 0 20px hsl(var(--game-wrong) / 0.4);
-  }
-  .text-shadow-game {
-    text-shadow: 0 2px 8px hsl(30 40% 43% / 0.3);
-  }
+  .gold-gradient { background: linear-gradient(135deg, hsl(var(--game-gold)), hsl(var(--game-dark-gold))); }
+  .glow-primary { box-shadow: 0 0 20px hsl(var(--game-gold) / 0.3), 0 0 40px hsl(var(--game-gold) / 0.1); }
+  .glow-gold    { box-shadow: 0 0 20px hsl(var(--game-gold) / 0.4), 0 0 50px hsl(var(--game-gold) / 0.15); }
+  .glow-correct { box-shadow: 0 0 20px hsl(var(--game-correct) / 0.4); }
+  .glow-wrong   { box-shadow: 0 0 20px hsl(var(--game-wrong) / 0.4); }
+  .text-shadow-game { text-shadow: 0 2px 8px hsl(var(--game-dark-gold) / 0.3); }
   .parchment-card {
-    background: linear-gradient(135deg, hsl(40 60% 97%), hsl(38 45% 93%));
+    background: var(--theme-header-bg);
     border: 2px solid hsl(var(--game-border-gold));
-    box-shadow: 0 4px 20px hsl(30 40% 43% / 0.12), inset 0 0 60px hsl(40 50% 95% / 0.5);
+    box-shadow: 0 4px 20px hsl(var(--game-dark-gold) / 0.12), inset 0 0 60px hsl(var(--game-cream) / 0.4);
   }
-  .parchment-border-double {
-    border: 4px double hsl(var(--game-border-gold));
+  .parchment-border-double { border: 4px double hsl(var(--game-border-gold)); }
+  .game-answer-1 { background: var(--theme-answer-1); }
+  .game-answer-2 { background: var(--theme-answer-2); }
+  .game-answer-3 { background: var(--theme-answer-3); }
+  .game-answer-4 { background: var(--theme-answer-4); }
+  .answer-btn {
+    @apply rounded-2xl font-bold text-white shadow-lg transition-all duration-150 select-none;
+    touch-action: manipulation;
+    min-height: 3.5rem;
+    padding: 0.75rem 1rem;
+    font-size: clamp(0.85rem, 3.5vw, 1.1rem);
+    line-height: 1.3;
+    word-break: break-word;
   }
-  .game-answer-1 {
-    background: linear-gradient(135deg, hsl(0 55% 50%), hsl(0 50% 42%));
-  }
-  .game-answer-2 {
-    background: linear-gradient(135deg, hsl(215 55% 50%), hsl(215 50% 42%));
-  }
-  .game-answer-3 {
-    background: linear-gradient(135deg, hsl(35 70% 50%), hsl(35 60% 42%));
-  }
-  .game-answer-4 {
-    background: linear-gradient(135deg, hsl(145 50% 40%), hsl(145 45% 34%));
-  }
-  /* Decorative watercolor-style corners */
   .watercolor-corners::before,
   .watercolor-corners::after {
     content: '';
     position: absolute;
-    width: 120px;
-    height: 120px;
+    width: 120px; height: 120px;
     opacity: 0.15;
-    background: radial-gradient(ellipse, hsl(35 50% 50%), transparent 70%);
+    background: radial-gradient(ellipse, hsl(var(--game-glow)), transparent 70%);
     pointer-events: none;
   }
-  .watercolor-corners::before {
-    top: -20px;
-    right: -20px;
-  }
-  .watercolor-corners::after {
-    bottom: -20px;
-    left: -20px;
-  }
+  .watercolor-corners::before { top: -20px; right: -20px; }
+  .watercolor-corners::after  { bottom: -20px; left: -20px; }
+  .mobile-scroll { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .safe-top    { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 }
