@@ -268,6 +268,62 @@
   --sidebar-ring: 280 70% 55%;
 }
 
+
+/* Theme: Medical / X-Ray */
+[data-theme="medical"] {
+  --background: 210 30% 8%;
+  --foreground: 195 80% 90%;
+  --card: 210 28% 11%;
+  --card-foreground: 195 80% 90%;
+  --popover: 210 28% 11%;
+  --popover-foreground: 195 80% 90%;
+  --primary: 195 100% 50%;
+  --primary-foreground: 210 30% 8%;
+  --secondary: 210 60% 30%;
+  --secondary-foreground: 195 80% 90%;
+  --muted: 210 25% 16%;
+  --muted-foreground: 195 40% 60%;
+  --accent: 195 100% 50%;
+  --accent-foreground: 210 30% 8%;
+  --destructive: 0 75% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 145 70% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 40 90% 55%;
+  --warning-foreground: 30 50% 12%;
+  --border: 210 30% 20%;
+  --input: 210 30% 18%;
+  --ring: 195 100% 50%;
+
+  --game-bg: 210 30% 8%;
+  --game-surface: 210 28% 13%;
+  --game-glow: 195 100% 50%;
+  --game-gold: 195 100% 55%;
+  --game-dark-gold: 195 80% 75%;
+  --game-correct: 145 70% 45%;
+  --game-wrong: 0 75% 55%;
+  --game-cream: 210 28% 13%;
+  --game-parchment: 210 25% 16%;
+  --game-border-gold: 195 80% 45%;
+
+  --theme-gradient-start: hsl(210, 32%, 7%);
+  --theme-gradient-end: hsl(215, 35%, 11%);
+  --theme-answer-1: linear-gradient(135deg, hsl(0 65% 48%), hsl(350 60% 38%));
+  --theme-answer-2: linear-gradient(135deg, hsl(195 90% 38%), hsl(210 85% 30%));
+  --theme-answer-3: linear-gradient(135deg, hsl(170 65% 38%), hsl(160 58% 30%));
+  --theme-answer-4: linear-gradient(135deg, hsl(225 60% 45%), hsl(240 55% 36%));
+  --theme-header-bg: linear-gradient(135deg, hsl(210 28% 12%), hsl(215 32% 16%));
+
+  --sidebar-background: 210 30% 8%;
+  --sidebar-foreground: 195 80% 85%;
+  --sidebar-primary: 195 100% 50%;
+  --sidebar-primary-foreground: 210 30% 8%;
+  --sidebar-accent: 210 25% 14%;
+  --sidebar-accent-foreground: 195 80% 85%;
+  --sidebar-border: 210 25% 18%;
+  --sidebar-ring: 195 100% 50%;
+}
+
 @layer base {
   * { @apply border-border; }
   body {
@@ -285,6 +341,33 @@
     background-image: url('@/assets/parchment-texture.jpg');
     background-size: cover;
     background-position: center;
+  }
+
+  [data-theme="medical"] .game-gradient {
+    background: linear-gradient(160deg, hsl(210, 32%, 7%) 0%, hsl(215, 35%, 11%) 100%);
+    background-image: url('/medical-bg.svg');
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Medical theme: glowing cyan borders and text */
+  [data-theme="medical"] .parchment-card {
+    background: linear-gradient(135deg, hsl(210 28% 12%), hsl(215 30% 15%));
+    border: 1px solid hsl(195 80% 45% / 0.5);
+    box-shadow: 0 0 20px hsl(195 100% 50% / 0.1), 0 4px 20px hsl(210 30% 5% / 0.8), inset 0 0 40px hsl(195 100% 50% / 0.03);
+  }
+
+  [data-theme="medical"] .parchment-border-double {
+    border: 2px solid hsl(195 80% 45% / 0.6);
+    box-shadow: 0 0 12px hsl(195 100% 50% / 0.2);
+  }
+
+  [data-theme="medical"] .text-shadow-game {
+    text-shadow: 0 0 20px hsl(195 100% 50% / 0.6), 0 2px 8px hsl(195 100% 50% / 0.3);
+  }
+
+  [data-theme="medical"] .glow-gold {
+    box-shadow: 0 0 20px hsl(195 100% 50% / 0.5), 0 0 50px hsl(195 100% 50% / 0.2);
   }
   .gold-gradient { background: linear-gradient(135deg, hsl(var(--game-gold)), hsl(var(--game-dark-gold))); }
   .glow-primary { box-shadow: 0 0 20px hsl(var(--game-gold) / 0.3), 0 0 40px hsl(var(--game-gold) / 0.1); }

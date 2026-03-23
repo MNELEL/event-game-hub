@@ -36,6 +36,7 @@ export const PRESET_CONFETTI: Record<string, string[]> = {
   ocean:     ["#0284c7", "#06b6d4", "#38bdf8", "#0ea5e9", "#7dd3fc"],
   forest:    ["#2d7a3a", "#4ade80", "#86efac", "#fbbf24", "#a3e635"],
   sunset:    ["#9333ea", "#ec4899", "#f97316", "#fbbf24", "#e879f9"],
+  medical:   ["#00d4ff", "#00a8cc", "#ffffff", "#38bdf8", "#7dd3fc"],
 };
 
 export const DEFAULT_AVATARS = ["🧠","🦁","🦊","🐼","🦄","🐸","🦋","🐉","🌟","⚡","🔥","💎","🎯","🚀","🎭","👑"];
@@ -46,6 +47,7 @@ export const BUILT_IN_THEMES: ThemeOption[] = [
   { id: "ocean",     name: "אוקיינוס",  emoji: "🌊", preview: { bg: "#ebf8ff", accent: "#0284c7", text: "#0c1a2e" } },
   { id: "forest",    name: "יער ירוק",  emoji: "🌿", preview: { bg: "#f0faf0", accent: "#2d7a3a", text: "#0f2a12" } },
   { id: "sunset",    name: "שקיעה",     emoji: "🌅", preview: { bg: "#faf0ff", accent: "#9333ea", text: "#2d0f4e" } },
+  { id: "medical",   name: "רפואי",      emoji: "🏥", preview: { bg: "#0d1520", accent: "#00d4ff", text: "#b0e8f5" } },
 ];
 
 export const THEMES = BUILT_IN_THEMES;
