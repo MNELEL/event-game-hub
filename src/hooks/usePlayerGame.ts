@@ -99,13 +99,17 @@ export function usePlayerGame() {
             answerSubmitted:
               game.status === "question" &&
               game.current_question_index !== prev.currentQuestionIndex
-                ? false
-                : prev.answerSubmitted,
+                ? false  // new question → reset
+                : game.status !== "question"
+                  ? false  // left question phase → reset
+                  : prev.answerSubmitted,
             lastAnswerCorrect:
               game.status === "question" &&
               game.current_question_index !== prev.currentQuestionIndex
                 ? null
-                : prev.lastAnswerCorrect,
+                : game.status !== "question"
+                  ? null
+                  : prev.lastAnswerCorrect,
           }));
         }
       )

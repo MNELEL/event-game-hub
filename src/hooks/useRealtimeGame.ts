@@ -109,7 +109,9 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     const { data, error } = await supabase.from("games").insert({
       code,
       status: "lobby",
-      settings: JSON.parse(JSON.stringify(settings)),
+      // Embed full question data so submit-answer can verify answers
+      // even when question_ids are short strings (not DB UUIDs)
+      settings: JSON.parse(JSON.stringify({ ...settings, questions: gameQuestions })),
       question_ids: gameQuestions.map(q => q.id),
       created_by: user?.id ?? null,
     }).select().single();
