@@ -280,6 +280,38 @@
   .game-gradient {
     background: linear-gradient(160deg, var(--theme-gradient-start) 0%, var(--theme-gradient-end) 100%);
   }
+  [data-theme="scifi"] .game-gradient {
+    background: linear-gradient(160deg, hsl(225, 38%, 5%) 0%, hsl(230, 40%, 8%) 100%);
+    background-image: url('/scifi-bg.svg');
+    background-size: cover;
+    background-position: center;
+  }
+
+  [data-theme="scifi"] .parchment-card {
+    background: linear-gradient(135deg, hsl(225 32% 9% / 0.92), hsl(228 35% 12% / 0.88));
+    border: 1px solid hsl(195 80% 45% / 0.4);
+    box-shadow: 0 0 30px hsl(195 100% 50% / 0.08), 0 4px 24px hsl(225 40% 3% / 0.9), inset 0 0 40px hsl(225 30% 5% / 0.5);
+    backdrop-filter: blur(8px);
+  }
+
+  [data-theme="scifi"] .parchment-border-double {
+    border: 1px solid hsl(195 80% 50% / 0.55);
+    box-shadow: 0 0 16px hsl(195 100% 55% / 0.25), inset 0 0 16px hsl(195 100% 55% / 0.05);
+  }
+
+  [data-theme="scifi"] .text-shadow-game {
+    text-shadow: 0 0 24px hsl(195 100% 55% / 0.7), 0 0 8px hsl(195 100% 55% / 0.4);
+  }
+
+  [data-theme="scifi"] .glow-gold {
+    box-shadow: 0 0 24px hsl(195 100% 55% / 0.5), 0 0 60px hsl(195 100% 55% / 0.2);
+  }
+
+  [data-theme="scifi"] .game-answer-1 { background: linear-gradient(135deg, hsl(0 70% 48%), hsl(340 65% 34%)); }
+  [data-theme="scifi"] .game-answer-2 { background: linear-gradient(135deg, hsl(195 90% 38%), hsl(210 85% 26%)); }
+  [data-theme="scifi"] .game-answer-3 { background: linear-gradient(135deg, hsl(35 85% 48%), hsl(25 78% 34%)); }
+  [data-theme="scifi"] .game-answer-4 { background: linear-gradient(135deg, hsl(270 65% 45%), hsl(255 55% 32%)); }
+
   [data-theme="parchment"] .game-gradient {
     background-color: var(--theme-gradient-start);
     background-image: url('@/assets/parchment-texture.jpg');
@@ -325,4 +357,60 @@
   .mobile-scroll { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   .safe-top    { padding-top: env(safe-area-inset-top); }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* Theme: Sci-Fi Space */
+[data-theme="scifi"] {
+  --background: 225 35% 6%;
+  --foreground: 210 60% 92%;
+  --card: 225 32% 9%;
+  --card-foreground: 210 60% 92%;
+  --popover: 225 32% 9%;
+  --popover-foreground: 210 60% 92%;
+  --primary: 195 100% 55%;
+  --primary-foreground: 225 35% 6%;
+  --secondary: 30 90% 55%;
+  --secondary-foreground: 225 35% 6%;
+  --muted: 225 28% 14%;
+  --muted-foreground: 210 35% 55%;
+  --accent: 195 100% 55%;
+  --accent-foreground: 225 35% 6%;
+  --destructive: 0 80% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 145 75% 48%;
+  --success-foreground: 0 0% 100%;
+  --warning: 35 95% 58%;
+  --warning-foreground: 225 35% 6%;
+  --border: 225 30% 18%;
+  --input: 225 30% 16%;
+  --ring: 195 100% 55%;
+  --radius: 0.5rem;
+
+  --game-bg: 225 35% 6%;
+  --game-surface: 225 30% 10%;
+  --game-glow: 195 100% 55%;
+  --game-gold: 195 100% 60%;
+  --game-dark-gold: 210 70% 80%;
+  --game-correct: 145 75% 48%;
+  --game-wrong: 0 80% 55%;
+  --game-cream: 225 30% 10%;
+  --game-parchment: 225 28% 12%;
+  --game-border-gold: 195 80% 45%;
+
+  --theme-gradient-start: hsl(225, 38%, 5%);
+  --theme-gradient-end: hsl(230, 40%, 8%);
+  --theme-answer-1: linear-gradient(135deg, hsl(0 70% 48%), hsl(340 65% 36%));
+  --theme-answer-2: linear-gradient(135deg, hsl(195 90% 38%), hsl(210 85% 28%));
+  --theme-answer-3: linear-gradient(135deg, hsl(35 85% 48%), hsl(25 80% 36%));
+  --theme-answer-4: linear-gradient(135deg, hsl(270 65% 45%), hsl(255 58% 34%));
+  --theme-header-bg: linear-gradient(135deg, hsl(225 32% 9%), hsl(228 35% 13%));
+
+  --sidebar-background: 225 35% 6%;
+  --sidebar-foreground: 210 60% 88%;
+  --sidebar-primary: 195 100% 55%;
+  --sidebar-primary-foreground: 225 35% 6%;
+  --sidebar-accent: 225 28% 12%;
+  --sidebar-accent-foreground: 210 60% 88%;
+  --sidebar-border: 225 28% 16%;
+  --sidebar-ring: 195 100% 55%;
 }
