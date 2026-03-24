@@ -5,7 +5,7 @@ import { defaultQuestions } from "@/data/defaultQuestions";
 const generateGameCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
 const defaultSettings: GameSettings = {
-  title: "מגה מוח",
+  title: "החגיגה של חיוש",
   questionsPerGame: 10,
   defaultTimeLimit: 15,
   selectedCategories: [],
@@ -13,7 +13,7 @@ const defaultSettings: GameSettings = {
   shuffleQuestions: true,
 };
 
-const STORAGE_KEY = "megabrain_data";
+const STORAGE_KEY = "hayoush_data";
 
 function loadFromStorage(): { questions: Question[]; settings: GameSettings } {
   try {

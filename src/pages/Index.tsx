@@ -38,7 +38,7 @@ const Index = () => {
         >
           {/* H1 — correct */}
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
-            🧠 מגה מוח
+            🧠 החגיגה של חיוש
           </h1>
           {/* 3. Contrast fix: /80 → full opacity for better contrast */}
           <p className="text-xl md:text-2xl text-foreground/90 font-body">
