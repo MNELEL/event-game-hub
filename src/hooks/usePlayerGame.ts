@@ -90,27 +90,24 @@ export function usePlayerGame() {
         { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${state.gameId}` },
         (payload) => {
           const game = payload.new;
-          setState(prev => ({
-            ...prev,
-            gameStatus: game.status as GameStatus,
-            currentQuestionIndex: game.current_question_index,
-            currentQuestionId: prev.questionIds[game.current_question_index] || null,
-            timeRemaining: game.time_remaining,
-            answerSubmitted:
+          setState(prev => {
+            // Reset when: new question index arrives, OR entering "question" from another status
+            const enteringQuestion =
               game.status === "question" &&
-              game.current_question_index !== prev.currentQuestionIndex
-                ? false  // new question → reset
-                : game.status !== "question"
-                  ? false  // left question phase → reset
-                  : prev.answerSubmitted,
-            lastAnswerCorrect:
-              game.status === "question" &&
-              game.current_question_index !== prev.currentQuestionIndex
-                ? null
-                : game.status !== "question"
-                  ? null
-                  : prev.lastAnswerCorrect,
-          }));
+              (prev.gameStatus !== "question" ||
+               game.current_question_index !== prev.currentQuestionIndex);
+
+            return {
+              ...prev,
+              gameStatus: game.status as GameStatus,
+              currentQuestionIndex: game.current_question_index,
+              currentQuestionId: prev.questionIds[game.current_question_index] || null,
+              timeRemaining: game.time_remaining,
+              answerSubmitted: enteringQuestion ? false : prev.answerSubmitted,
+              lastAnswerCorrect: enteringQuestion ? null : prev.lastAnswerCorrect,
+              lastPointsEarned: enteringQuestion ? 0 : prev.lastPointsEarned,
+            };
+          });
         }
       )
       .subscribe();
