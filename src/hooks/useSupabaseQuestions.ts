@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Question, GameSettings } from "@/types/game";
 import { defaultQuestions } from "@/data/defaultQuestions";
 
-const CACHE_KEY = "megabrain_data";
+const CACHE_KEY = "hayoush_data";
 
 function cacheToLocal(questions: Question[], settings: GameSettings) {
   try {
@@ -45,7 +45,7 @@ function questionToDb(q: Question, index: number) {
 export function useSupabaseQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const defaultSettings: GameSettings = {
-    title: "מגה מוח",
+    title: "החגיגה של חיוש",
     questionsPerGame: 10,
     defaultTimeLimit: 15,
     selectedCategories: [],

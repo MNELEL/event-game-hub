@@ -7,7 +7,7 @@ inject();
 
 // Initialize theme before render to avoid flash
 try {
-  const saved = localStorage.getItem("megabrain_theme");
+  const saved = localStorage.getItem("hayoush_theme");
   const valid = ["parchment","dark","ocean","forest","sunset"];
   document.documentElement.setAttribute("data-theme", valid.includes(saved || "") ? saved! : "parchment");
 } catch {}

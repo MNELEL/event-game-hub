@@ -38,6 +38,7 @@ export const PRESET_CONFETTI: Record<string, string[]> = {
   forest:    ["#2d7a3a", "#4ade80", "#86efac", "#fbbf24", "#a3e635"],
   sunset:    ["#9333ea", "#ec4899", "#f97316", "#fbbf24", "#e879f9"],
   scifi:     ["#00c8ff", "#0066aa", "#ff6a00", "#ffffff", "#7dd3fc"],
+  medical:   ["#00d4ff", "#00a8cc", "#ffffff", "#38bdf8", "#7dd3fc"],
 };
 
 export const DEFAULT_AVATARS = ["🧠","🦁","🦊","🐼","🦄","🐸","🦋","🐉","🌟","⚡","🔥","💎","🎯","🚀","🎭","👑"];
@@ -49,13 +50,14 @@ export const BUILT_IN_THEMES: ThemeOption[] = [
   { id: "forest",    name: "יער ירוק",  emoji: "🌿", preview: { bg: "#f0faf0", accent: "#2d7a3a", text: "#0f2a12" } },
   { id: "sunset",    name: "שקיעה",     emoji: "🌅", preview: { bg: "#faf0ff", accent: "#9333ea", text: "#2d0f4e" } },
   { id: "scifi",     name: "חלל",        emoji: "🚀", preview: { bg: "#070d18", accent: "#00c8ff", text: "#b8e4f5" } },
+  { id: "medical",   name: "רפואי",      emoji: "🏥", preview: { bg: "#0d1520", accent: "#00d4ff", text: "#b0e8f5" } },
 ];
 
 export const THEMES = BUILT_IN_THEMES;
 
-const STORAGE_KEY = "megabrain_theme";
-const CUSTOM_KEY  = "megabrain_custom_themes";
-const AVATARS_KEY = "megabrain_player_avatars";
+const STORAGE_KEY = "hayoush_theme";
+const CUSTOM_KEY  = "hayoush_custom_themes";
+const AVATARS_KEY = "hayoush_player_avatars";
 
 function loadCustomThemes(): CustomTheme[] {
   try { const r = localStorage.getItem(CUSTOM_KEY); return r ? JSON.parse(r) : []; } catch { return []; }
