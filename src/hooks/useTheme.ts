@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { SoundEffects } from "@/hooks/useSoundEffects";
 
 export type ThemeId = "parchment" | "dark" | "ocean" | "forest" | "sunset" | string;
 
@@ -117,6 +118,8 @@ export function useTheme() {
     try { localStorage.setItem(STORAGE_KEY, themeId); } catch {}
     if (isBuiltIn) { clearCustomThemeDom(); document.documentElement.setAttribute("data-theme", themeId); }
     else { const c = customThemes.find(t => t.id === themeId); if (c) applyCustomThemeToDom(c); }
+    // Notify sound system so music style changes with theme
+    SoundEffects.setTheme(themeId);
   }, [themeId, customThemes, isBuiltIn]);
 
   const setTheme = useCallback((id: string) => setThemeId(id), []);
