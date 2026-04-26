@@ -389,7 +389,7 @@ export function ThemeStudio({ open, onClose }: Props) {
                         backgroundSize: "cover",
                       }}
                     >
-                      <p className="font-bold text-lg" style={{ color: hslToHex(editing.gameGold) }}>🧠 מגה מוח</p>
+                      <p className="font-bold text-lg" style={{ color: hslToHex(editing.gameGold) }}>🧠 החגיגה של חיוש</p>
                       <p className="text-xs mt-1 opacity-70">תצוגה מקדימה</p>
                       <div className="flex gap-2 justify-center mt-2">
                         <span className="px-3 py-1 rounded-lg text-white text-xs font-bold" style={{ backgroundColor: hslToHex(editing.primary) }}>כפתור ראשי</span>

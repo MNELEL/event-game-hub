@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { SoundEffects } from "@/hooks/useSoundEffects";
 
 export type ThemeId = "parchment" | "dark" | "ocean" | "forest" | "sunset" | string;
 
@@ -47,14 +48,15 @@ export const BUILT_IN_THEMES: ThemeOption[] = [
   { id: "ocean",     name: "אוקיינוס",  emoji: "🌊", preview: { bg: "#ebf8ff", accent: "#0284c7", text: "#0c1a2e" } },
   { id: "forest",    name: "יער ירוק",  emoji: "🌿", preview: { bg: "#f0faf0", accent: "#2d7a3a", text: "#0f2a12" } },
   { id: "sunset",    name: "שקיעה",     emoji: "🌅", preview: { bg: "#faf0ff", accent: "#9333ea", text: "#2d0f4e" } },
+  { id: "scifi",     name: "חלל",        emoji: "🚀", preview: { bg: "#070d18", accent: "#00c8ff", text: "#b8e4f5" } },
   { id: "medical",   name: "רפואי",      emoji: "🏥", preview: { bg: "#0d1520", accent: "#00d4ff", text: "#b0e8f5" } },
 ];
 
 export const THEMES = BUILT_IN_THEMES;
 
-const STORAGE_KEY = "megabrain_theme";
-const CUSTOM_KEY  = "megabrain_custom_themes";
-const AVATARS_KEY = "megabrain_player_avatars";
+const STORAGE_KEY = "hayoush_theme";
+const CUSTOM_KEY  = "hayoush_custom_themes";
+const AVATARS_KEY = "hayoush_player_avatars";
 
 function loadCustomThemes(): CustomTheme[] {
   try { const r = localStorage.getItem(CUSTOM_KEY); return r ? JSON.parse(r) : []; } catch { return []; }
@@ -117,6 +119,8 @@ export function useTheme() {
     try { localStorage.setItem(STORAGE_KEY, themeId); } catch {}
     if (isBuiltIn) { clearCustomThemeDom(); document.documentElement.setAttribute("data-theme", themeId); }
     else { const c = customThemes.find(t => t.id === themeId); if (c) applyCustomThemeToDom(c); }
+    // Notify sound system so music style changes with theme
+    SoundEffects.setTheme(themeId);
   }, [themeId, customThemes, isBuiltIn]);
 
   const setTheme = useCallback((id: string) => setThemeId(id), []);

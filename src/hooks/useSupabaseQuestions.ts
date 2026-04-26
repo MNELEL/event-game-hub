@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Question, GameSettings } from "@/types/game";
 import { defaultQuestions } from "@/data/defaultQuestions";
 
-const CACHE_KEY = "megabrain_data";
+const CACHE_KEY = "hayoush_data";
 
 function cacheToLocal(questions: Question[], settings: GameSettings) {
   try {
@@ -29,7 +29,7 @@ function dbToQuestion(row: any): Question {
 // Convert app Question to DB insert format
 function questionToDb(q: Question, index: number) {
   return {
-    id: q.id.length > 10 ? q.id : undefined, // only use UUID ids
+    // never pass id — let DB generate UUID; short_id stored separately
     text: q.text,
     options: JSON.stringify(q.options),
     correct_answer: q.correctAnswer,
@@ -45,7 +45,7 @@ function questionToDb(q: Question, index: number) {
 export function useSupabaseQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const defaultSettings: GameSettings = {
-    title: "מגה מוח",
+    title: "החגיגה של חיוש",
     questionsPerGame: 10,
     defaultTimeLimit: 15,
     selectedCategories: [],
@@ -156,8 +156,7 @@ export function useSupabaseQuestions() {
 
   const addQuestion = useCallback(async (question: Question) => {
     const row = questionToDb(question, questions.length);
-    const { id, ...rest } = row;
-    const { data, error } = await supabase.from("questions").insert(rest).select().single();
+    const { data, error } = await supabase.from("questions").insert(row).select().single();
     if (!error && data) {
       const newQ = dbToQuestion(data);
       setQuestions(prev => { const u = [...prev, newQ]; syncCache(u); return u; });
@@ -187,10 +186,7 @@ export function useSupabaseQuestions() {
   const updateQuestions = useCallback(async (newQuestions: Question[]) => {
     // Delete all and re-insert (for reset)
     await supabase.from("questions").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    const rows = newQuestions.map((q, i) => {
-      const { id, ...rest } = questionToDb(q, i);
-      return rest;
-    });
+    const rows = newQuestions.map((q, i) => questionToDb(q, i));
     const { data } = await supabase.from("questions").insert(rows).select();
     if (data) {
       const loaded = data.map(dbToQuestion);

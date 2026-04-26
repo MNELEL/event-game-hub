@@ -170,7 +170,7 @@ const PlayerJoin = () => {
           <div className="text-center mb-1">
             <span className="text-4xl">🌿</span>
           </div>
-          <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">🧠 מגה מוח</h1>
+          <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">🧠 החגיגה של חיוש</h1>
           <div className="w-24 mx-auto border-t-2 border-double border-game-border-gold mb-4" />
           <p className="text-game-dark-gold/60 text-center mb-6">הכניסו קוד משחק ושם כדי להצטרף</p>
 

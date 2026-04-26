@@ -58,7 +58,7 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
     if (printWindow) {
       printWindow.document.write(`
         <html dir="rtl">
-          <head><title>סטטיסטיקות מגה מוח</title>
+          <head><title>סטטיסטיקות החגיגה של חיוש</title>
             <style>
               body { margin: 0; display: flex; justify-content: center; background: #f5eed6; }
               img { max-width: 100%; height: auto; }

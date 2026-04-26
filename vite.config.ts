@@ -73,8 +73,8 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       manifest: {
-        name: "מגה מוח - משחק טריוויה",
-        short_name: "מגה מוח",
+        name: "החגיגה של חיוש - משחק טריוויה",
+        short_name: "החגיגה של חיוש",
         description: "משחק טריוויה אינטראקטיבי לאירועים",
         theme_color: "#1a1a2e",
         background_color: "#1a1a2e",

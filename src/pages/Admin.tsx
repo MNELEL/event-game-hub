@@ -95,7 +95,7 @@ const Admin = () => {
               <Home className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="font-display font-bold text-base text-foreground leading-tight">🧠 מגה מוח</h1>
+              <h1 className="font-display font-bold text-base text-foreground leading-tight">🧠 החגיגה של חיוש</h1>
               <p className="text-[11px] text-muted-foreground leading-none">ממשק ניהול</p>
             </div>
           </div>
