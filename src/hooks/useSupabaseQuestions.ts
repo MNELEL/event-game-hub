@@ -46,7 +46,7 @@ function questionToDb(q: Question, index: number) {
 export function useSupabaseQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const defaultSettings: GameSettings = {
-    title: "חיוש בת מצוה",
+    title: branding.name,
     questionsPerGame: 10,
     defaultTimeLimit: 15,
     selectedCategories: [],
