@@ -23,6 +23,37 @@ let musicGainNode: GainNode | null = null;
 let musicOscillators: OscillatorNode[] = [];
 let musicInterval: ReturnType<typeof setInterval> | null = null;
 
+// Custom uploaded music
+let customAudio: HTMLAudioElement | null = null;
+let customAudioUrl: string | null = null;
+
+function applyCustomVolume() {
+  if (customAudio) {
+    customAudio.volume = Math.max(0, Math.min(1, masterVolume * musicVolume));
+  }
+}
+
+function playCustomMusic() {
+  if (!customAudioUrl || !musicEnabled) return;
+  if (!customAudio) {
+    customAudio = new Audio(customAudioUrl);
+    customAudio.loop = true;
+    customAudio.crossOrigin = "anonymous";
+  } else if (customAudio.src !== customAudioUrl) {
+    customAudio.src = customAudioUrl;
+  }
+  applyCustomVolume();
+  customAudio.play().catch(() => {
+    // Browser may block until user interaction; ignore silently
+  });
+}
+
+function stopCustomMusic() {
+  if (customAudio) {
+    try { customAudio.pause(); customAudio.currentTime = 0; } catch {}
+  }
+}
+
 function createGain(volume: number): GainNode {
   const ctx = audioCtx();
   const gain = ctx.createGain();
