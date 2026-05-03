@@ -50,7 +50,7 @@ const Login = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="font-display text-4xl text-game-gold text-center mb-2">🧠 מגה מוח</h1>
+        <h1 className="font-display text-4xl text-game-gold text-center mb-2">🧠 חיוש בת מצוה</h1>
         <p className="text-primary-foreground/60 text-center mb-8">
           {isSignUp ? "הרשמה לממשק ניהול" : "כניסה לממשק ניהול"}
         </p>

@@ -24,8 +24,8 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,woff2}"],
       },
       manifest: {
-        name: "מגה מוח - משחק טריוויה",
-        short_name: "מגה מוח",
+        name: "חיוש בת מצוה - משחק טריוויה",
+        short_name: "חיוש בת מצוה",
         description: "משחק טריוויה אינטראקטיבי לאירועים",
         theme_color: "#1a1a2e",
         background_color: "#1a1a2e",
