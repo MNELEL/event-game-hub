@@ -139,6 +139,12 @@ function startBackgroundMusic(style: 'lobby' | 'game' | 'victory' = 'lobby') {
   stopBackgroundMusic();
   if (!musicEnabled) return;
 
+  // If custom music is uploaded, play it instead of synthesized music
+  if (customAudioUrl) {
+    playCustomMusic();
+    return;
+  }
+
   const ctx = audioCtx();
   musicGainNode = ctx.createGain();
   musicGainNode.gain.setValueAtTime(musicVolume * masterVolume * 0.15, ctx.currentTime);
