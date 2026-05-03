@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-r
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { BrandingProvider } from "@/hooks/useBranding";
 import { useBackgroundMusicLoader } from "@/hooks/useBackgroundMusicLoader";
+import { useThemeLoader } from "@/hooks/useThemeLoader";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
@@ -15,6 +16,7 @@ import Login from "./pages/Login";
 import Install from "./pages/Install";
 import OfflineGame from "./pages/OfflineGame";
 import About from "./pages/About";
+import BrandingPreview from "./pages/BrandingPreview";
 import NotFound from "./pages/NotFound";
 
 function JoinRedirect() {
@@ -34,6 +36,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 const AppRoutes = () => {
   useBackgroundMusicLoader();
+  useThemeLoader();
   return (
     <Routes>
       <Route path="/" element={<Index />} />
@@ -45,6 +48,7 @@ const AppRoutes = () => {
       <Route path="/install" element={<Install />} />
       <Route path="/offline" element={<OfflineGame />} />
       <Route path="/about" element={<About />} />
+      <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
