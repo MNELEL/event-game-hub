@@ -91,7 +91,7 @@ const PlayerJoin = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="text-center mb-1">
-            <span className="text-4xl">{branding.icons.primary}</span>
+            <span className="text-4xl">{branding.iconPrimary}</span>
           </div>
           <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">{branding.name}</h1>
           <div className="w-24 mx-auto border-t-2 border-double border-game-border-gold mb-4" />
