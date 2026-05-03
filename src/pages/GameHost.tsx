@@ -12,6 +12,7 @@ import { GameFinished } from "@/components/game/GameFinished";
 import { SoundControlPanel } from "@/components/game/SoundControlPanel";
 import { Home, Loader2, Settings } from "lucide-react";
 import { useBranding } from "@/hooks/useBranding";
+import { HeroIntro } from "@/components/game/HeroIntro";
 
 const GameHost = () => {
   const navigate = useNavigate();
