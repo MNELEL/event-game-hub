@@ -178,7 +178,7 @@ const About = () => {
           <div className="text-center pt-6 border-t border-game-border-gold/30">
             <div className="flex items-center justify-center gap-2 text-game-dark-gold font-bold">
               <Phone className="w-4 h-4" />
-              <span>{branding.contact.phone}</span>
+              <span>{branding.phone}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">נבנה עם ❤️ ב-Lovable</p>
           </div>
