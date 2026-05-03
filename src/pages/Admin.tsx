@@ -13,13 +13,15 @@ import { TutorialDialog } from "@/components/game/TutorialDialog";
 import { QuestionImportExport } from "@/components/game/QuestionImportExport";
 import { ActiveGamesList } from "@/components/game/ActiveGamesList";
 import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
-import { branding } from "@/config/branding";
-import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2 } from "lucide-react";
+import { useBranding } from "@/hooks/useBranding";
+import { BrandingEditor } from "@/components/game/BrandingEditor";
+import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const store = useSupabaseQuestions();
+  const { branding } = useBranding();
   const [showTutorial, setShowTutorial] = useState(false);
 
   if (store.loading) {
@@ -41,7 +43,7 @@ const Admin = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
               <Home className="w-5 h-5" />
             </Button>
-            <h1 className="font-display text-2xl font-bold text-foreground">{branding.icons.primary} {branding.name} - ממשק ניהול</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">{branding.iconPrimary} {branding.name} - ממשק ניהול</h1>
           </div>
           <div className="flex items-center gap-2">
             {user && (
@@ -72,7 +74,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <Tabs defaultValue="questions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-12">
+          <TabsList className="grid w-full grid-cols-5 h-12">
             <TabsTrigger value="questions" className="gap-2 font-display">
               <List className="w-4 h-4" />
               שאלות ({store.questions.length})
@@ -84,6 +86,10 @@ const Admin = () => {
             <TabsTrigger value="games" className="gap-2 font-display">
               <Gamepad2 className="w-4 h-4" />
               משחקים
+            </TabsTrigger>
+            <TabsTrigger value="branding" className="gap-2 font-display">
+              <Palette className="w-4 h-4" />
+              מיתוג
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2 font-display">
               <Settings className="w-4 h-4" />
@@ -112,6 +118,10 @@ const Admin = () => {
 
           <TabsContent value="games">
             <ActiveGamesList />
+          </TabsContent>
+
+          <TabsContent value="branding">
+            <BrandingEditor />
           </TabsContent>
 
           <TabsContent value="settings">

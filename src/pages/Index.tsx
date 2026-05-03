@@ -2,10 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff, Info } from "lucide-react";
-import { branding } from "@/config/branding";
+import { branding as defaultBranding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { branding } = useBranding();
 
   return (
     <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
@@ -33,7 +35,7 @@ const Index = () => {
         transition={{ duration: 0.8 }}
       >
         <motion.div className="mb-6" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}>
-          <div className="text-6xl md:text-7xl mb-2">{branding.icons.festive}</div>
+          <div className="text-6xl md:text-7xl mb-2">{branding.iconFestive}</div>
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
             {branding.name}
           </h1>

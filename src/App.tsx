@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { BrandingProvider } from "@/hooks/useBranding";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
@@ -53,7 +54,9 @@ const App = () => (
       <OfflineBanner />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <BrandingProvider>
+            <AppRoutes />
+          </BrandingProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

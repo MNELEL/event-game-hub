@@ -6,7 +6,7 @@ import { Player } from "@/types/game";
 import { Play, UserPlus, Users, Monitor, Phone, QrCode } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
-import { branding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 
 type Props = {
   gameCode: string;
@@ -19,6 +19,7 @@ type Props = {
 export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCount }: Props) {
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
+  const { branding } = useBranding();
 
   // Start lobby background music on mount
   useEffect(() => {
@@ -194,7 +195,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
-                {branding.contact.phone}
+                {branding.phone}
               </motion.div>
             </motion.div>
 

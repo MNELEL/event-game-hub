@@ -7,7 +7,7 @@ import { usePlayerGame } from "@/hooks/usePlayerGame";
 import { Wifi, Loader2, CheckCircle, Clock, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SoundEffects } from "@/hooks/useSoundEffects";
-import { branding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 
 const answerClasses = [
   "game-answer-1",
@@ -19,6 +19,7 @@ const answerLabels = ["1", "2", "3", "4"];
 
 const PlayerJoin = () => {
   const [searchParams] = useSearchParams();
+  const { branding } = useBranding();
   const [name, setName] = useState("");
   const [gameCode, setGameCode] = useState("");
   const [joining, setJoining] = useState(false);
@@ -90,7 +91,7 @@ const PlayerJoin = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="text-center mb-1">
-            <span className="text-4xl">{branding.icons.primary}</span>
+            <span className="text-4xl">{branding.iconPrimary}</span>
           </div>
           <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">{branding.name}</h1>
           <div className="w-24 mx-auto border-t-2 border-double border-game-border-gold mb-4" />

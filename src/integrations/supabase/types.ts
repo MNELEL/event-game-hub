@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      branding: {
+        Row: {
+          about_description: string
+          created_at: string
+          full_name: string
+          hero_subtitle: string
+          icon_festive: string
+          icon_primary: string
+          id: string
+          is_active: boolean
+          lobby_subtitle: string
+          name: string
+          phone: string
+          short_name: string
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          about_description?: string
+          created_at?: string
+          full_name?: string
+          hero_subtitle?: string
+          icon_festive?: string
+          icon_primary?: string
+          id?: string
+          is_active?: boolean
+          lobby_subtitle?: string
+          name?: string
+          phone?: string
+          short_name?: string
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          about_description?: string
+          created_at?: string
+          full_name?: string
+          hero_subtitle?: string
+          icon_festive?: string
+          icon_primary?: string
+          id?: string
+          is_active?: boolean
+          lobby_subtitle?: string
+          name?: string
+          phone?: string
+          short_name?: string
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       game_settings: {
         Row: {
           created_at: string
