@@ -21,6 +21,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const store = useSupabaseQuestions();
+  const { branding } = useBranding();
   const [showTutorial, setShowTutorial] = useState(false);
 
   if (store.loading) {
