@@ -1,4 +1,4 @@
-// Yemot HaMashiach IVR webhook (api_call protocol)
+// Yemot HaMashiach IVR webhook (type=api protocol)
 // Public endpoint, secured via ?secret=YEMOT_WEBHOOK_SECRET
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       return ymResp([hangupMessage("שגיאת אבטחה. אנא פנה למנהל המערכת.")]);
     }
 
-    // Yemot sends all params in the query string for GET api_call
+    // Yemot sends all params in the query string for GET type=api
     const params = url.searchParams;
     console.log("[yemot-ivr] ←", Object.fromEntries(params.entries()));
 
