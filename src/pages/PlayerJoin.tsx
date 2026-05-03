@@ -7,7 +7,7 @@ import { usePlayerGame } from "@/hooks/usePlayerGame";
 import { Wifi, Loader2, CheckCircle, Clock, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SoundEffects } from "@/hooks/useSoundEffects";
-import { branding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 
 const answerClasses = [
   "game-answer-1",
