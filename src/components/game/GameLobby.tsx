@@ -92,7 +92,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             ✦ 🌿 ✦
           </motion.div>
 
-          {/* Brain icon with glow pulse */}
+          {/* Crown icon with glow pulse */}
           <motion.div
             className="text-8xl md:text-9xl mb-2 inline-block"
             initial={{ scale: 0, rotateY: 180 }}
@@ -110,7 +110,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
               }}
               transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              🧠
+              👑
             </motion.span>
           </motion.div>
 
@@ -131,7 +131,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.6 }}
           >
-            חידון ידע אינטראקטיבי
+            חידון בת המצווה של חיוש ✨
           </motion.p>
 
           {/* Gold ornamental line */}
