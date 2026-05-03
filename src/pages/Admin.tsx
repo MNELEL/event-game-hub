@@ -41,7 +41,7 @@ const Admin = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
               <Home className="w-5 h-5" />
             </Button>
-            <h1 className="font-display text-2xl font-bold text-foreground">🧠 חיוש בת מצוה - ממשק ניהול</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">{branding.icons.primary} {branding.name} - ממשק ניהול</h1>
           </div>
           <div className="flex items-center gap-2">
             {user && (
