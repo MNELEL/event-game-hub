@@ -119,6 +119,10 @@ const Admin = () => {
             <ActiveGamesList />
           </TabsContent>
 
+          <TabsContent value="branding">
+            <BrandingEditor />
+          </TabsContent>
+
           <TabsContent value="settings">
             <GameSettingsPanel
               settings={store.settings}
