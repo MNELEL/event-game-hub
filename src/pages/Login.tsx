@@ -49,7 +49,7 @@ const Login = () => {
       >
         <h1 className="font-display text-4xl text-game-dark-gold text-center mb-2">{branding.iconPrimary} {branding.name}</h1>
         <p className="text-game-dark-gold/70 text-center mb-8">
-          {isSignUp ? "הרשמה לממשק ניהול" : "כניסה לממשק ניהול"}
+          כניסה לממשק ניהול
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -71,8 +71,8 @@ const Login = () => {
             minLength={6}
           />
           <Button variant="gold" size="lg" className="w-full gap-2" type="submit" disabled={loading}>
-            {isSignUp ? <UserPlus className="w-5 h-5" /> : <LogIn className="w-5 h-5" />}
-            {loading ? "טוען..." : isSignUp ? "הרשמה" : "כניסה"}
+            <LogIn className="w-5 h-5" />
+            {loading ? "טוען..." : "כניסה"}
           </Button>
         </form>
 
@@ -101,12 +101,6 @@ const Login = () => {
         </Button>
 
         <div className="mt-4 text-center space-y-2">
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-game-dark-gold/70 hover:text-game-gold text-sm transition-colors"
-          >
-            {isSignUp ? "כבר יש לך חשבון? התחבר" : "אין לך חשבון? הירשם"}
-          </button>
           <div>
             <button
               onClick={() => navigate("/")}
