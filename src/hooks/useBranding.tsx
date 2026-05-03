@@ -60,6 +60,9 @@ function rowToValues(row: any): BrandingValues {
     heroSubtitle: row.hero_subtitle ?? fallback.heroSubtitle,
     aboutDescription: row.about_description ?? fallback.aboutDescription,
     lobbySubtitle: row.lobby_subtitle ?? fallback.lobbySubtitle,
+    logoUrl: row.logo_url ?? "",
+    heroImageUrl: row.hero_image_url ?? "",
+    backgroundImageUrl: row.background_image_url ?? "",
   };
 }
 
