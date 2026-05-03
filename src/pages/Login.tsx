@@ -11,26 +11,21 @@ import { useBranding } from "@/hooks/useBranding";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const { toast } = useToast();
   const { branding } = useBranding();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = isSignUp
-      ? await signUp(email, password)
-      : await signIn(email, password);
+    const { error } = await signIn(email, password);
     setLoading(false);
 
     if (error) {
       toast({ title: "שגיאה", description: error.message, variant: "destructive" });
-    } else if (isSignUp) {
-      toast({ title: "נרשמת בהצלחה!", description: "בדוק את המייל לאישור החשבון" });
     } else {
       navigate("/admin");
     }
