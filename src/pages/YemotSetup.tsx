@@ -166,6 +166,18 @@ api_call_method=GET`;
           <p className="text-[11px] text-muted-foreground">
             זה יעדכן את הנתיב <code dir="ltr">ivr2:/{extension || "1"}/ext.ini</code> במערכת שלך.
           </p>
+
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">תצוגה מקדימה של תוכן ext.ini שייכתב:</div>
+            <pre className="rounded-md border border-border bg-muted/60 p-3 font-mono text-[11px] sm:text-xs whitespace-pre-wrap break-all text-foreground" dir="ltr">
+{`type=api_call
+api_call_url=${WEBHOOK_URL}?secret=${secret ? "•".repeat(Math.min(secret.length, 12)) + "  (הסוד יוזרק בצד השרת)" : "<YEMOT_WEBHOOK_SECRET מהשרת>"}
+api_call_method=GET`}
+            </pre>
+            <p className="text-[11px] text-muted-foreground">
+              הסוד עצמו לא נחשף כאן — הוא נשלף מצד השרת בעת ההעלאה לימות.
+            </p>
+          </div>
         </Card>
 
         {/* Quick URL */}
