@@ -21,7 +21,7 @@ export type Database = {
           is_active: boolean
           name: string
           storage_path: string
-          uploaded_by: string | null
+          uploaded_by: string
           url: string
         }
         Insert: {
@@ -30,7 +30,7 @@ export type Database = {
           is_active?: boolean
           name: string
           storage_path: string
-          uploaded_by?: string | null
+          uploaded_by: string
           url: string
         }
         Update: {
@@ -39,7 +39,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           storage_path?: string
-          uploaded_by?: string | null
+          uploaded_by?: string
           url?: string
         }
         Relationships: []
@@ -393,6 +393,32 @@ export type Database = {
       }
     }
     Functions: {
+      claim_branding: {
+        Args: { p_branding_id: string }
+        Returns: {
+          about_description: string
+          created_at: string
+          full_name: string
+          hero_subtitle: string
+          icon_festive: string
+          icon_primary: string
+          id: string
+          is_active: boolean
+          lobby_subtitle: string
+          name: string
+          owner_id: string | null
+          phone: string
+          short_name: string
+          tagline: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "branding"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       increment_player_score: {
         Args: { p_player_id: string; p_points: number }
         Returns: undefined
