@@ -28,8 +28,8 @@ Deno.serve(async (req) => {
     const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: claims, error: authErr } = await supa.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (authErr || !claims?.claims) return json({ error: "Unauthorized" }, 401);
+    const { data: userData, error: authErr } = await supa.auth.getUser(authHeader.replace("Bearer ", ""));
+    if (authErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
 
     if (!YEMOT_API_TOKEN) return json({ error: "חסר YEMOT_API_TOKEN בהגדרות" }, 400);
     if (!YEMOT_WEBHOOK_SECRET) return json({ error: "חסר YEMOT_WEBHOOK_SECRET בהגדרות" }, 400);
