@@ -77,7 +77,7 @@ const About = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            {branding.copy.aboutDescription}
+            {branding.aboutDescription}
             על המשפחה, על החברים ועל הרגעים הכי חשובים. המנחה מציג את המשחק על מסך גדול,
             וכל האורחים מצטרפים מהטלפון. ערב בלתי נשכח לחיוש ולכל האורחים.
           </motion.p>
