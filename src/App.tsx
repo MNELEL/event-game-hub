@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,16 +10,22 @@ import { useBackgroundMusicLoader } from "@/hooks/useBackgroundMusicLoader";
 import { useThemeLoader } from "@/hooks/useThemeLoader";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import Index from "./pages/Index";
-import Admin from "./pages/Admin";
-import GameHost from "./pages/GameHost";
-import PlayerJoin from "./pages/PlayerJoin";
-import Login from "./pages/Login";
-import Install from "./pages/Install";
-import OfflineGame from "./pages/OfflineGame";
-import About from "./pages/About";
-import BrandingPreview from "./pages/BrandingPreview";
-import YemotSetup from "./pages/YemotSetup";
-import NotFound from "./pages/NotFound";
+const Admin = lazy(() => import("./pages/Admin"));
+const GameHost = lazy(() => import("./pages/GameHost"));
+const PlayerJoin = lazy(() => import("./pages/PlayerJoin"));
+const Login = lazy(() => import("./pages/Login"));
+const Install = lazy(() => import("./pages/Install"));
+const OfflineGame = lazy(() => import("./pages/OfflineGame"));
+const About = lazy(() => import("./pages/About"));
+const BrandingPreview = lazy(() => import("./pages/BrandingPreview"));
+const YemotSetup = lazy(() => import("./pages/YemotSetup"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+const RouteFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+  </div>
+);
 
 function JoinRedirect() {
   const [params] = useSearchParams();
