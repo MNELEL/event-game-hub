@@ -250,8 +250,8 @@ function stopBackgroundMusic() {
 // ==================== SOUND EFFECTS ====================
 export const SoundEffects = {
   // Volume controls
-  setMasterVolume: (v: number) => { masterVolume = Math.max(0, Math.min(1, v)); },
-  setMusicVolume: (v: number) => { musicVolume = Math.max(0, Math.min(1, v)); },
+  setMasterVolume: (v: number) => { masterVolume = Math.max(0, Math.min(1, v)); applyCustomVolume(); },
+  setMusicVolume: (v: number) => { musicVolume = Math.max(0, Math.min(1, v)); applyCustomVolume(); },
   setSfxVolume: (v: number) => { sfxVolume = Math.max(0, Math.min(1, v)); },
   toggleMusic: (enabled?: boolean) => {
     musicEnabled = enabled ?? !musicEnabled;
@@ -262,6 +262,21 @@ export const SoundEffects = {
   // Background music
   startMusic: startBackgroundMusic,
   stopMusic: stopBackgroundMusic,
+
+  // Custom uploaded music
+  setCustomMusicUrl: (url: string | null) => {
+    if (customAudioUrl === url) return;
+    stopCustomMusic();
+    customAudio = null;
+    customAudioUrl = url;
+    try {
+      if (url) localStorage.setItem("custom_music_url", url);
+      else localStorage.removeItem("custom_music_url");
+    } catch {}
+  },
+  getCustomMusicUrl: () => customAudioUrl,
+  hasCustomMusic: () => !!customAudioUrl,
+
 
   // Lobby waiting - warm gentle arpeggio
   lobbyPulse: () => {
