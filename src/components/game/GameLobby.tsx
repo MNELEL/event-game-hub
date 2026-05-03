@@ -48,6 +48,13 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {branding.backgroundImageUrl && (
+        <div
+          className="absolute inset-0 bg-center bg-cover opacity-15 pointer-events-none"
+          style={{ backgroundImage: `url(${branding.backgroundImageUrl})` }}
+          aria-hidden="true"
+        />
+      )}
       {/* Floating leaves background */}
       {[...Array(8)].map((_, i) => (
         <motion.div
