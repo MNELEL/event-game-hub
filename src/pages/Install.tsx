@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Check, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { branding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
