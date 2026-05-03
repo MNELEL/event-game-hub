@@ -110,12 +110,12 @@ const Index = () => {
           ].map((feature, i) => (
             <motion.div
               key={i}
-              className="bg-game-surface/50 backdrop-blur-sm rounded-2xl p-6 border border-game-glow/20"
-              whileHover={{ scale: 1.05, borderColor: "hsl(250 80% 65% / 0.5)" }}
+              className="bg-game-parchment/70 backdrop-blur-sm rounded-2xl p-6 border-2 border-game-border-gold/40 shadow-md"
+              whileHover={{ scale: 1.05, borderColor: "hsl(35 55% 53% / 0.7)" }}
             >
-              <feature.icon className="w-10 h-10 text-game-gold mx-auto mb-3" />
-              <h3 className="font-display text-lg text-primary-foreground font-bold mb-1">{feature.title}</h3>
-              <p className="text-primary-foreground/60 text-sm">{feature.desc}</p>
+              <feature.icon className="w-10 h-10 text-game-dark-gold mx-auto mb-3" />
+              <h3 className="font-display text-lg text-game-dark-gold font-bold mb-1">{feature.title}</h3>
+              <p className="text-game-dark-gold/70 text-sm">{feature.desc}</p>
             </motion.div>
           ))}
         </motion.div>
