@@ -34,35 +34,33 @@ export function usePlayerGame() {
 
   // Join a game by code
   const joinGame = useCallback(async (code: string, name: string) => {
-    const { data: game } = await supabase
-      .from("games")
-      .select("*")
-      .eq("code", code.toUpperCase())
-      .single();
+    const { data, error } = await (supabase as any).rpc("join_game_by_code", {
+      p_code: code.toUpperCase(),
+      p_name: name,
+    });
 
-    if (!game) return { error: "משחק לא נמצא" };
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("game_not_found")) return { error: "משחק לא נמצא" };
+      if (msg.includes("game_not_open")) return { error: "המשחק כבר התחיל או הסתיים" };
+      if (msg.includes("invalid_name")) return { error: "שם לא תקין" };
+      return { error: "שגיאה בהצטרפות" };
+    }
 
-    if (game.status === "finished") return { error: "המשחק כבר הסתיים" };
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) return { error: "שגיאה בהצטרפות" };
 
-    const { data: player, error } = await supabase
-      .from("players")
-      .insert({ game_id: game.id, name })
-      .select("id, secret_token")
-      .single();
-
-    if (error || !player) return { error: "שגיאה בהצטרפות" };
-
-    const questionIds = (game.question_ids as string[]) || [];
+    const questionIds = (row.question_ids as string[]) || [];
 
     setState(prev => ({
       ...prev,
-      gameId: game.id,
-      playerId: player.id,
+      gameId: row.game_id,
+      playerId: row.player_id,
       playerName: name,
-      secretToken: player.secret_token,
-      gameStatus: game.status as GameStatus,
-      currentQuestionIndex: game.current_question_index,
-      timeRemaining: game.time_remaining,
+      secretToken: row.secret_token,
+      gameStatus: row.status as GameStatus,
+      currentQuestionIndex: row.current_question_index,
+      timeRemaining: row.time_remaining,
       questionCount: questionIds.length,
       questionIds,
       connected: true,
