@@ -129,6 +129,10 @@ const Admin = () => {
             <BrandingEditor />
           </TabsContent>
 
+          <TabsContent value="music">
+            <BackgroundMusicManager />
+          </TabsContent>
+
           <TabsContent value="settings">
             <GameSettingsPanel
               settings={store.settings}
