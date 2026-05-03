@@ -62,7 +62,7 @@ const About = () => {
               animate={{ scale: [1, 1.03, 1] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
-              👑 אודות חיוש בת מצוה
+              {branding.icons.primary} אודות {branding.name}
             </motion.h1>
             <p className="text-lg text-game-dark-gold font-body">
               חידון בת המצווה החגיגי של חיוש ✨
@@ -76,7 +76,7 @@ const About = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            חיוש בת מצוה הוא חידון אינטראקטיבי מיוחד לכבוד בת המצווה — שאלות על חיוש,
+            {branding.copy.aboutDescription}
             על המשפחה, על החברים ועל הרגעים הכי חשובים. המנחה מציג את המשחק על מסך גדול,
             וכל האורחים מצטרפים מהטלפון. ערב בלתי נשכח לחיוש ולכל האורחים.
           </motion.p>
