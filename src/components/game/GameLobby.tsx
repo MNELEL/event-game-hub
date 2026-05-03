@@ -123,6 +123,16 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             </motion.span>
           </motion.div>
 
+          {branding.logoUrl && (
+            <motion.img
+              src={branding.logoUrl}
+              alt={branding.name}
+              className="mx-auto mb-4 h-28 w-28 object-contain drop-shadow-lg"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 120 }}
+            />
+          )}
           {/* Title with letter-by-letter reveal */}
           <motion.h1
             className="font-serif text-6xl md:text-8xl font-bold text-game-dark-gold text-shadow-game"
