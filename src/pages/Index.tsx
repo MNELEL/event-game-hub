@@ -25,6 +25,13 @@ const Index = () => {
 
   return (
     <main className="min-h-screen game-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
+      {branding.backgroundImageUrl && (
+        <div
+          className="absolute inset-0 bg-center bg-cover opacity-20 pointer-events-none"
+          style={{ backgroundImage: `url(${branding.backgroundImageUrl})` }}
+          aria-hidden="true"
+        />
+      )}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {glows.map((g, i) => (
           <motion.div
@@ -50,7 +57,21 @@ const Index = () => {
         transition={{ duration: 0.8 }}
       >
         <motion.div className="mb-6" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}>
-          <div className="text-6xl md:text-7xl mb-2">{branding.iconFestive}</div>
+          {branding.heroImageUrl ? (
+            <img
+              src={branding.heroImageUrl}
+              alt={branding.name}
+              className="mx-auto mb-4 max-h-48 w-auto rounded-xl shadow-lg object-cover"
+            />
+          ) : branding.logoUrl ? (
+            <img
+              src={branding.logoUrl}
+              alt={branding.name}
+              className="mx-auto mb-2 h-24 w-24 object-contain"
+            />
+          ) : (
+            <div className="text-6xl md:text-7xl mb-2">{branding.iconFestive}</div>
+          )}
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
             {branding.name}
           </h1>

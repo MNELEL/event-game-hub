@@ -47,14 +47,17 @@ export type Database = {
       branding: {
         Row: {
           about_description: string
+          background_image_url: string | null
           created_at: string
           full_name: string
+          hero_image_url: string | null
           hero_subtitle: string
           icon_festive: string
           icon_primary: string
           id: string
           is_active: boolean
           lobby_subtitle: string
+          logo_url: string | null
           name: string
           owner_id: string | null
           phone: string
@@ -64,14 +67,17 @@ export type Database = {
         }
         Insert: {
           about_description?: string
+          background_image_url?: string | null
           created_at?: string
           full_name?: string
+          hero_image_url?: string | null
           hero_subtitle?: string
           icon_festive?: string
           icon_primary?: string
           id?: string
           is_active?: boolean
           lobby_subtitle?: string
+          logo_url?: string | null
           name?: string
           owner_id?: string | null
           phone?: string
@@ -81,14 +87,17 @@ export type Database = {
         }
         Update: {
           about_description?: string
+          background_image_url?: string | null
           created_at?: string
           full_name?: string
+          hero_image_url?: string | null
           hero_subtitle?: string
           icon_festive?: string
           icon_primary?: string
           id?: string
           is_active?: boolean
           lobby_subtitle?: string
+          logo_url?: string | null
           name?: string
           owner_id?: string | null
           phone?: string
@@ -397,14 +406,17 @@ export type Database = {
         Args: { p_branding_id: string }
         Returns: {
           about_description: string
+          background_image_url: string | null
           created_at: string
           full_name: string
+          hero_image_url: string | null
           hero_subtitle: string
           icon_festive: string
           icon_primary: string
           id: string
           is_active: boolean
           lobby_subtitle: string
+          logo_url: string | null
           name: string
           owner_id: string | null
           phone: string

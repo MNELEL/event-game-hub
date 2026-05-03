@@ -13,6 +13,9 @@ export type BrandingValues = {
   heroSubtitle: string;
   aboutDescription: string;
   lobbySubtitle: string;
+  logoUrl: string;
+  heroImageUrl: string;
+  backgroundImageUrl: string;
 };
 
 const fallback: BrandingValues = {
@@ -26,6 +29,9 @@ const fallback: BrandingValues = {
   heroSubtitle: defaults.copy.heroSubtitle,
   aboutDescription: defaults.copy.aboutDescription,
   lobbySubtitle: defaults.copy.lobbySubtitle,
+  logoUrl: "",
+  heroImageUrl: "",
+  backgroundImageUrl: "",
 };
 
 type Ctx = {
@@ -54,6 +60,9 @@ function rowToValues(row: any): BrandingValues {
     heroSubtitle: row.hero_subtitle ?? fallback.heroSubtitle,
     aboutDescription: row.about_description ?? fallback.aboutDescription,
     lobbySubtitle: row.lobby_subtitle ?? fallback.lobbySubtitle,
+    logoUrl: row.logo_url ?? "",
+    heroImageUrl: row.hero_image_url ?? "",
+    backgroundImageUrl: row.background_image_url ?? "",
   };
 }
 
@@ -98,6 +107,9 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
         hero_subtitle: v.heroSubtitle,
         about_description: v.aboutDescription,
         lobby_subtitle: v.lobbySubtitle,
+        logo_url: v.logoUrl || null,
+        hero_image_url: v.heroImageUrl || null,
+        background_image_url: v.backgroundImageUrl || null,
       })
       .eq("is_active", true);
     if (error) return { error: error.message };
