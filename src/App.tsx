@@ -54,7 +54,9 @@ const App = () => (
       <OfflineBanner />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <BrandingProvider>
+            <AppRoutes />
+          </BrandingProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
