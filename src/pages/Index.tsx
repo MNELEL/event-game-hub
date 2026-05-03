@@ -33,9 +33,9 @@ const Index = () => {
         transition={{ duration: 0.8 }}
       >
         <motion.div className="mb-6" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}>
-          <div className="text-6xl md:text-7xl mb-2">👑✨🎀</div>
+          <div className="text-6xl md:text-7xl mb-2">{branding.icons.festive}</div>
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
-            חיוש בת מצוה
+            {branding.name}
           </h1>
           <p className="text-xl md:text-2xl text-primary-foreground/80 font-body">
             חידון בת המצווה החגיגי — כמה אתם באמת מכירים את חיוש?
