@@ -11,6 +11,7 @@ import { QuestionList } from "@/components/game/QuestionList";
 import { GameSettingsPanel } from "@/components/game/GameSettingsPanel";
 import { TutorialDialog } from "@/components/game/TutorialDialog";
 import { QuestionImportExport } from "@/components/game/QuestionImportExport";
+import { QuestionTextImport } from "@/components/game/QuestionTextImport";
 import { ActiveGamesList } from "@/components/game/ActiveGamesList";
 import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
 import { useBranding } from "@/hooks/useBranding";
