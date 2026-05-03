@@ -28,6 +28,7 @@ const CHART_COLORS = [
 
 export function GameStatsPanel({ players, questions, onClose }: Props) {
   const statsRef = useRef<HTMLDivElement>(null);
+  const { branding } = useBranding();
 
   const exportAsImage = useCallback(async () => {
     if (!statsRef.current) return;
