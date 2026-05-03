@@ -74,6 +74,36 @@ export function BrandingEditor() {
         <p className="text-xs text-game-dark-gold/60 mt-2">{draft.phone}</p>
       </div>
 
+      <div className="rounded-xl border border-border p-4 space-y-4 bg-card/50">
+        <div>
+          <h3 className="font-display text-lg text-foreground">תמונות מיתוג</h3>
+          <p className="text-xs text-muted-foreground">הלוגו, תמונת הכותרת ותמונת הרקע יוצגו אוטומטית במסכי הבית והלובי.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <BrandingImageUpload
+            label="לוגו"
+            hint="מומלץ ריבועי PNG שקוף"
+            value={draft.logoUrl}
+            onChange={(url) => setDraft({ ...draft, logoUrl: url })}
+            aspect="square"
+          />
+          <BrandingImageUpload
+            label="תמונת כותרת (Hero)"
+            hint="פס רחב מעל הכותרת"
+            value={draft.heroImageUrl}
+            onChange={(url) => setDraft({ ...draft, heroImageUrl: url })}
+            aspect="wide"
+          />
+          <BrandingImageUpload
+            label="תמונת רקע"
+            hint="תוצג דהויה כרקע"
+            value={draft.backgroundImageUrl}
+            onChange={(url) => setDraft({ ...draft, backgroundImageUrl: url })}
+            aspect="tall"
+          />
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2">
         {FIELDS.map((f) => (
           <div key={f.key} className={f.textarea ? "md:col-span-2" : ""}>
