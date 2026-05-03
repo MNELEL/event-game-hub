@@ -90,9 +90,9 @@ const PlayerJoin = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="text-center mb-1">
-            <span className="text-4xl">👑</span>
+            <span className="text-4xl">{branding.icons.primary}</span>
           </div>
-          <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">חיוש בת מצוה</h1>
+          <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">{branding.name}</h1>
           <div className="w-24 mx-auto border-t-2 border-double border-game-border-gold mb-4" />
           <p className="text-game-dark-gold/60 text-center mb-6">הכניסו קוד וצטרפו לחגיגה של חיוש ✨</p>
           
