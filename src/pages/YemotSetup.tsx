@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save } from "lucide-react";
+import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_PROJECT_ID = "wzmspoufqdldcuagsvir";
 const WEBHOOK_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/yemot-ivr`;
@@ -54,6 +55,11 @@ export default function YemotSetup() {
     return localStorage.getItem(STORAGE_KEY) ?? "";
   });
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [extension, setExtension] = useState<string>(() => {
+    if (typeof window === "undefined") return "1";
+    return localStorage.getItem("yemot_extension") || "1";
+  });
+  const [autoLoading, setAutoLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -65,6 +71,33 @@ export default function YemotSetup() {
       setSavedAt(null);
     }
   }, [secret]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("yemot_extension", extension || "1");
+  }, [extension]);
+
+  const runAutoSetup = async () => {
+    const ext = (extension || "1").replace(/[^0-9]/g, "");
+    if (!ext) {
+      toast.error("יש להזין מספר שלוחה תקין");
+      return;
+    }
+    setAutoLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("setup-yemot-extension", {
+        body: { extension: ext },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`שלוחה ${ext} הוגדרה בהצלחה בימות! חייג למערכת והקש ${ext}.`);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "ההגדרה האוטומטית נכשלה. נסה את הדרך הידנית למטה.");
+    } finally {
+      setAutoLoading(false);
+    }
+  };
 
   const clearSecret = () => {
     setSecret("");
