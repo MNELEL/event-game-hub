@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { LogIn, UserPlus, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { branding } from "@/config/branding";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const Login = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="font-display text-4xl text-game-gold text-center mb-2">🧠 חיוש בת מצוה</h1>
+        <h1 className="font-display text-4xl text-game-gold text-center mb-2">{branding.icons.primary} {branding.name}</h1>
         <p className="text-primary-foreground/60 text-center mb-8">
           {isSignUp ? "הרשמה לממשק ניהול" : "כניסה לממשק ניהול"}
         </p>

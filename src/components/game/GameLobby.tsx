@@ -6,6 +6,7 @@ import { Player } from "@/types/game";
 import { Play, UserPlus, Users, Monitor, Phone, QrCode } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
+import { branding } from "@/config/branding";
 
 type Props = {
   gameCode: string;
@@ -121,7 +122,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
           >
-            חיוש בת מצוה
+            {branding.name}
           </motion.h1>
 
           {/* Subtitle reveal */}
@@ -193,7 +194,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
-                03-7737970
+                {branding.contact.phone}
               </motion.div>
             </motion.div>
 

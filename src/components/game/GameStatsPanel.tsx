@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ArrowRight, Target, Zap, Trophy, PieChart as PieIcon, Download, Image } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import html2canvas from "html2canvas";
+import { branding } from "@/config/branding";
 
 type Props = {
   players: Player[];
@@ -58,7 +59,7 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
     if (printWindow) {
       printWindow.document.write(`
         <html dir="rtl">
-          <head><title>סטטיסטיקות חיוש בת מצוה</title>
+          <head><title>סטטיסטיקות ${branding.name}</title>
             <style>
               body { margin: 0; display: flex; justify-content: center; background: #f5eed6; }
               img { max-width: 100%; height: auto; }

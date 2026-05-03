@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Question, GameSettings } from "@/types/game";
 import { defaultQuestions } from "@/data/defaultQuestions";
+import { branding } from "@/config/branding";
 
-const CACHE_KEY = "chayoush_data";
+const CACHE_KEY = branding.storage.cacheKey;
 
 function cacheToLocal(questions: Question[], settings: GameSettings) {
   try {
@@ -45,7 +46,7 @@ function questionToDb(q: Question, index: number) {
 export function useSupabaseQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const defaultSettings: GameSettings = {
-    title: "חיוש בת מצוה",
+    title: branding.name,
     questionsPerGame: 10,
     defaultTimeLimit: 15,
     selectedCategories: [],

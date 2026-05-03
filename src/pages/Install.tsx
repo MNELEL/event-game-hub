@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Check, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { branding } from "@/config/branding";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -36,8 +37,8 @@ export default function Install() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
       <div className="max-w-md w-full text-center space-y-6">
-        <div className="text-6xl">🧠</div>
-        <h1 className="text-3xl font-bold text-foreground">התקן את חיוש בת מצוה</h1>
+        <div className="text-6xl">{branding.icons.primary}</div>
+        <h1 className="text-3xl font-bold text-foreground">התקן את {branding.name}</h1>
         <p className="text-muted-foreground">
           התקן את האפליקציה על המכשיר שלך לגישה מהירה וחוויה מלאה — בלי חנות אפליקציות!
         </p>
