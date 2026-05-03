@@ -2,10 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff, Info } from "lucide-react";
-import { branding } from "@/config/branding";
+import { branding as defaultBranding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { branding } = useBranding();
 
   return (
     <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
