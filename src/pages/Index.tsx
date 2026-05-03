@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff, Info } from "lucide-react";
 import { branding as defaultBranding } from "@/config/branding";
@@ -9,24 +10,38 @@ const Index = () => {
   const navigate = useNavigate();
   const { branding } = useBranding();
 
+  const glows = useMemo(
+    () =>
+      [...Array(20)].map(() => ({
+        width: Math.random() * 100 + 20,
+        height: Math.random() * 100 + 20,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        duration: Math.random() * 4 + 3,
+        delay: Math.random() * 2,
+      })),
+    []
+  );
+
   return (
     <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+        {glows.map((g, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full bg-game-glow/10"
             style={{
-              width: Math.random() * 100 + 20,
-              height: Math.random() * 100 + 20,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              width: g.width,
+              height: g.height,
+              left: `${g.left}%`,
+              top: `${g.top}%`,
             }}
             animate={{ y: [0, -30, 0], opacity: [0.1, 0.3, 0.1] }}
-            transition={{ duration: Math.random() * 4 + 3, repeat: Infinity, delay: Math.random() * 2 }}
+            transition={{ duration: g.duration, repeat: Infinity, delay: g.delay }}
           />
         ))}
       </div>
+
 
       <motion.div
         className="relative z-10 text-center max-w-2xl"
