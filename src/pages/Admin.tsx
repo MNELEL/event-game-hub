@@ -61,6 +61,9 @@ const Admin = () => {
               <FileDown className="w-4 h-4 ml-1" />
               ייצוא HTML
             </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate("/yemot-setup")} className="gap-1">
+              📞 ימות
+            </Button>
             <Button variant="default" size="sm" onClick={() => navigate("/host")}>
               <Play className="w-4 h-4 ml-1" />
               הפעלת משחק

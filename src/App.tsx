@@ -17,6 +17,7 @@ import Install from "./pages/Install";
 import OfflineGame from "./pages/OfflineGame";
 import About from "./pages/About";
 import BrandingPreview from "./pages/BrandingPreview";
+import YemotSetup from "./pages/YemotSetup";
 import NotFound from "./pages/NotFound";
 
 function JoinRedirect() {
@@ -49,6 +50,7 @@ const AppRoutes = () => {
       <Route path="/offline" element={<OfflineGame />} />
       <Route path="/about" element={<About />} />
       <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
+      <Route path="/yemot-setup" element={<ProtectedRoute><YemotSetup /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

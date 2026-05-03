@@ -2,3 +2,6 @@ project_id = "wzmspoufqdldcuagsvir"
 
 [functions.submit-answer]
 verify_jwt = false
+
+[functions.yemot-ivr]
+verify_jwt = false
