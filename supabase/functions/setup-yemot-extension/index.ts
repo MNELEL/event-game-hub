@@ -41,7 +41,19 @@ Deno.serve(async (req) => {
 
     const projectRef = SUPABASE_URL.replace(/^https?:\/\//, "").split(".")[0];
     const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/yemot-ivr?secret=${encodeURIComponent(YEMOT_WEBHOOK_SECRET)}`;
-    const iniContent = `type=api_call\napi_call_url=${webhookUrl}\napi_call_method=GET\n`;
+    const iniContent = [
+      "type=api",
+      `api_link=${webhookUrl}`,
+      "api_add_0=ApiPhone",
+      "api_add_1=ApiDID",
+      "api_add_2=ApiExtension",
+      "api_000=none",
+      "api_extension_send=yes",
+      "api_call_id_send=yes",
+      "hangup_insert_file=no",
+      "say_error_message=no",
+      "",
+    ].join("\n");
 
     const path = `ivr2:/${ext}/ext.ini`;
 
