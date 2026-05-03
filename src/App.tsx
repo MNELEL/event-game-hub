@@ -12,6 +12,7 @@ import PlayerJoin from "./pages/PlayerJoin";
 import Login from "./pages/Login";
 import Install from "./pages/Install";
 import OfflineGame from "./pages/OfflineGame";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 function JoinRedirect() {
@@ -39,6 +40,7 @@ const AppRoutes = () => (
     <Route path="/join" element={<JoinRedirect />} />
     <Route path="/install" element={<Install />} />
     <Route path="/offline" element={<OfflineGame />} />
+    <Route path="/about" element={<About />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
