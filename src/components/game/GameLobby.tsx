@@ -19,6 +19,7 @@ type Props = {
 export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCount }: Props) {
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
+  const { branding } = useBranding();
 
   // Start lobby background music on mount
   useEffect(() => {
