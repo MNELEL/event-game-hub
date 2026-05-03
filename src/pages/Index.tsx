@@ -24,7 +24,7 @@ const Index = () => {
   );
 
   return (
-    <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
+    <main className="min-h-screen game-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {glows.map((g, i) => (
           <motion.div
