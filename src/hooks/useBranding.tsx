@@ -107,6 +107,9 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
         hero_subtitle: v.heroSubtitle,
         about_description: v.aboutDescription,
         lobby_subtitle: v.lobbySubtitle,
+        logo_url: v.logoUrl || null,
+        hero_image_url: v.heroImageUrl || null,
+        background_image_url: v.backgroundImageUrl || null,
       })
       .eq("is_active", true);
     if (error) return { error: error.message };
