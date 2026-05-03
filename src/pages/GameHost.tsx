@@ -122,6 +122,8 @@ const GameHost = () => {
         <SoundControlPanel />
       </div>
 
+      <HeroIntro triggerKey={`${gameState.status}-${gameState.currentQuestionIndex}`} />
+
       <AnimatePresence mode="wait">
         {gameState.status === "lobby" && (
           <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }} transition={{ duration: 0.4 }}>
