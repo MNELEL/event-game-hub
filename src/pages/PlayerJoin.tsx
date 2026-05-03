@@ -8,6 +8,7 @@ import { Wifi, Loader2, CheckCircle, Clock, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { useBranding } from "@/hooks/useBranding";
+import { BrandedBackdrop } from "@/components/game/BrandedBackdrop";
 
 const answerClasses = [
   "game-answer-1",
@@ -133,7 +134,8 @@ const PlayerJoin = () => {
   // Connected - waiting in lobby
   if (state.gameStatus === "lobby") {
     return (
-      <div className="min-h-screen game-gradient flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+        <BrandedBackdrop logo />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <CheckCircle className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-3xl text-game-dark-gold mb-2">שלום {state.playerName}! 👋</h2>
@@ -151,7 +153,8 @@ const PlayerJoin = () => {
   // Game in question mode - show answer buttons
   if (state.gameStatus === "question") {
     return (
-      <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+        <BrandedBackdrop logo />
         <motion.div className="w-full max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Timer bar */}
           <div className="mb-6">
@@ -220,7 +223,8 @@ const PlayerJoin = () => {
   // Results / Leaderboard
   if (state.gameStatus === "results" || state.gameStatus === "leaderboard") {
     return (
-      <div className="min-h-screen game-gradient flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+        <BrandedBackdrop logo />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <Trophy className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-2xl text-game-dark-gold mb-2">
@@ -235,7 +239,8 @@ const PlayerJoin = () => {
   // Finished
   if (state.gameStatus === "finished") {
     return (
-      <div className="min-h-screen game-gradient flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+        <BrandedBackdrop logo />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <motion.div
             animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}

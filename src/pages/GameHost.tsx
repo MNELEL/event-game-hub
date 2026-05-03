@@ -11,6 +11,7 @@ import { GameLeaderboard } from "@/components/game/GameLeaderboard";
 import { GameFinished } from "@/components/game/GameFinished";
 import { SoundControlPanel } from "@/components/game/SoundControlPanel";
 import { Home, Loader2, Settings } from "lucide-react";
+import { useBranding } from "@/hooks/useBranding";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const GameHost = () => {
   const game = useRealtimeGame(questions, settings);
   const { gameState } = game;
   const [gameReady, setGameReady] = useState(false);
+  const { branding } = useBranding();
 
   // Create or resume game session when questions are loaded
   useEffect(() => {
@@ -81,6 +83,20 @@ const GameHost = () => {
 
   return (
     <div className="min-h-screen game-gradient relative overflow-hidden" dir="rtl">
+      {branding.backgroundImageUrl && (
+        <div
+          className="absolute inset-0 bg-center bg-cover opacity-15 pointer-events-none z-0"
+          style={{ backgroundImage: `url(${branding.backgroundImageUrl})` }}
+          aria-hidden="true"
+        />
+      )}
+      {branding.logoUrl && (
+        <img
+          src={branding.logoUrl}
+          alt={branding.name}
+          className="absolute top-3 right-4 z-50 h-12 w-12 object-contain drop-shadow-md pointer-events-none"
+        />
+      )}
       <div className="absolute top-4 left-4 z-50 flex gap-2 items-start">
         <Button variant="ghost" size="icon" className="text-game-dark-gold/50 hover:text-game-dark-gold" onClick={() => navigate("/")}>
           <Home className="w-5 h-5" />
