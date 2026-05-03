@@ -1,46 +1,37 @@
 /**
  * 🎨 הגדרות מיתוג מרוכזות
  * ----------------------------------------
- * כל שם, אייקון, צבע וטקסט שיווקי של האפליקציה מוגדרים כאן.
- * עדכון במקום אחד = שינוי בכל האפליקציה.
+ * המקור היחיד הוא branding.config.json בשורש הפרויקט.
+ * הקובץ הזה רק עוטף אותו לשימוש נוח בקוד וגם נצרך ע"י vite.config.ts
+ * בזמן build כדי להזריק את הערכים ל-index.html ול-PWA manifest.
  */
+import raw from "../../branding.config.json";
 
 export const branding = {
-  // שם האפליקציה
-  name: "חיוש בת מצוה",
-  fullName: "חיוש בת מצוה - משחק טריוויה אינטראקטיבי",
-  shortName: "חיוש בת מצוה",
-  authorName: "Chayoush",
-
-  // אייקונים / אימוג'ים
+  name: raw.name,
+  fullName: raw.fullName,
+  shortName: raw.shortName,
+  authorName: raw.authorName,
+  themeColor: raw.themeColor,
+  backgroundColor: raw.backgroundColor,
   icons: {
-    primary: "👑",
-    festive: "👑✨🎀",
-    legacy: "🧠", // ישן - לא לשימוש חדש
+    primary: raw.icons.primary,
+    festive: raw.icons.festive,
+    legacy: "🧠",
   },
-
-  // טקסטים שיווקיים
   copy: {
-    tagline: "חידון אינטראקטיבי מיוחד לכבוד בת המצווה",
-    heroSubtitle: "כמה אתם מכירים את חיוש?",
-    aboutDescription:
-      "חיוש בת מצוה הוא חידון אינטראקטיבי מיוחד לכבוד בת המצווה — שאלות על חיוש,",
-    lobbySubtitle: "חידון לכבוד בת המצווה",
+    tagline: raw.copy.tagline,
+    heroSubtitle: raw.copy.heroSubtitle,
+    aboutDescription: raw.copy.aboutDescription,
+    lobbySubtitle: raw.copy.lobbySubtitle,
   },
-
-  // פרטי קשר
   contact: {
-    phone: "03-7737970",
+    phone: raw.contact.phone,
   },
-
-  // מפתחות אחסון מקומי (localStorage)
   storage: {
-    cacheKey: "chayoush_data",
-    storageKey: "chayoush_data",
+    cacheKey: raw.storage.cacheKey,
+    storageKey: raw.storage.storageKey,
   },
-
-  // צבעי מותג עיקריים (HSL ערכים מוגדרים ב-index.css כ-tokens)
-  // המקור הוא tailwind.config.ts / index.css. כאן רק רפרנסים נוחים.
   colors: {
     goldToken: "game-gold",
     darkGoldToken: "game-dark-gold",
