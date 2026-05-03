@@ -230,6 +230,7 @@ function startBackgroundMusic(style: 'lobby' | 'game' | 'victory' = 'lobby') {
 }
 
 function stopBackgroundMusic() {
+  stopCustomMusic();
   if (musicInterval) {
     clearInterval(musicInterval);
     musicInterval = null;
