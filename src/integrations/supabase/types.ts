@@ -176,6 +176,33 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_players: {
+        Row: {
+          created_at: string
+          game_id: string
+          last_answer_at: string | null
+          last_question_index: number
+          phone: string
+          player_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          last_answer_at?: string | null
+          last_question_index?: number
+          phone: string
+          player_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          last_answer_at?: string | null
+          last_question_index?: number
+          phone?: string
+          player_id?: string
+        }
+        Relationships: []
+      }
       player_answers: {
         Row: {
           answer: number
@@ -380,6 +407,26 @@ export type Database = {
           secret_token: string
           status: string
           time_remaining: number
+        }[]
+      }
+      join_phone_player: {
+        Args: { p_phone: string }
+        Returns: {
+          current_question_index: number
+          game_id: string
+          player_id: string
+          question_ids: string[]
+          secret_token: string
+          status: string
+          time_remaining: number
+        }[]
+      }
+      submit_phone_answer: {
+        Args: { p_answer: number; p_phone: string; p_question_index: number }
+        Returns: {
+          accepted: boolean
+          correct: boolean
+          points: number
         }[]
       }
     }
