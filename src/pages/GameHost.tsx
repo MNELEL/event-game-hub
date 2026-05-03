@@ -12,6 +12,7 @@ import { GameFinished } from "@/components/game/GameFinished";
 import { SoundControlPanel } from "@/components/game/SoundControlPanel";
 import { Home, Loader2, Settings } from "lucide-react";
 import { useBranding } from "@/hooks/useBranding";
+import { HeroIntro } from "@/components/game/HeroIntro";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -70,8 +71,22 @@ const GameHost = () => {
 
   if (questionsLoading || !gameReady) {
     return (
-      <div className="min-h-screen game-gradient flex items-center justify-center" dir="rtl">
-        <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <div className="min-h-screen game-gradient flex items-center justify-center relative overflow-hidden" dir="rtl">
+        {branding.backgroundImageUrl && (
+          <div
+            className="absolute inset-0 bg-center bg-cover opacity-15 pointer-events-none"
+            style={{ backgroundImage: `url(${branding.backgroundImageUrl})` }}
+            aria-hidden="true"
+          />
+        )}
+        <motion.div className="text-center relative z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {(branding.heroImageUrl || branding.logoUrl) && (
+            <img
+              src={branding.heroImageUrl || branding.logoUrl}
+              alt={branding.name}
+              className="mx-auto mb-6 max-h-40 w-auto rounded-xl shadow-xl object-cover"
+            />
+          )}
           <Loader2 className="w-12 h-12 text-game-gold animate-spin mx-auto mb-4" />
           <p className="text-game-dark-gold/60 font-serif text-xl">
             {resumeGameId ? "טוען משחק..." : "מכין את המשחק..."}
@@ -106,6 +121,8 @@ const GameHost = () => {
         </Button>
         <SoundControlPanel />
       </div>
+
+      <HeroIntro triggerKey={`${gameState.status}-${gameState.currentQuestionIndex}`} />
 
       <AnimatePresence mode="wait">
         {gameState.status === "lobby" && (
