@@ -44,7 +44,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
       .subscribe();
 
     // Also load existing players
-    supabase.from("players").select("*").eq("game_id", gameDbId).then(({ data }) => {
+    supabase.from("players_public").select("*").eq("game_id", gameDbId).then(({ data }) => {
       if (data) {
         const players: Player[] = data.map(p => ({
           id: p.id,
@@ -226,7 +226,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     const { data } = await supabase.from("players").insert({
       game_id: gameDbId,
       name,
-    }).select().single();
+    }).select("id, name, score, game_id, connected, created_at").single();
 
     if (data) {
       return { id: data.id, name: data.name, score: 0, answers: [] } as Player;
@@ -261,7 +261,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
       .map(id => questionMap.get(id))
       .filter(Boolean) as Question[];
 
-    const { data: playersData } = await supabase.from("players").select("*").eq("game_id", gameId);
+    const { data: playersData } = await supabase.from("players_public").select("*").eq("game_id", gameId);
     const { data: answersData } = await supabase.from("player_answers").select("*").eq("game_id", gameId);
 
     const players: Player[] = (playersData || []).map(p => ({
