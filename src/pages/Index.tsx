@@ -129,7 +129,7 @@ const Index = () => {
               whileHover={{ scale: 1.05, borderColor: "hsl(35 55% 53% / 0.7)" }}
             >
               <feature.icon className="w-10 h-10 text-game-dark-gold mx-auto mb-3" />
-              <h3 className="font-display text-lg text-game-dark-gold font-bold mb-1">{feature.title}</h3>
+              <h2 className="font-display text-lg text-game-dark-gold font-bold mb-1">{feature.title}</h2>
               <p className="text-game-dark-gold/70 text-sm">{feature.desc}</p>
             </motion.div>
           ))}
