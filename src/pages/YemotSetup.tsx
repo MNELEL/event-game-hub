@@ -107,16 +107,30 @@ api_call_method=GET`;
             <h2 className="font-bold text-foreground">כתובת ה-API להדבקה</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            הזן את הסוד שהגדרת (YEMOT_WEBHOOK_SECRET) כדי לקבל את הכתובת המלאה להעתקה:
+            הזן את הסוד שהגדרת (YEMOT_WEBHOOK_SECRET). הוא יישמר במכשיר זה ויוטמע אוטומטית בכתובת בכל פעם שתחזור לעמוד הזה.
           </p>
-          <input
-            type="text"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            placeholder="הסוד שלך…"
-            className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm font-mono"
-            dir="ltr"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={secret}
+              onChange={(e) => setSecret(e.target.value)}
+              placeholder="הסוד שלך…"
+              className="flex-1 px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm font-mono"
+              dir="ltr"
+            />
+            {secret && (
+              <Button type="button" variant="outline" size="sm" onClick={clearSecret} className="shrink-0 gap-1">
+                <Trash2 className="w-4 h-4" />
+                נקה
+              </Button>
+            )}
+          </div>
+          {savedAt && (
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+              <Save className="w-3 h-3" />
+              נשמר במכשיר זה — יטען אוטומטית בביקור הבא
+            </div>
+          )}
           <CopyBox value={fullUrl} label="api_call_url" />
         </Card>
 
