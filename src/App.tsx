@@ -50,6 +50,7 @@ const AppRoutes = () => {
       <Route path="/offline" element={<OfflineGame />} />
       <Route path="/about" element={<About />} />
       <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
+      <Route path="/yemot-setup" element={<ProtectedRoute><YemotSetup /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
