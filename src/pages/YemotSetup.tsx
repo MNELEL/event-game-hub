@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2 } from "lucide-react";
+import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2, CheckCircle2, XCircle, Circle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +60,14 @@ export default function YemotSetup() {
     return localStorage.getItem("yemot_extension") || "1";
   });
   const [autoLoading, setAutoLoading] = useState(false);
+  type LogStatus = "pending" | "running" | "success" | "error";
+  type LogEntry = { id: string; label: string; status: LogStatus; detail?: string; ts: number };
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+
+  const pushLog = (entry: Omit<LogEntry, "ts">) =>
+    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
+  const updateLog = (id: string, patch: Partial<LogEntry>) =>
+    setLogs((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch, ts: Date.now() } : l)));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -84,15 +92,40 @@ export default function YemotSetup() {
       return;
     }
     setAutoLoading(true);
+    setLogs([]);
+    const t0 = Date.now();
+    pushLog({ id: "prep", label: `הכנת תוכן ext.ini עבור שלוחה ${ext}`, status: "running" });
     try {
+      // tiny delay so the user actually sees the step
+      await new Promise((r) => setTimeout(r, 150));
+      updateLog("prep", { status: "success", detail: `נתיב יעד: ivr2:/${ext}/ext.ini` });
+
+      pushLog({ id: "upload", label: "שליחה לשרת והעלאה לימות המשיח", status: "running" });
       const { data, error } = await supabase.functions.invoke("setup-yemot-extension", {
         body: { extension: ext },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success(`שלוחה ${ext} הוגדרה בהצלחה בימות! חייג למערכת והקש ${ext}.`);
+      if ((data as any)?.error) {
+        const det = (data as any)?.details ? JSON.stringify((data as any).details) : undefined;
+        updateLog("upload", { status: "error", detail: det });
+        throw new Error((data as any).error);
+      }
+      const ymInfo = (data as any)?.yemot;
+      updateLog("upload", {
+        status: "success",
+        detail: typeof ymInfo === "string" ? ymInfo : JSON.stringify(ymInfo),
+      });
+
+      pushLog({
+        id: "done",
+        label: `הסתיים בהצלחה תוך ${((Date.now() - t0) / 1000).toFixed(1)} שניות`,
+        status: "success",
+        detail: `חייג למערכת והקש ${ext} כדי לבדוק.`,
+      });
+      toast.success(`שלוחה ${ext} הוגדרה בהצלחה בימות!`);
     } catch (e: any) {
       console.error(e);
+      pushLog({ id: "fail", label: "ההגדרה האוטומטית נכשלה", status: "error", detail: e?.message });
       toast.error(e?.message || "ההגדרה האוטומטית נכשלה. נסה את הדרך הידנית למטה.");
     } finally {
       setAutoLoading(false);
@@ -178,6 +211,37 @@ api_call_method=GET`}
               הסוד עצמו לא נחשף כאן — הוא נשלף מצד השרת בעת ההעלאה לימות.
             </p>
           </div>
+
+          {(autoLoading || logs.length > 0) && (
+            <div className="space-y-1.5">
+              <div className="text-xs text-muted-foreground">לוג השלבים:</div>
+              <div className="rounded-md border border-border bg-background/80 p-3 space-y-2">
+                {logs.map((l) => (
+                  <div key={l.id} className="flex items-start gap-2 text-sm">
+                    <span className="mt-0.5 shrink-0">
+                      {l.status === "running" && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                      {l.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                      {l.status === "error" && <XCircle className="w-4 h-4 text-destructive" />}
+                      {l.status === "pending" && <Circle className="w-4 h-4 text-muted-foreground" />}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className={l.status === "error" ? "text-destructive" : "text-foreground"}>
+                        {l.label}
+                      </div>
+                      {l.detail && (
+                        <div className="text-[11px] text-muted-foreground font-mono break-all whitespace-pre-wrap mt-0.5" dir="ltr">
+                          {l.detail}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums" dir="ltr">
+                      {new Date(l.ts).toLocaleTimeString("he-IL", { hour12: false })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Quick URL */}
