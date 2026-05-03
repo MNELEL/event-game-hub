@@ -141,9 +141,16 @@ export default function YemotSetup() {
     ? `${WEBHOOK_URL}?secret=${encodeURIComponent(secret)}`
     : `${WEBHOOK_URL}?secret=YOUR_SECRET`;
 
-  const iniContent = `type=api_call
-api_call_url=${fullUrl}
-api_call_method=GET`;
+  const iniContent = `type=api
+api_link=${fullUrl}
+api_add_0=ApiPhone
+api_add_1=ApiDID
+api_add_2=ApiExtension
+api_000=none
+api_extension_send=yes
+api_call_id_send=yes
+hangup_insert_file=no
+say_error_message=no`;
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6" dir="rtl">
@@ -203,9 +210,16 @@ api_call_method=GET`;
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">תצוגה מקדימה של תוכן ext.ini שייכתב:</div>
             <pre className="rounded-md border border-border bg-muted/60 p-3 font-mono text-[11px] sm:text-xs whitespace-pre-wrap break-all text-foreground" dir="ltr">
-{`type=api_call
-api_call_url=${WEBHOOK_URL}?secret=${secret ? "•".repeat(Math.min(secret.length, 12)) + "  (הסוד יוזרק בצד השרת)" : "<YEMOT_WEBHOOK_SECRET מהשרת>"}
-api_call_method=GET`}
+{`type=api
+api_link=${WEBHOOK_URL}?secret=${secret ? "•".repeat(Math.min(secret.length, 12)) + "  (הסוד יוזרק בצד השרת)" : "<YEMOT_WEBHOOK_SECRET מהשרת>"}
+api_add_0=ApiPhone
+api_add_1=ApiDID
+api_add_2=ApiExtension
+api_000=none
+api_extension_send=yes
+api_call_id_send=yes
+hangup_insert_file=no
+say_error_message=no`}
             </pre>
             <p className="text-[11px] text-muted-foreground">
               הסוד עצמו לא נחשף כאן — הוא נשלף מצד השרת בעת ההעלאה לימות.
@@ -275,7 +289,7 @@ api_call_method=GET`}
               נשמר במכשיר זה — יטען אוטומטית בביקור הבא
             </div>
           )}
-          <CopyBox value={fullUrl} label="api_call_url" />
+          <CopyBox value={fullUrl} label="api_link" />
         </Card>
 
         {/* Steps */}
@@ -378,7 +392,7 @@ api_call_method=GET`}
             </div>
             <div>
               <div className="font-semibold text-foreground">לא נשמע כלום / שגיאה כללית</div>
-              <div className="text-muted-foreground text-xs">בדוק שה-`api_call_method` הוא GET ושה-URL מודבק כשורה אחת בלי רווחים.</div>
+              <div className="text-muted-foreground text-xs">בדוק שהשלוחה מוגדרת כ-<code dir="ltr">type=api</code>, שה-<code dir="ltr">api_link</code> תקין, ושקיימות שורות <code dir="ltr">api_add</code> לשליחת מספר הטלפון.</div>
             </div>
           </div>
         </Card>
