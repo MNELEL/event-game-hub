@@ -14,7 +14,7 @@ import {
   Zap,
   Phone,
 } from "lucide-react";
-import { branding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 
 const features = [
   { icon: Languages, title: "שאלות בעברית", desc: "מאגר מגוון, תמיכה בתמונות, אודיו ווידאו" },
