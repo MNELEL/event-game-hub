@@ -17,6 +17,7 @@ import Install from "./pages/Install";
 import OfflineGame from "./pages/OfflineGame";
 import About from "./pages/About";
 import BrandingPreview from "./pages/BrandingPreview";
+import YemotSetup from "./pages/YemotSetup";
 import NotFound from "./pages/NotFound";
 
 function JoinRedirect() {
