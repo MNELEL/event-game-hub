@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff, Info } from "lucide-react";
+import { branding } from "@/config/branding";
 
 const Index = () => {
   const navigate = useNavigate();
