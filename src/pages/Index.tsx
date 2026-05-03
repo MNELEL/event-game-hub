@@ -39,13 +39,13 @@ const Index = () => {
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
             {branding.name}
           </h1>
-          <p className="text-xl md:text-2xl text-primary-foreground/80 font-body">
+          <p className="text-xl md:text-2xl text-game-dark-gold font-body font-medium">
             חידון בת המצווה החגיגי — כמה אתם באמת מכירים את חיוש?
           </p>
         </motion.div>
 
         <motion.p
-          className="text-primary-foreground/60 mb-10 text-lg leading-relaxed"
+          className="text-game-dark-gold/80 mb-10 text-lg leading-relaxed"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
