@@ -33,6 +33,7 @@ const steps = [
 
 const About = () => {
   const navigate = useNavigate();
+  const { branding } = useBranding();
 
   return (
     <div className="min-h-screen game-gradient py-10 px-4 relative overflow-hidden" dir="rtl">
