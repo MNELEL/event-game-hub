@@ -211,6 +211,37 @@ api_call_method=GET`}
               הסוד עצמו לא נחשף כאן — הוא נשלף מצד השרת בעת ההעלאה לימות.
             </p>
           </div>
+
+          {(autoLoading || logs.length > 0) && (
+            <div className="space-y-1.5">
+              <div className="text-xs text-muted-foreground">לוג השלבים:</div>
+              <div className="rounded-md border border-border bg-background/80 p-3 space-y-2">
+                {logs.map((l) => (
+                  <div key={l.id} className="flex items-start gap-2 text-sm">
+                    <span className="mt-0.5 shrink-0">
+                      {l.status === "running" && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                      {l.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                      {l.status === "error" && <XCircle className="w-4 h-4 text-destructive" />}
+                      {l.status === "pending" && <Circle className="w-4 h-4 text-muted-foreground" />}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className={l.status === "error" ? "text-destructive" : "text-foreground"}>
+                        {l.label}
+                      </div>
+                      {l.detail && (
+                        <div className="text-[11px] text-muted-foreground font-mono break-all whitespace-pre-wrap mt-0.5" dir="ltr">
+                          {l.detail}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums" dir="ltr">
+                      {new Date(l.ts).toLocaleTimeString("he-IL", { hour12: false })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Quick URL */}
