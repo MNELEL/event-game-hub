@@ -10,15 +10,18 @@ const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
   auth: { persistSession: false },
 });
 
-// Yemot expects plain text response, commands separated by &
+// Yemot api_call: response is plain text. Commands separated by &.
+// After commands finish playing, Yemot will call the URL again automatically.
 function ymResp(commands: string[]): Response {
-  return new Response(commands.join("&"), {
+  const body = commands.join("&");
+  console.log("[yemot-ivr] →", body);
+  return new Response(body, {
     status: 200,
     headers: { "Content-Type": "text/plain; charset=utf-8" },
   });
 }
 
-// Escape Hebrew text for id_list_message t- TTS
+// Sanitize text for t- TTS (avoid characters that break the protocol)
 function tts(text: string): string {
   return "t-" + text.replace(/[.,&=]/g, " ");
 }
@@ -34,8 +37,13 @@ Deno.serve(async (req) => {
       ]);
     }
 
-    const phone = url.searchParams.get("ApiPhone") || url.searchParams.get("ApiCallerId") || "";
-    const lastInput = url.searchParams.get("ApiYFLastInput") || "";
+    // Yemot sends all params in the query string for GET api_call
+    const params = url.searchParams;
+    console.log("[yemot-ivr] ←", Object.fromEntries(params.entries()));
+
+    const phone = params.get("ApiPhone") || params.get("ApiCallerId") || "";
+    // ApiYFLastInput is the latest digits the user pressed; falsy on first hit
+    const lastInput = (params.get("ApiYFLastInput") || "").trim();
 
     if (!phone) {
       return ymResp([
@@ -50,7 +58,8 @@ Deno.serve(async (req) => {
     });
 
     if (joinErr || !joinData || joinData.length === 0) {
-      const msg = joinErr?.message === "no_active_game"
+      console.error("[yemot-ivr] join error", joinErr);
+      const msg = joinErr?.message?.includes("no_active_game")
         ? "אין משחק פעיל כרגע. אנא נסה שוב מאוחר יותר."
         : "אירעה שגיאה. אנא נסה שוב.";
       return ymResp([`id_list_message=${tts(msg)}`, "hangup=yes"]);
@@ -65,10 +74,7 @@ Deno.serve(async (req) => {
       question_ids: string[];
     };
 
-    // First call (no input yet) — welcome
-    const isFirstHit = !lastInput && !url.searchParams.get("ApiTimeOut");
-
-    // 2) Handle answer submission if we have input and game is in question state
+    // 2) Handle answer submission if in question state and we got a digit
     if (lastInput && state.status === "question") {
       const digit = parseInt(lastInput, 10);
       if (digit >= 1 && digit <= 4) {
@@ -77,23 +83,24 @@ Deno.serve(async (req) => {
           p_question_index: state.current_question_index,
           p_answer: digit,
         });
+        // Acknowledge and let Yemot re-poll us automatically
+        return ymResp([
+          `id_list_message=${tts("תשובתך נקלטה. ממתין לשאלה הבאה.")}`,
+        ]);
       }
-      // After submission, loop back to wait for next question
-      return ymResp([
-        `id_list_message=${tts("תשובתך נקלטה. ממתין לשאלה הבאה.")}`,
-        "go_to_folder=/",
-      ]);
     }
 
-    // 3) Branch by game status
+    // 3) Branch by game status. NEVER use go_to_folder=/ — it would
+    // kick the caller out of the api_call extension. Just return a
+    // message; Yemot will call this URL again after playback.
     switch (state.status) {
-      case "lobby":
-        return ymResp([
-          `id_list_message=${tts(isFirstHit
-            ? `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}. ממתין לתחילת המשחק.`
-            : "ממתין לתחילת המשחק.")}`,
-          "go_to_folder=/",
-        ]);
+      case "lobby": {
+        const isFirst = !lastInput && !params.get("ApiTimeOut");
+        const msg = isFirst
+          ? `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}. ממתין לתחילת המשחק.`
+          : "ממתין לתחילת המשחק.";
+        return ymResp([`id_list_message=${tts(msg)}`]);
+      }
 
       case "question": {
         const qNum = state.current_question_index + 1;
@@ -109,13 +116,11 @@ Deno.serve(async (req) => {
       case "leaderboard":
         return ymResp([
           `id_list_message=${tts("ממתין לשאלה הבאה.")}`,
-          "go_to_folder=/",
         ]);
 
       case "playing":
         return ymResp([
           `id_list_message=${tts("המשחק מתחיל. ממתין לשאלה.")}`,
-          "go_to_folder=/",
         ]);
 
       case "finished":
