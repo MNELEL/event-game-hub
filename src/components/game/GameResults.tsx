@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Question, Player } from "@/types/game";
-import { ArrowLeft, Check, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Users } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { fireCorrectBurst } from "@/hooks/useConfetti";
 

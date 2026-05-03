@@ -14,6 +14,14 @@ type Props = {
   onHome: () => void;
 };
 
+type SpecialTitle = {
+  emoji: string;
+  title: string;
+  playerName: string;
+  detail: string;
+  icon: React.ReactNode;
+};
+
 export function GameFinished({ players, questions, onRestart, onHome }: Props) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   const winner = sorted[0];

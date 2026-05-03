@@ -14,11 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      branding: {
+        Row: {
+          about_description: string
+          created_at: string
+          full_name: string
+          hero_subtitle: string
+          icon_festive: string
+          icon_primary: string
+          id: string
+          is_active: boolean
+          lobby_subtitle: string
+          name: string
+          phone: string
+          short_name: string
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          about_description?: string
+          created_at?: string
+          full_name?: string
+          hero_subtitle?: string
+          icon_festive?: string
+          icon_primary?: string
+          id?: string
+          is_active?: boolean
+          lobby_subtitle?: string
+          name?: string
+          phone?: string
+          short_name?: string
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          about_description?: string
+          created_at?: string
+          full_name?: string
+          hero_subtitle?: string
+          icon_festive?: string
+          icon_primary?: string
+          id?: string
+          is_active?: boolean
+          lobby_subtitle?: string
+          name?: string
+          phone?: string
+          short_name?: string
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       game_settings: {
         Row: {
           created_at: string
           default_time_limit: number
           id: string
+          owner_id: string | null
           questions_per_game: number
           selected_categories: string[]
           show_leaderboard_after_each: boolean
@@ -30,6 +82,7 @@ export type Database = {
           created_at?: string
           default_time_limit?: number
           id?: string
+          owner_id?: string | null
           questions_per_game?: number
           selected_categories?: string[]
           show_leaderboard_after_each?: boolean
@@ -41,6 +94,7 @@ export type Database = {
           created_at?: string
           default_time_limit?: number
           id?: string
+          owner_id?: string | null
           questions_per_game?: number
           selected_categories?: string[]
           show_leaderboard_after_each?: boolean
@@ -139,6 +193,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "player_answers_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "player_answers_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: false
@@ -155,6 +216,7 @@ export type Database = {
           id: string
           name: string
           score: number
+          secret_token: string
         }
         Insert: {
           connected?: boolean
@@ -163,6 +225,7 @@ export type Database = {
           id?: string
           name: string
           score?: number
+          secret_token?: string
         }
         Update: {
           connected?: boolean
@@ -171,6 +234,7 @@ export type Database = {
           id?: string
           name?: string
           score?: number
+          secret_token?: string
         }
         Relationships: [
           {
@@ -192,6 +256,7 @@ export type Database = {
           media_url: string | null
           options: Json
           order_index: number
+          owner_id: string | null
           points: number
           text: string
           time_limit: number
@@ -206,6 +271,7 @@ export type Database = {
           media_url?: string | null
           options?: Json
           order_index?: number
+          owner_id?: string | null
           points?: number
           text: string
           time_limit?: number
@@ -220,6 +286,7 @@ export type Database = {
           media_url?: string | null
           options?: Json
           order_index?: number
+          owner_id?: string | null
           points?: number
           text?: string
           time_limit?: number
@@ -229,7 +296,41 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      players_public: {
+        Row: {
+          connected: boolean | null
+          created_at: string | null
+          game_id: string | null
+          id: string | null
+          name: string | null
+          score: number | null
+        }
+        Insert: {
+          connected?: boolean | null
+          created_at?: string | null
+          game_id?: string | null
+          id?: string | null
+          name?: string | null
+          score?: number | null
+        }
+        Update: {
+          connected?: boolean | null
+          created_at?: string | null
+          game_id?: string | null
+          id?: string | null
+          name?: string | null
+          score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       increment_player_score: {

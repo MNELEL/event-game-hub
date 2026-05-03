@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ArrowRight, Target, Zap, Trophy, PieChart as PieIcon, Download, Image } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import html2canvas from "html2canvas";
+import { useBranding } from "@/hooks/useBranding";
 
 type Props = {
   players: Player[];
@@ -27,6 +28,7 @@ const CHART_COLORS = [
 
 export function GameStatsPanel({ players, questions, onClose }: Props) {
   const statsRef = useRef<HTMLDivElement>(null);
+  const { branding } = useBranding();
 
   const exportAsImage = useCallback(async () => {
     if (!statsRef.current) return;

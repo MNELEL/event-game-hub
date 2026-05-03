@@ -10,6 +10,7 @@ import { QuestionList } from "@/components/game/QuestionList";
 import { GameSettingsPanel } from "@/components/game/GameSettingsPanel";
 import { TutorialDialog } from "@/components/game/TutorialDialog";
 import { QuestionImportExport } from "@/components/game/QuestionImportExport";
+import { ActiveGamesList } from "@/components/game/ActiveGamesList";
 import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
 import {
   Play, HelpCircle, Settings, List, Plus, Home, LogOut,

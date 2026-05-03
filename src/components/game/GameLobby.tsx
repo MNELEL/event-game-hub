@@ -6,6 +6,7 @@ import { Player } from "@/types/game";
 import { Play, UserPlus, Users, Monitor, Phone, QrCode, Copy, Check } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
+import { useBranding } from "@/hooks/useBranding";
 
 type Props = {
   gameCode: string;
@@ -99,7 +100,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             ✦ 🌿 ✦
           </motion.div>
 
-          {/* Brain icon with glow pulse */}
+          {/* Crown icon with glow pulse */}
           <motion.div
             className="text-8xl md:text-9xl mb-2 inline-block"
             initial={{ scale: 0, rotateY: 180 }}
@@ -117,7 +118,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
               }}
               transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              🧠
+              👑
             </motion.span>
           </motion.div>
 
@@ -138,7 +139,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.6 }}
           >
-            חידון ידע אינטראקטיבי
+            חידון בת המצווה של חיוש ✨
           </motion.p>
 
           {/* Gold ornamental line */}
@@ -200,7 +201,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
-                03-7737970
+                {branding.phone}
               </motion.div>
             </motion.div>
 

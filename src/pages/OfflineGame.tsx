@@ -7,9 +7,11 @@ import { useGameStore } from "@/hooks/useGameStore";
 import { GameQuestionDisplay } from "@/components/game/GameQuestionDisplay";
 import { GameFinished } from "@/components/game/GameFinished";
 import { Home, WifiOff, Play, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
+import { useBranding } from "@/hooks/useBranding";
 
 const OfflineGame = () => {
   const navigate = useNavigate();
+  const { branding } = useBranding();
   const store = useGameStore();
   const { gameState } = store;
   const [playerName, setPlayerName] = useState("");

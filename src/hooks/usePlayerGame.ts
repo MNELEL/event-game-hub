@@ -8,12 +8,14 @@ type PlayerGameState = {
   playerId: string | null;
   sessionToken: string | null;
   playerName: string;
+  secretToken: string | null;
   gameStatus: GameStatus;
   currentQuestionIndex: number;
   currentQuestionId: string | null;
   questionIds: string[];
   timeRemaining: number;
   questionCount: number;
+  questionIds: string[];
   connected: boolean;
   answerSubmitted: boolean;
   playerScore: number;
@@ -27,12 +29,14 @@ export function usePlayerGame() {
     playerId: null,
     sessionToken: null,
     playerName: "",
+    secretToken: null,
     gameStatus: "lobby",
     currentQuestionIndex: 0,
     currentQuestionId: null,
     questionIds: [],
     timeRemaining: 15,
     questionCount: 0,
+    questionIds: [],
     connected: false,
     answerSubmitted: false,
     playerScore: 0,
@@ -66,6 +70,7 @@ export function usePlayerGame() {
       playerId: player.id,
       sessionToken,
       playerName: name,
+      secretToken: player.secret_token,
       gameStatus: game.status as GameStatus,
       currentQuestionIndex: game.current_question_index,
       currentQuestionId: questionIds[game.current_question_index] || null,

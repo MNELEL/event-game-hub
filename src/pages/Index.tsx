@@ -6,6 +6,7 @@ import { ThemeButton } from "@/components/game/ThemeButton";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { branding } = useBranding();
 
   return (
     // 1. `main` landmark — fixes "Document does not have a main landmark"
@@ -52,9 +53,9 @@ const Index = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          מתאים לאירועים משפחתיים, ערבי גיבוש, כנסים, ימי הולדת, בת/בר מצווה ועוד...
+          חוויה אינטראקטיבית מיוחדת לכבוד בת המצווה — שאלות על חיוש, על המשפחה ועל החברים.
           <br />
-          פשוט ליצור, קל להפעיל, בלתי נשכח!
+          כולם משחקים מהטלפון, צוברים נקודות ומקבלים תארים בסוף הערב!
         </motion.p>
 
         <motion.div
@@ -92,6 +93,10 @@ const Index = () => {
           <Button variant="outline" size="lg" onClick={() => navigate("/offline")} className="gap-2">
             <WifiOff className="w-5 h-5" aria-hidden="true" />
             משחק אופליין
+          </Button>
+          <Button variant="outline" size="lg" onClick={() => navigate("/about")} className="gap-2">
+            <Info className="w-5 h-5" />
+            אודות
           </Button>
         </motion.div>
 

@@ -7,11 +7,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { LogIn, UserPlus, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useBranding } from "@/hooks/useBranding";
 
 const Login = () => {
   const navigate = useNavigate();
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const { branding } = useBranding();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
