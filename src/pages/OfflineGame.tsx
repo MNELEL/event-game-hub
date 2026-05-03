@@ -11,6 +11,7 @@ import { useBranding } from "@/hooks/useBranding";
 
 const OfflineGame = () => {
   const navigate = useNavigate();
+  const { branding } = useBranding();
   const store = useGameStore();
   const { gameState } = store;
   const [playerName, setPlayerName] = useState("");
