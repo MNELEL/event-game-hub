@@ -133,6 +133,41 @@ api_call_method=GET`;
           </p>
         </div>
 
+        {/* Auto setup */}
+        <Card className="p-5 border-2 border-emerald-500/40 bg-emerald-500/5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Wand2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="font-bold text-foreground">הגדרה אוטומטית (מומלץ)</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            לחיצה אחת תיצור/תעדכן עבורך את קובץ <code dir="ltr">ext.ini</code> בשלוחה הנבחרת ישירות בימות המשיח, באמצעות מפתח ה-API שכבר שמרת.
+          </p>
+          <div className="flex gap-2 items-center">
+            <label className="text-sm text-foreground shrink-0">שלוחה:</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={extension}
+              onChange={(e) => setExtension(e.target.value)}
+              placeholder="1"
+              className="w-20 px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm font-mono text-center"
+              dir="ltr"
+            />
+            <Button
+              type="button"
+              onClick={runAutoSetup}
+              disabled={autoLoading}
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {autoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+              הגדר את השלוחה אצלי בימות
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            זה יעדכן את הנתיב <code dir="ltr">ivr2:/{extension || "1"}/ext.ini</code> במערכת שלך.
+          </p>
+        </Card>
+
         {/* Quick URL */}
         <Card className="p-5 border-2 border-primary/40 bg-primary/5 space-y-3">
           <div className="flex items-center gap-2">
