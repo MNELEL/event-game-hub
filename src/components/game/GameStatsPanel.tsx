@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ArrowRight, Target, Zap, Trophy, PieChart as PieIcon, Download, Image } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import html2canvas from "html2canvas";
-import { branding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 
 type Props = {
   players: Player[];
