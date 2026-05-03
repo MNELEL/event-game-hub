@@ -39,7 +39,7 @@ function waitRead(text: string, valName: string, seconds = 5): string {
 }
 
 function answerRead(text: string, valName: string, seconds: number): string {
-  return `read=${tts(text)}=${valName},no,1,1,${seconds},No,yes,no,,1.2.3.4,1,,None`;
+  return `read=${tts(text)}=${valName},no,1,1,${seconds},No,yes,no,,1.2.3.4,1,Ok,None`;
 }
 
 Deno.serve(async (req) => {
