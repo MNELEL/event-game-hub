@@ -60,6 +60,14 @@ export default function YemotSetup() {
     return localStorage.getItem("yemot_extension") || "1";
   });
   const [autoLoading, setAutoLoading] = useState(false);
+  type LogStatus = "pending" | "running" | "success" | "error";
+  type LogEntry = { id: string; label: string; status: LogStatus; detail?: string; ts: number };
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+
+  const pushLog = (entry: Omit<LogEntry, "ts">) =>
+    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
+  const updateLog = (id: string, patch: Partial<LogEntry>) =>
+    setLogs((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch, ts: Date.now() } : l)));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -84,15 +92,40 @@ export default function YemotSetup() {
       return;
     }
     setAutoLoading(true);
+    setLogs([]);
+    const t0 = Date.now();
+    pushLog({ id: "prep", label: `הכנת תוכן ext.ini עבור שלוחה ${ext}`, status: "running" });
     try {
+      // tiny delay so the user actually sees the step
+      await new Promise((r) => setTimeout(r, 150));
+      updateLog("prep", { status: "success", detail: `נתיב יעד: ivr2:/${ext}/ext.ini` });
+
+      pushLog({ id: "upload", label: "שליחה לשרת והעלאה לימות המשיח", status: "running" });
       const { data, error } = await supabase.functions.invoke("setup-yemot-extension", {
         body: { extension: ext },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success(`שלוחה ${ext} הוגדרה בהצלחה בימות! חייג למערכת והקש ${ext}.`);
+      if ((data as any)?.error) {
+        const det = (data as any)?.details ? JSON.stringify((data as any).details) : undefined;
+        updateLog("upload", { status: "error", detail: det });
+        throw new Error((data as any).error);
+      }
+      const ymInfo = (data as any)?.yemot;
+      updateLog("upload", {
+        status: "success",
+        detail: typeof ymInfo === "string" ? ymInfo : JSON.stringify(ymInfo),
+      });
+
+      pushLog({
+        id: "done",
+        label: `הסתיים בהצלחה תוך ${((Date.now() - t0) / 1000).toFixed(1)} שניות`,
+        status: "success",
+        detail: `חייג למערכת והקש ${ext} כדי לבדוק.`,
+      });
+      toast.success(`שלוחה ${ext} הוגדרה בהצלחה בימות!`);
     } catch (e: any) {
       console.error(e);
+      pushLog({ id: "fail", label: "ההגדרה האוטומטית נכשלה", status: "error", detail: e?.message });
       toast.error(e?.message || "ההגדרה האוטומטית נכשלה. נסה את הדרך הידנית למטה.");
     } finally {
       setAutoLoading(false);
