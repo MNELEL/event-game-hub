@@ -46,20 +46,22 @@ const AppRoutes = () => {
   useBackgroundMusicLoader();
   useThemeLoader();
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-      <Route path="/host" element={<ProtectedRoute><GameHost /></ProtectedRoute>} />
-      <Route path="/play" element={<PlayerJoin />} />
-      <Route path="/join" element={<JoinRedirect />} />
-      <Route path="/install" element={<Install />} />
-      <Route path="/offline" element={<OfflineGame />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
-      <Route path="/yemot-setup" element={<ProtectedRoute><YemotSetup /></ProtectedRoute>} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+        <Route path="/host" element={<ProtectedRoute><GameHost /></ProtectedRoute>} />
+        <Route path="/play" element={<PlayerJoin />} />
+        <Route path="/join" element={<JoinRedirect />} />
+        <Route path="/install" element={<Install />} />
+        <Route path="/offline" element={<OfflineGame />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
+        <Route path="/yemot-setup" element={<ProtectedRoute><YemotSetup /></ProtectedRoute>} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 
