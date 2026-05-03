@@ -63,7 +63,7 @@ const About = () => {
               animate={{ scale: [1, 1.03, 1] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
-              {branding.icons.primary} אודות {branding.name}
+              {branding.iconPrimary} אודות {branding.name}
             </motion.h1>
             <p className="text-lg text-game-dark-gold font-body">
               חידון בת המצווה החגיגי של חיוש ✨
