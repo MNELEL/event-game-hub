@@ -45,9 +45,31 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   );
 }
 
+const STORAGE_KEY = "yemot_webhook_secret";
+
 export default function YemotSetup() {
   const navigate = useNavigate();
-  const [secret, setSecret] = useState("");
+  const [secret, setSecret] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem(STORAGE_KEY) ?? "";
+  });
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (secret) {
+      localStorage.setItem(STORAGE_KEY, secret);
+      setSavedAt(Date.now());
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+      setSavedAt(null);
+    }
+  }, [secret]);
+
+  const clearSecret = () => {
+    setSecret("");
+    toast.success("הסוד נמחק מהמכשיר");
+  };
 
   const fullUrl = secret
     ? `${WEBHOOK_URL}?secret=${encodeURIComponent(secret)}`
