@@ -13,6 +13,9 @@ export type BrandingValues = {
   heroSubtitle: string;
   aboutDescription: string;
   lobbySubtitle: string;
+  logoUrl: string;
+  heroImageUrl: string;
+  backgroundImageUrl: string;
 };
 
 const fallback: BrandingValues = {
@@ -26,6 +29,9 @@ const fallback: BrandingValues = {
   heroSubtitle: defaults.copy.heroSubtitle,
   aboutDescription: defaults.copy.aboutDescription,
   lobbySubtitle: defaults.copy.lobbySubtitle,
+  logoUrl: "",
+  heroImageUrl: "",
+  backgroundImageUrl: "",
 };
 
 type Ctx = {
