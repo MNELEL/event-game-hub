@@ -121,7 +121,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
           >
-            מגה מוח
+            חיוש בת מצוה
           </motion.h1>
 
           {/* Subtitle reveal */}

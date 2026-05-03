@@ -33,7 +33,7 @@ const Index = () => {
       >
         <motion.div className="mb-6" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}>
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
-            🧠 מגה מוח
+            🧠 חיוש בת מצוה
           </h1>
           <p className="text-xl md:text-2xl text-primary-foreground/80 font-body">
             משחק הטריוויה האינטראקטיבי שישגע את כולם!
