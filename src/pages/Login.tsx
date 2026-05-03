@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { LogIn, UserPlus, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { branding } from "@/config/branding";
 
 const Login = () => {
   const navigate = useNavigate();
