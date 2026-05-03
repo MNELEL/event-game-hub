@@ -13,7 +13,7 @@ import { TutorialDialog } from "@/components/game/TutorialDialog";
 import { QuestionImportExport } from "@/components/game/QuestionImportExport";
 import { ActiveGamesList } from "@/components/game/ActiveGamesList";
 import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
-import { branding } from "@/config/branding";
+import { useBranding } from "@/hooks/useBranding";
 import { BrandingEditor } from "@/components/game/BrandingEditor";
 import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette } from "lucide-react";
 
