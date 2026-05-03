@@ -21,6 +21,7 @@ const GameHost = () => {
   const game = useRealtimeGame(questions, settings);
   const { gameState } = game;
   const [gameReady, setGameReady] = useState(false);
+  const { branding } = useBranding();
 
   // Create or resume game session when questions are loaded
   useEffect(() => {
