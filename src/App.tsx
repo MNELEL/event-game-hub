@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { BrandingProvider } from "@/hooks/useBranding";
+import { useBackgroundMusicLoader } from "@/hooks/useBackgroundMusicLoader";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
@@ -31,20 +32,23 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<Index />} />
-    <Route path="/login" element={<Login />} />
-    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-    <Route path="/host" element={<ProtectedRoute><GameHost /></ProtectedRoute>} />
-    <Route path="/play" element={<PlayerJoin />} />
-    <Route path="/join" element={<JoinRedirect />} />
-    <Route path="/install" element={<Install />} />
-    <Route path="/offline" element={<OfflineGame />} />
-    <Route path="/about" element={<About />} />
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-);
+const AppRoutes = () => {
+  useBackgroundMusicLoader();
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+      <Route path="/host" element={<ProtectedRoute><GameHost /></ProtectedRoute>} />
+      <Route path="/play" element={<PlayerJoin />} />
+      <Route path="/join" element={<JoinRedirect />} />
+      <Route path="/install" element={<Install />} />
+      <Route path="/offline" element={<OfflineGame />} />
+      <Route path="/about" element={<About />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

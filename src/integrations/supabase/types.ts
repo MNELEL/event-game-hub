@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      background_music: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          storage_path: string
+          uploaded_by: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          storage_path: string
+          uploaded_by?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          storage_path?: string
+          uploaded_by?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       branding: {
         Row: {
           about_description: string
