@@ -25,7 +25,10 @@ let musicInterval: ReturnType<typeof setInterval> | null = null;
 
 // Custom uploaded music
 let customAudio: HTMLAudioElement | null = null;
-let customAudioUrl: string | null = null;
+let customAudioUrl: string | null = (() => {
+  try { return localStorage.getItem("custom_music_url"); } catch { return null; }
+})();
+
 
 function applyCustomVolume() {
   if (customAudio) {
