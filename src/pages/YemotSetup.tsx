@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save } from "lucide-react";
+import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_PROJECT_ID = "wzmspoufqdldcuagsvir";
 const WEBHOOK_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/yemot-ivr`;
@@ -54,6 +55,11 @@ export default function YemotSetup() {
     return localStorage.getItem(STORAGE_KEY) ?? "";
   });
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [extension, setExtension] = useState<string>(() => {
+    if (typeof window === "undefined") return "1";
+    return localStorage.getItem("yemot_extension") || "1";
+  });
+  const [autoLoading, setAutoLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -65,6 +71,33 @@ export default function YemotSetup() {
       setSavedAt(null);
     }
   }, [secret]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("yemot_extension", extension || "1");
+  }, [extension]);
+
+  const runAutoSetup = async () => {
+    const ext = (extension || "1").replace(/[^0-9]/g, "");
+    if (!ext) {
+      toast.error("יש להזין מספר שלוחה תקין");
+      return;
+    }
+    setAutoLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("setup-yemot-extension", {
+        body: { extension: ext },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`שלוחה ${ext} הוגדרה בהצלחה בימות! חייג למערכת והקש ${ext}.`);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "ההגדרה האוטומטית נכשלה. נסה את הדרך הידנית למטה.");
+    } finally {
+      setAutoLoading(false);
+    }
+  };
 
   const clearSecret = () => {
     setSecret("");
@@ -99,6 +132,41 @@ api_call_method=GET`;
             חבר את השלוחה שלך כדי שמתקשרים יוכלו להצטרף למשחק ולענות בהקשת מקשים
           </p>
         </div>
+
+        {/* Auto setup */}
+        <Card className="p-5 border-2 border-emerald-500/40 bg-emerald-500/5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Wand2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="font-bold text-foreground">הגדרה אוטומטית (מומלץ)</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            לחיצה אחת תיצור/תעדכן עבורך את קובץ <code dir="ltr">ext.ini</code> בשלוחה הנבחרת ישירות בימות המשיח, באמצעות מפתח ה-API שכבר שמרת.
+          </p>
+          <div className="flex gap-2 items-center">
+            <label className="text-sm text-foreground shrink-0">שלוחה:</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={extension}
+              onChange={(e) => setExtension(e.target.value)}
+              placeholder="1"
+              className="w-20 px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm font-mono text-center"
+              dir="ltr"
+            />
+            <Button
+              type="button"
+              onClick={runAutoSetup}
+              disabled={autoLoading}
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {autoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+              הגדר את השלוחה אצלי בימות
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            זה יעדכן את הנתיב <code dir="ltr">ivr2:/{extension || "1"}/ext.ini</code> במערכת שלך.
+          </p>
+        </Card>
 
         {/* Quick URL */}
         <Card className="p-5 border-2 border-primary/40 bg-primary/5 space-y-3">
