@@ -126,6 +126,12 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="branding">
+            <div className="flex justify-end mb-3">
+              <Button variant="outline" size="sm" onClick={() => navigate("/branding-preview")} className="gap-2">
+                <Palette className="w-4 h-4" />
+                תצוגה מקדימה והחלפת ערכת צבעים
+              </Button>
+            </div>
             <BrandingEditor />
           </TabsContent>
 
