@@ -19,6 +19,7 @@ const answerLabels = ["1", "2", "3", "4"];
 
 const PlayerJoin = () => {
   const [searchParams] = useSearchParams();
+  const { branding } = useBranding();
   const [name, setName] = useState("");
   const [gameCode, setGameCode] = useState("");
   const [joining, setJoining] = useState(false);
