@@ -6,6 +6,7 @@ import { Player } from "@/types/game";
 import { Play, UserPlus, Users, Monitor, Phone, QrCode } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
+import { branding } from "@/config/branding";
 
 type Props = {
   gameCode: string;
