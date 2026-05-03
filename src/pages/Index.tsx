@@ -32,11 +32,12 @@ const Index = () => {
         transition={{ duration: 0.8 }}
       >
         <motion.div className="mb-6" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}>
+          <div className="text-6xl md:text-7xl mb-2">👑✨🎀</div>
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
-            🧠 חיוש בת מצוה
+            חיוש בת מצוה
           </h1>
           <p className="text-xl md:text-2xl text-primary-foreground/80 font-body">
-            משחק הטריוויה האינטראקטיבי שישגע את כולם!
+            חידון בת המצווה החגיגי — כמה אתם באמת מכירים את חיוש?
           </p>
         </motion.div>
 
@@ -46,9 +47,9 @@ const Index = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          מתאים לאירועים משפחתיים, ערבי גיבוש, כנסים, ימי הולדת, בת/בר מצווה ועוד...
+          חוויה אינטראקטיבית מיוחדת לכבוד בת המצווה — שאלות על חיוש, על המשפחה ועל החברים.
           <br />
-          פשוט ליצור, קל להפעיל, בלתי נשכח!
+          כולם משחקים מהטלפון, צוברים נקודות ומקבלים תארים בסוף הערב!
         </motion.p>
 
         <motion.div
@@ -100,9 +101,9 @@ const Index = () => {
           transition={{ delay: 0.9 }}
         >
           {[
-            { icon: BookOpen, title: "שאלות מוכנות", desc: "מאגר שאלות מגוון בנושאים שונים" },
-            { icon: Users, title: "מרובה משתתפים", desc: "כולם משחקים מהטלפון" },
-            { icon: Zap, title: "חוויה מושלמת", desc: "אנימציות, צלילים ודירוג חי" },
+            { icon: BookOpen, title: "שאלות על חיוש", desc: "כמה אתם מכירים את בת המצווה שלנו?" },
+            { icon: Users, title: "כל האורחים משחקים", desc: "סורקים QR ומצטרפים מהטלפון" },
+            { icon: Zap, title: "ערב בלתי נשכח", desc: "אנימציות, צלילים, תארים ומלכת הערב" },
           ].map((feature, i) => (
             <motion.div
               key={i}
