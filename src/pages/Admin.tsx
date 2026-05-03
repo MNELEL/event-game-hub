@@ -15,7 +15,8 @@ import { ActiveGamesList } from "@/components/game/ActiveGamesList";
 import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
 import { useBranding } from "@/hooks/useBranding";
 import { BrandingEditor } from "@/components/game/BrandingEditor";
-import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette } from "lucide-react";
+import { BackgroundMusicManager } from "@/components/game/BackgroundMusicManager";
+import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette, Music } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
