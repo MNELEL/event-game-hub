@@ -48,12 +48,12 @@ const Login = () => {
   return (
     <div className="min-h-screen game-gradient flex items-center justify-center p-6" dir="rtl">
       <motion.div
-        className="bg-game-surface/80 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-game-glow/20"
+        className="bg-game-parchment/90 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border-2 border-double border-game-border-gold shadow-xl"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="font-display text-4xl text-game-gold text-center mb-2">{branding.iconPrimary} {branding.name}</h1>
-        <p className="text-primary-foreground/60 text-center mb-8">
+        <h1 className="font-display text-4xl text-game-dark-gold text-center mb-2">{branding.iconPrimary} {branding.name}</h1>
+        <p className="text-game-dark-gold/70 text-center mb-8">
           {isSignUp ? "הרשמה לממשק ניהול" : "כניסה לממשק ניהול"}
         </p>
 
@@ -63,7 +63,7 @@ const Login = () => {
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="אימייל"
-            className="bg-game-bg/50 border-game-glow/30 text-primary-foreground h-12"
+            className="bg-white/70 border-game-border-gold/50 text-game-dark-gold placeholder:text-game-dark-gold/40 h-12"
             required
           />
           <Input
@@ -71,7 +71,7 @@ const Login = () => {
             value={password}
             onChange={e => setPassword(e.target.value)}
             placeholder="סיסמה"
-            className="bg-game-bg/50 border-game-glow/30 text-primary-foreground h-12"
+            className="bg-white/70 border-game-border-gold/50 text-game-dark-gold placeholder:text-game-dark-gold/40 h-12"
             required
             minLength={6}
           />
@@ -83,17 +83,17 @@ const Login = () => {
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-game-glow/20" />
+            <div className="w-full border-t border-game-border-gold/40" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-game-surface/80 px-3 text-primary-foreground/40">או</span>
+            <span className="bg-game-parchment px-3 text-game-dark-gold/70">או</span>
           </div>
         </div>
 
         <Button
           variant="outline"
           size="lg"
-          className="w-full gap-3 bg-white/10 border-game-glow/20 text-primary-foreground hover:bg-white/20"
+          className="w-full gap-3 bg-white/80 border-game-border-gold/50 text-game-dark-gold hover:bg-white"
           onClick={handleGoogleSignIn}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -108,14 +108,14 @@ const Login = () => {
         <div className="mt-4 text-center space-y-2">
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-primary-foreground/60 hover:text-game-gold text-sm transition-colors"
+            className="text-game-dark-gold/70 hover:text-game-gold text-sm transition-colors"
           >
             {isSignUp ? "כבר יש לך חשבון? התחבר" : "אין לך חשבון? הירשם"}
           </button>
           <div>
             <button
               onClick={() => navigate("/")}
-              className="text-primary-foreground/40 hover:text-primary-foreground/60 text-xs transition-colors flex items-center gap-1 mx-auto"
+              className="text-game-dark-gold/50 hover:text-game-dark-gold/80 text-xs transition-colors flex items-center gap-1 mx-auto"
             >
               <Home className="w-3 h-3" />
               חזרה לדף הבית
