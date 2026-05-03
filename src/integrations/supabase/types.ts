@@ -56,6 +56,7 @@ export type Database = {
           is_active: boolean
           lobby_subtitle: string
           name: string
+          owner_id: string | null
           phone: string
           short_name: string
           tagline: string
@@ -72,6 +73,7 @@ export type Database = {
           is_active?: boolean
           lobby_subtitle?: string
           name?: string
+          owner_id?: string | null
           phone?: string
           short_name?: string
           tagline?: string
@@ -88,6 +90,7 @@ export type Database = {
           is_active?: boolean
           lobby_subtitle?: string
           name?: string
+          owner_id?: string | null
           phone?: string
           short_name?: string
           tagline?: string
@@ -366,6 +369,18 @@ export type Database = {
       increment_player_score: {
         Args: { p_player_id: string; p_points: number }
         Returns: undefined
+      }
+      join_game_by_code: {
+        Args: { p_code: string; p_name: string }
+        Returns: {
+          current_question_index: number
+          game_id: string
+          player_id: string
+          question_ids: string[]
+          secret_token: string
+          status: string
+          time_remaining: number
+        }[]
       }
     }
     Enums: {
