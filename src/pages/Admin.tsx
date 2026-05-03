@@ -107,7 +107,11 @@ const Admin = () => {
           </TabsList>
 
           <TabsContent value="questions">
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-4 gap-2 flex-wrap">
+              <QuestionTextImport
+                onImport={(imported) => store.updateQuestions([...store.questions, ...imported])}
+                onReplace={(imported) => store.updateQuestions(imported)}
+              />
               <QuestionImportExport
                 questions={store.questions}
                 onImport={(imported) => store.updateQuestions([...store.questions, ...imported])}
