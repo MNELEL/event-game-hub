@@ -294,18 +294,40 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
 
         <PhonePlayersList phonePlayers={phonePlayers} gameStatus={gameStatus} />
 
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button
-            variant="gold"
-            size="xl"
-            onClick={handleStart}
-            disabled={questionsCount === 0}
-            className="gap-3 text-xl px-12"
+        {graceCountdown && graceCountdown > 0 ? (
+          <motion.div
+            className="parchment-card rounded-xl p-5 mb-4 text-center"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
           >
-            <Play className="w-6 h-6" />
-            התחל משחק!
-          </Button>
-        </motion.div>
+            <p className="font-serif text-game-dark-gold text-lg mb-1">המשחק יתחיל בעוד</p>
+            <motion.div
+              key={graceCountdown}
+              initial={{ scale: 1.4, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-5xl font-bold text-game-gold mb-2"
+            >
+              {graceCountdown}
+            </motion.div>
+            <p className="text-sm text-game-dark-gold/60 mb-3">מתקשרים יכולים עדיין להצטרף</p>
+            <Button variant="gold" size="sm" onClick={onCancelGrace}>
+              דלג והתחל מיד
+            </Button>
+          </motion.div>
+        ) : (
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="gold"
+              size="xl"
+              onClick={handleStart}
+              disabled={questionsCount === 0}
+              className="gap-3 text-xl px-12"
+            >
+              <Play className="w-6 h-6" />
+              התחל משחק!
+            </Button>
+          </motion.div>
+        )}
 
         <p className="text-game-dark-gold/50 text-sm mt-3">{questionsCount} שאלות מוכנות</p>
       </motion.div>
