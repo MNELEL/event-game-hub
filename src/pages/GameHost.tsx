@@ -13,6 +13,7 @@ import { SoundControlPanel } from "@/components/game/SoundControlPanel";
 import { Home, Loader2, Settings } from "lucide-react";
 import { useBranding } from "@/hooks/useBranding";
 import { HeroIntro } from "@/components/game/HeroIntro";
+import { usePhonePlayers } from "@/hooks/usePhonePlayers";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const GameHost = () => {
   const { gameState } = game;
   const [gameReady, setGameReady] = useState(false);
   const { branding } = useBranding();
+  const phonePlayers = usePhonePlayers(game.gameDbId);
 
   // Create or resume game session when questions are loaded
   useEffect(() => {
@@ -130,6 +132,8 @@ const GameHost = () => {
             <GameLobby
               gameCode={gameState.gameCode}
               players={gameState.players}
+              phonePlayers={phonePlayers}
+              gameStatus={gameState.status}
               onAddPlayer={game.addPlayer}
               onStart={() => {
                 game.startGame();
