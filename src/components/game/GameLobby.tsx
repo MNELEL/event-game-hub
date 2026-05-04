@@ -290,6 +290,8 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
           </AnimatePresence>
         </div>
 
+        <PhonePlayersList phonePlayers={phonePlayers} gameStatus={gameStatus} />
+
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
             variant="gold"
