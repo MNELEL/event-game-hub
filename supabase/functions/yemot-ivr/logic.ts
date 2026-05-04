@@ -271,12 +271,12 @@ export function decideIvrResponse(input: DecideInput): Decision {
     const title = (state.game_title || "").trim();
     const welcome = title
       ? `שלום, ברוכים הבאים למשחק ${title}.`
-      : `שלום, ברוכים הבאים למשחק הטריוויה.`;
+      : `שלום, ברוכים הבאים למשחק.`;
     return {
       kind: "wait",
-      text: `${welcome} נרשמת בשם מתקשר ${phone.slice(-4)}. המשחק כבר התחיל אבל הספקת להצטרף בזמן לשאלה הראשונה. כעת תשמע את השאלה — הקשב לארבע האפשרויות, ובסיום הקש 1, 2, 3 או 4 לבחירת התשובה.`,
+      text: `${welcome} נרשמת בשם מתקשר ${phone.slice(-4)}. המשחק כבר התחיל אבל הספקת להצטרף בזמן לשאלה הראשונה. השאלות מוצגות על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4 לבחירת התשובה.`,
       valName: "recovered_intro",
-      seconds: 9,
+      seconds: 8,
     };
   }
 
@@ -289,16 +289,16 @@ export function decideIvrResponse(input: DecideInput): Decision {
     const title = (state.game_title || "").trim();
     const welcome = title
       ? `ברוכים הבאים למשחק ${title}.`
-      : `ברוכים הבאים למשחק הטריוויה.`;
+      : `ברוכים הבאים למשחק.`;
     const registered = `הרשמתך התקבלה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
     const tail = lobbyStart
-      ? `המשחק יתחיל בשעה ${lobbyStart}. אנא המתן להפעלת המשחק.`
-      : `אנא המתן להפעלת המשחק.`;
+      ? `המשחק יתחיל בשעה ${lobbyStart}. אנא המתן להפעלת המשחק. השאלות יוצגו על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4.`
+      : `אנא המתן להפעלת המשחק. השאלות יוצגו על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4.`;
     return {
       kind: "wait",
       text: `${welcome} ${registered} ${tail}`,
       valName: "joined_intro",
-      seconds: lobbyStart ? 7 : 5,
+      seconds: lobbyStart ? 8 : 6,
     };
   }
 
@@ -333,28 +333,20 @@ export function decideIvrResponse(input: DecideInput): Decision {
       const total = state.question_ids?.length || 0;
       const remaining = Math.max(1, state.time_remaining || POLL_SECONDS);
       const timeout = Math.min(remaining, POLL_SECONDS);
-      const q = state.current_question;
       const introVar = `qintro${state.current_question_index}`;
       const seenThisQ =
         (phoneRow?.last_seen_question_index ?? -1) >= state.current_question_index;
-      // First poll of this question — read the full question + options once.
-      if (q && !params.has(introVar) && !seenThisQ) {
-        const opts = (q.options || []).slice(0, 4)
-          .map((o, i) => `${i + 1}. ${o}.`).join(" ");
-        // For question 1, add a brief listening hint (unless we just played the
-        // recovery intro, which already explained how to answer).
-        const firstQHint =
-          state.current_question_index === 0 && !params.has("recovered_intro")
-            ? "זוהי השאלה הראשונה. הקשב היטב לארבע האפשרויות. "
-            : "";
-        const text =
-          `${firstQHint}שאלה ${qNum} מתוך ${total}. ${q.text}. ` +
-          `${opts} הקש את מספר התשובה: 1, 2, 3 או 4.`;
+      // The phone is a "keypad only" device — the question + answer options are
+      // shown on the host screen. We DO NOT read the question text aloud.
+      // First poll of a new question: short prompt that the question is on
+      // the screen and the caller can press 1-4. Subsequent polls: silent
+      // re-poll while still accepting digits.
+      if (!params.has(introVar) && !seenThisQ) {
         return {
           kind: "answer",
-          text,
+          text: `שאלה ${qNum} מתוך ${total}. השאלה מוצגת על המסך. כשהטיימר רץ, הקש 1, 2, 3 או 4 לבחירת התשובה.`,
           valName: answerVar,
-          seconds: Math.max(timeout, 6),
+          seconds: Math.max(timeout, 5),
         };
       }
       return {
