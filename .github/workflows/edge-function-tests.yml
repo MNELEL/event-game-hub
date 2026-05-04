@@ -1,5 +1,8 @@
 name: edge-function-tests
 
+permissions:
+  contents: read
+
 on:
   push:
     paths:
