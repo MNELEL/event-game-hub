@@ -131,7 +131,30 @@ export function ApiPermissionsChecklist() {
 
       {/* SECTION B: Whitelist */}
       <div className="space-y-2">
-        <h3 className="text-sm font-bold text-foreground">2. ערכים שחייבים להיות ב-whitelist</h3>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <h3 className="text-sm font-bold text-foreground">2. ערכים שחייבים להיות ב-whitelist</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const json = JSON.stringify(
+                {
+                  ws_whitelist: WHITELIST_ENTRIES.map((e) => e.val),
+                  ws_parms_mismatch_action: "remove",
+                  default_acl_policy: "allow",
+                },
+                null,
+                2,
+              );
+              navigator.clipboard.writeText(json);
+              toast.success("הועתק! הדבק/י בשדה 'תצוגת JSON' בימות");
+            }}
+            className="gap-1"
+          >
+            <Copy className="w-4 h-4" />
+            העתק JSON מלא להדבקה בימות
+          </Button>
+        </div>
         <div className="rounded-md border border-border bg-background/80 divide-y divide-border">
           <div className="grid grid-cols-[auto_1fr] gap-3 p-2.5 text-[11px] font-semibold text-muted-foreground uppercase">
             <div>ערך להוסיף</div>
