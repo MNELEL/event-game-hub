@@ -193,21 +193,71 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
         </motion.h1>
         <div className="w-40 mx-auto border-t-2 border-double border-game-border-gold my-3" />
 
-        {winner && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="flex items-center justify-center gap-2"
-          >
-            <Sparkles className="w-6 h-6 text-game-gold" />
-            <p className="font-serif text-2xl md:text-3xl text-game-dark-gold">
-              🏆 המנצח: <span className="text-game-gold font-bold">{winner.name}</span> - {winner.score} נקודות!
-            </p>
-            <Sparkles className="w-6 h-6 text-game-gold" />
-          </motion.div>
-        )}
       </motion.div>
+
+      {/* Winners Podium - Top 3 */}
+      {sorted.length > 0 && (() => {
+        const podium = [
+          { player: sorted[1], place: 2, medal: "🥈", height: "h-32", delay: 0.6, gradient: "from-slate-300/30 to-slate-500/20", textColor: "text-slate-200", order: "order-1" },
+          { player: sorted[0], place: 1, medal: "🥇", height: "h-44", delay: 1.0, gradient: "from-game-gold/40 to-game-dark-gold/30", textColor: "text-game-gold", order: "order-2", isWinner: true },
+          { player: sorted[2], place: 3, medal: "🥉", height: "h-24", delay: 0.3, gradient: "from-orange-400/30 to-orange-700/20", textColor: "text-orange-300", order: "order-3" },
+        ].filter(p => p.player);
+
+        return (
+          <div className="w-full max-w-md mb-8 relative z-10">
+            <div className={`flex items-end justify-center gap-2 ${podium.length < 3 ? "justify-center" : ""}`}>
+              {podium.map((p) => (
+                <motion.div
+                  key={p.place}
+                  className={`flex-1 max-w-[33%] flex flex-col items-center ${p.order}`}
+                  initial={{ opacity: 0, y: 60 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: p.delay, type: "spring", stiffness: 180, damping: 14 }}
+                >
+                  {/* Crown for winner */}
+                  {p.isWinner && (
+                    <motion.div
+                      className="text-4xl mb-1"
+                      animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.15, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      👑
+                    </motion.div>
+                  )}
+
+                  {/* Medal + name card */}
+                  <motion.div
+                    className="text-center mb-2 px-1"
+                    animate={p.isWinner ? { scale: [1, 1.05, 1] } : {}}
+                    transition={{ duration: 1.8, repeat: Infinity }}
+                  >
+                    <div className="text-3xl md:text-4xl mb-1">{p.medal}</div>
+                    <div className={`font-serif font-bold text-sm md:text-base ${p.textColor} truncate`} title={p.player.name}>
+                      {p.player.name}
+                    </div>
+                    <div className={`font-serif text-lg md:text-xl font-bold ${p.textColor}`}>
+                      {p.player.score}
+                    </div>
+                  </motion.div>
+
+                  {/* Podium block */}
+                  <motion.div
+                    className={`w-full ${p.height} parchment-border-double rounded-t-lg bg-gradient-to-t ${p.gradient} flex items-start justify-center pt-2 ${p.isWinner ? "glow-gold" : ""}`}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1 }}
+                    transition={{ delay: p.delay + 0.2, duration: 0.5, ease: "easeOut" }}
+                    style={{ transformOrigin: "bottom" }}
+                  >
+                    <span className={`font-serif text-3xl md:text-4xl font-bold ${p.textColor} drop-shadow-lg`}>
+                      {p.place}
+                    </span>
+                  </motion.div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Leaderboard */}
       {sorted.length > 0 && (
