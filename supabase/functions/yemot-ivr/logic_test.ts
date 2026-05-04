@@ -242,3 +242,94 @@ Deno.test("game finished for in-lobby caller — hangup", () => {
   });
   assertEquals(d.kind, "hangup");
 });
+
+// ───── Scenario: first-question grace recovery ─────
+
+Deno.test("recovery intro plays once when caller joins during first question", () => {
+  // Caller was admitted via the first-question grace window — joined_in_lobby=true
+  // even though status='question' and current_question_index=0.
+  const d = decideIvrResponse({
+    phone: "0501234567",
+    params: new URLSearchParams(),
+    state: baseState({ status: "question", current_question_index: 0 }),
+    phoneRow: lobbyRow(3, -1),
+    now: NOW,
+  });
+  assertEquals(d.kind, "wait");
+  if (d.kind === "wait") {
+    assertEquals(d.valName, "recovered_intro");
+    // Verify the message explains the situation and how to answer
+    if (!d.text.includes("המשחק כבר התחיל")) {
+      throw new Error("recovery intro should mention the game already started");
+    }
+    if (!d.text.includes("1, 2, 3 או 4")) {
+      throw new Error("recovery intro should explain how to answer");
+    }
+  }
+});
+
+Deno.test("recovery intro is suppressed once recovered_intro var is set", () => {
+  // Second poll — recovered_intro already played, should now read the question.
+  const params = new URLSearchParams({ recovered_intro: "Ok" });
+  const d = decideIvrResponse({
+    phone: "0501234567",
+    params,
+    state: baseState({
+      status: "question",
+      current_question_index: 0,
+      current_question: { text: "מה?", options: ["א", "ב", "ג", "ד"] },
+    }),
+    phoneRow: lobbyRow(4, -1),
+    now: NOW,
+  });
+  assertEquals(d.kind, "answer");
+  if (d.kind === "answer") {
+    // First-question hint should be suppressed because recovery intro already explained it
+    if (d.text.includes("זוהי השאלה הראשונה")) {
+      throw new Error("first-question hint should NOT play after recovery intro");
+    }
+  }
+});
+
+Deno.test("late joiner message includes 'stay on line for next game' instructions", () => {
+  const d = decideIvrResponse({
+    phone: "0501234567",
+    params: new URLSearchParams(),
+    state: baseState({ status: "question", current_question_index: 2 }),
+    phoneRow: lateRow(2),
+    now: NOW,
+  });
+  assertEquals(d.kind, "wait");
+  if (d.kind === "wait") {
+    if (!d.text.includes("הישאר על הקו")) {
+      throw new Error("late joiner message should tell them to stay on the line");
+    }
+    if (!d.text.includes("ברוכים הבאים")) {
+      throw new Error("late joiner message should mention the welcome cue");
+    }
+    if (!d.text.includes("1, 2, 3 או 4")) {
+      throw new Error("late joiner message should explain how to answer in the next game");
+    }
+  }
+});
+
+Deno.test("first-question hint plays for normal lobby joiner (no recovery intro)", () => {
+  const params = new URLSearchParams({ joined_intro: "Ok" });
+  const d = decideIvrResponse({
+    phone: "0501234567",
+    params,
+    state: baseState({
+      status: "question",
+      current_question_index: 0,
+      current_question: { text: "מה?", options: ["א", "ב", "ג", "ד"] },
+    }),
+    phoneRow: lobbyRow(20, -1),
+    now: NOW,
+  });
+  assertEquals(d.kind, "answer");
+  if (d.kind === "answer") {
+    if (!d.text.includes("זוהי השאלה הראשונה")) {
+      throw new Error("first-question hint should play for normal joiners");
+    }
+  }
+});
