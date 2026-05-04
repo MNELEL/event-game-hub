@@ -262,6 +262,7 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
         </motion.div>
       ))}
 
+      <div ref={exportRef} className="w-full flex flex-col items-center relative z-10">
       {/* Winner announcement */}
       <motion.div
         className="text-center mb-6 relative z-10"
