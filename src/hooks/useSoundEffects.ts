@@ -21,6 +21,46 @@ let musicGainNode: GainNode | null = null;
 let musicOscillators: OscillatorNode[] = [];
 let musicInterval: ReturnType<typeof setInterval> | null = null;
 
+// Custom uploaded music
+let customAudio: HTMLAudioElement | null = null;
+let customAudioUrl: string | null = (() => {
+  try { return localStorage.getItem("custom_music_url"); } catch { return null; }
+})();
+
+
+function applyCustomVolume() {
+  if (customAudio) {
+    customAudio.volume = Math.max(0, Math.min(1, masterVolume * musicVolume));
+  }
+}
+
+function playCustomMusic() {
+  if (!customAudioUrl || !musicEnabled) return;
+  if (!customAudio) {
+    customAudio = new Audio(customAudioUrl);
+    customAudio.loop = true;
+    customAudio.crossOrigin = "anonymous";
+  } else if (customAudio.src !== customAudioUrl) {
+    customAudio.src = customAudioUrl;
+  }
+  applyCustomVolume();
+  customAudio.play().catch(() => {
+    // Browser may block until user interaction; ignore silently
+  });
+}
+
+function stopCustomMusic() {
+  if (customAudio) {
+    try { customAudio.pause(); customAudio.currentTime = 0; } catch {}
+  }
+}
+
+function createGain(volume: number): GainNode {
+  const ctx = audioCtx();
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(volume * masterVolume * sfxVolume, ctx.currentTime);
+  return gain;
+}
 // ── Primitive helpers ──────────────────────────────────────
 
 function playTone(freq: number, dur: number, type: OscillatorType = "sine", vol = 0.3, detune = 0) {
@@ -62,6 +102,16 @@ function playWithEcho(freq: number, dur: number, type: OscillatorType = "sine", 
 
 // ── Theme music configs ────────────────────────────────────
 
+  // If custom music is uploaded, play it instead of synthesized music
+  if (customAudioUrl) {
+    playCustomMusic();
+    return;
+  }
+
+  const ctx = audioCtx();
+  musicGainNode = ctx.createGain();
+  musicGainNode.gain.setValueAtTime(musicVolume * masterVolume * 0.15, ctx.currentTime);
+  musicGainNode.connect(ctx.destination);
 type MusicStyle = "lobby" | "game" | "victory";
 interface ThemeMusicCfg { notes: number[][]; tempo: number; type: OscillatorType; vol: number }
 
@@ -180,6 +230,11 @@ function startBackgroundMusic(style: MusicStyle = "lobby") {
   musicInterval = setInterval(playStep, cfg.tempo);
 }
 
+function stopBackgroundMusic() {
+  stopCustomMusic();
+  if (musicInterval) {
+    clearInterval(musicInterval);
+    musicInterval = null;
 // ── Theme-specific SFX helpers ─────────────────────────────
 
 function themeCorrect() {
@@ -332,6 +387,10 @@ function themeVictory() {
 // ── Public API ─────────────────────────────────────────────
 
 export const SoundEffects = {
+  // Volume controls
+  setMasterVolume: (v: number) => { masterVolume = Math.max(0, Math.min(1, v)); applyCustomVolume(); },
+  setMusicVolume: (v: number) => { musicVolume = Math.max(0, Math.min(1, v)); applyCustomVolume(); },
+  setSfxVolume: (v: number) => { sfxVolume = Math.max(0, Math.min(1, v)); },
   // Theme control
   setTheme: (id: string) => {
     activeTheme = id;
@@ -351,6 +410,22 @@ export const SoundEffects = {
   startMusic: startBackgroundMusic,
   stopMusic:  stopBackgroundMusic,
 
+  // Custom uploaded music
+  setCustomMusicUrl: (url: string | null) => {
+    if (customAudioUrl === url) return;
+    stopCustomMusic();
+    customAudio = null;
+    customAudioUrl = url;
+    try {
+      if (url) localStorage.setItem("custom_music_url", url);
+      else localStorage.removeItem("custom_music_url");
+    } catch {}
+  },
+  getCustomMusicUrl: () => customAudioUrl,
+  hasCustomMusic: () => !!customAudioUrl,
+
+
+  // Lobby waiting - warm gentle arpeggio
   // SFX
   lobbyPulse: () => {
     playTone(440, 0.2, "sine", 0.08);

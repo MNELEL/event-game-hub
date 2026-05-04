@@ -14,11 +14,106 @@ export type Database = {
   }
   public: {
     Tables: {
+      background_music: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          storage_path: string
+          uploaded_by: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          storage_path: string
+          uploaded_by: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          storage_path?: string
+          uploaded_by?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      branding: {
+        Row: {
+          about_description: string
+          background_image_url: string | null
+          created_at: string
+          full_name: string
+          hero_image_url: string | null
+          hero_subtitle: string
+          icon_festive: string
+          icon_primary: string
+          id: string
+          is_active: boolean
+          lobby_subtitle: string
+          logo_url: string | null
+          name: string
+          owner_id: string | null
+          phone: string
+          short_name: string
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          about_description?: string
+          background_image_url?: string | null
+          created_at?: string
+          full_name?: string
+          hero_image_url?: string | null
+          hero_subtitle?: string
+          icon_festive?: string
+          icon_primary?: string
+          id?: string
+          is_active?: boolean
+          lobby_subtitle?: string
+          logo_url?: string | null
+          name?: string
+          owner_id?: string | null
+          phone?: string
+          short_name?: string
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          about_description?: string
+          background_image_url?: string | null
+          created_at?: string
+          full_name?: string
+          hero_image_url?: string | null
+          hero_subtitle?: string
+          icon_festive?: string
+          icon_primary?: string
+          id?: string
+          is_active?: boolean
+          lobby_subtitle?: string
+          logo_url?: string | null
+          name?: string
+          owner_id?: string | null
+          phone?: string
+          short_name?: string
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       game_settings: {
         Row: {
           created_at: string
           default_time_limit: number
           id: string
+          lobby_grace_seconds: number
+          owner_id: string | null
           questions_per_game: number
           selected_categories: string[]
           show_leaderboard_after_each: boolean
@@ -30,6 +125,8 @@ export type Database = {
           created_at?: string
           default_time_limit?: number
           id?: string
+          lobby_grace_seconds?: number
+          owner_id?: string | null
           questions_per_game?: number
           selected_categories?: string[]
           show_leaderboard_after_each?: boolean
@@ -41,6 +138,8 @@ export type Database = {
           created_at?: string
           default_time_limit?: number
           id?: string
+          lobby_grace_seconds?: number
+          owner_id?: string | null
           questions_per_game?: number
           selected_categories?: string[]
           show_leaderboard_after_each?: boolean
@@ -59,6 +158,7 @@ export type Database = {
           id: string
           question_ids: string[]
           settings: Json
+          start_at: string | null
           status: string
           time_remaining: number
           updated_at: string
@@ -71,6 +171,7 @@ export type Database = {
           id?: string
           question_ids?: string[]
           settings?: Json
+          start_at?: string | null
           status?: string
           time_remaining?: number
           updated_at?: string
@@ -83,9 +184,82 @@ export type Database = {
           id?: string
           question_ids?: string[]
           settings?: Json
+          start_at?: string | null
           status?: string
           time_remaining?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      join_phone_player_audit: {
+        Row: {
+          created_at: string
+          game_id: string | null
+          game_status: string | null
+          id: string
+          joined_in_lobby: boolean
+          outcome: string
+          phone_tail: string
+          reason: string
+          start_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          game_id?: string | null
+          game_status?: string | null
+          id?: string
+          joined_in_lobby: boolean
+          outcome: string
+          phone_tail: string
+          reason: string
+          start_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          game_id?: string | null
+          game_status?: string | null
+          id?: string
+          joined_in_lobby?: boolean
+          outcome?: string
+          phone_tail?: string
+          reason?: string
+          start_at?: string | null
+        }
+        Relationships: []
+      }
+      phone_players: {
+        Row: {
+          created_at: string
+          game_id: string
+          joined_in_lobby: boolean
+          last_answer_at: string | null
+          last_poll_at: string | null
+          last_question_index: number
+          last_seen_question_index: number | null
+          phone: string
+          player_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          joined_in_lobby?: boolean
+          last_answer_at?: string | null
+          last_poll_at?: string | null
+          last_question_index?: number
+          last_seen_question_index?: number | null
+          phone: string
+          player_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          joined_in_lobby?: boolean
+          last_answer_at?: string | null
+          last_poll_at?: string | null
+          last_question_index?: number
+          last_seen_question_index?: number | null
+          phone?: string
+          player_id?: string
         }
         Relationships: []
       }
@@ -139,6 +313,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "player_answers_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "player_answers_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: false
@@ -155,6 +336,7 @@ export type Database = {
           id: string
           name: string
           score: number
+          secret_token: string
         }
         Insert: {
           connected?: boolean
@@ -163,6 +345,7 @@ export type Database = {
           id?: string
           name: string
           score?: number
+          secret_token?: string
         }
         Update: {
           connected?: boolean
@@ -171,6 +354,7 @@ export type Database = {
           id?: string
           name?: string
           score?: number
+          secret_token?: string
         }
         Relationships: [
           {
@@ -192,6 +376,7 @@ export type Database = {
           media_url: string | null
           options: Json
           order_index: number
+          owner_id: string | null
           points: number
           text: string
           time_limit: number
@@ -206,6 +391,7 @@ export type Database = {
           media_url?: string | null
           options?: Json
           order_index?: number
+          owner_id?: string | null
           points?: number
           text: string
           time_limit?: number
@@ -220,6 +406,7 @@ export type Database = {
           media_url?: string | null
           options?: Json
           order_index?: number
+          owner_id?: string | null
           points?: number
           text?: string
           time_limit?: number
@@ -227,14 +414,150 @@ export type Database = {
         }
         Relationships: []
       }
+      system_alerts: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          kind: string
+          message: string
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind: string
+          message: string
+          severity: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind?: string
+          message?: string
+          severity?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      players_public: {
+        Row: {
+          connected: boolean | null
+          created_at: string | null
+          game_id: string | null
+          id: string | null
+          name: string | null
+          score: number | null
+        }
+        Insert: {
+          connected?: boolean | null
+          created_at?: string | null
+          game_id?: string | null
+          id?: string | null
+          name?: string | null
+          score?: number | null
+        }
+        Update: {
+          connected?: boolean | null
+          created_at?: string | null
+          game_id?: string | null
+          id?: string | null
+          name?: string | null
+          score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      check_clock_skew: {
+        Args: {
+          p_client_now: string
+          p_critical_seconds?: number
+          p_warn_seconds?: number
+        }
+        Returns: {
+          client_now: string
+          drift_seconds: number
+          message: string
+          server_now: string
+          severity: string
+        }[]
+      }
+      claim_branding: {
+        Args: { p_branding_id: string }
+        Returns: {
+          about_description: string
+          background_image_url: string | null
+          created_at: string
+          full_name: string
+          hero_image_url: string | null
+          hero_subtitle: string
+          icon_festive: string
+          icon_primary: string
+          id: string
+          is_active: boolean
+          lobby_subtitle: string
+          logo_url: string | null
+          name: string
+          owner_id: string | null
+          phone: string
+          short_name: string
+          tagline: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "branding"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       increment_player_score: {
         Args: { p_player_id: string; p_points: number }
         Returns: undefined
+      }
+      join_game_by_code: {
+        Args: { p_code: string; p_name: string }
+        Returns: {
+          current_question_index: number
+          game_id: string
+          player_id: string
+          question_ids: string[]
+          secret_token: string
+          status: string
+          time_remaining: number
+        }[]
+      }
+      join_phone_player: {
+        Args: { p_phone: string }
+        Returns: {
+          current_question_index: number
+          game_id: string
+          player_id: string
+          question_ids: string[]
+          secret_token: string
+          status: string
+          time_remaining: number
+        }[]
+      }
+      submit_phone_answer: {
+        Args: { p_answer: number; p_phone: string; p_question_index: number }
+        Returns: {
+          accepted: boolean
+          correct: boolean
+          points: number
+        }[]
       }
     }
     Enums: {

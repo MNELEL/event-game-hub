@@ -79,6 +79,18 @@ export function GameSettingsPanel({ settings, onUpdate, questions, onResetQuesti
           </div>
           <Switch checked={settings.showLeaderboardAfterEach} onCheckedChange={v => onUpdate({ ...settings, showLeaderboardAfterEach: v })} />
         </div>
+
+        <div>
+          <Label>חלון הרשמה לפני התחלה: {settings.lobbyGraceSeconds} שניות</Label>
+          <p className="text-xs text-muted-foreground mt-1 mb-2">
+            לאחר לחיצה על "התחל משחק", הלובי נשאר פתוח X שניות נוספות כדי לאפשר למתקשרים אחרונים להצטרף.
+          </p>
+          <Slider
+            value={[settings.lobbyGraceSeconds]}
+            onValueChange={([v]) => onUpdate({ ...settings, lobbyGraceSeconds: v })}
+            min={0} max={30} step={1}
+          />
+        </div>
       </Card>
 
       {/* Categories */}

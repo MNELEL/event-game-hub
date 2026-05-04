@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Question, GameSettings } from "@/types/game";
 import { defaultQuestions } from "@/data/defaultQuestions";
+import { branding } from "@/config/branding";
 
+const CACHE_KEY = branding.storage.cacheKey;
 const CACHE_KEY = "hayoush_data";
 
 function cacheToLocal(questions: Question[], settings: GameSettings) {
@@ -45,12 +47,14 @@ function questionToDb(q: Question, index: number) {
 export function useSupabaseQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const defaultSettings: GameSettings = {
+    title: branding.name,
     title: "החגיגה של חיוש",
     questionsPerGame: 10,
     defaultTimeLimit: 15,
     selectedCategories: [],
     showLeaderboardAfterEach: true,
     shuffleQuestions: true,
+    lobbyGraceSeconds: 0,
   };
   const [settings, setSettings] = useState<GameSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
@@ -127,6 +131,7 @@ export function useSupabaseQuestions() {
         selectedCategories: data.selected_categories || [],
         showLeaderboardAfterEach: data.show_leaderboard_after_each,
         shuffleQuestions: data.shuffle_questions,
+        lobbyGraceSeconds: (data as any).lobby_grace_seconds ?? 0,
       };
       setSettings(loaded);
       syncCache(undefined, loaded);
@@ -204,6 +209,7 @@ export function useSupabaseQuestions() {
       selected_categories: newSettings.selectedCategories,
       show_leaderboard_after_each: newSettings.showLeaderboardAfterEach,
       shuffle_questions: newSettings.shuffleQuestions,
+      lobby_grace_seconds: newSettings.lobbyGraceSeconds ?? 0,
     };
     
     if (existing) {

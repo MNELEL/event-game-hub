@@ -1,8 +1,38 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import branding from "./branding.config.json";
+
+/**
+ * Replaces %BRANDING_*% tokens in index.html at build/serve time so that the
+ * <title>, meta tags, theme-color and PWA app title all come from
+ * branding.config.json. Single source of truth = branding.config.json.
+ */
+function brandingHtmlPlugin(): Plugin {
+  const map: Record<string, string> = {
+    "%BRANDING_NAME%": branding.name,
+    "%BRANDING_SHORT_NAME%": branding.shortName,
+    "%BRANDING_FULL_NAME%": branding.fullName,
+    "%BRANDING_DESCRIPTION%": branding.description,
+    "%BRANDING_AUTHOR%": branding.authorName,
+    "%BRANDING_THEME_COLOR%": branding.themeColor,
+    "%BRANDING_BACKGROUND_COLOR%": branding.backgroundColor,
+    "%BRANDING_ICON_PRIMARY%": branding.icons.primary,
+    "%BRANDING_ICON_FESTIVE%": branding.icons.festive,
+  };
+  return {
+    name: "branding-html-inject",
+    transformIndexHtml(html) {
+      let out = html;
+      for (const [token, value] of Object.entries(map)) {
+        out = out.split(token).join(value);
+      }
+      return out;
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -15,6 +45,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    brandingHtmlPlugin(),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",

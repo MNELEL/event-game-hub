@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Question, Player } from "@/types/game";
-import { ArrowLeft, Check, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Users } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { fireCorrectBurst } from "@/hooks/useConfetti";
 
@@ -27,6 +27,15 @@ export function GameResults({ question, players, onNext }: Props) {
     fireCorrectBurst();
   }, []);
 
+  // Calculate answer distribution
+  const totalPlayers = players.length;
+  const answerCounts = question.options.map((_, i) => {
+    return players.filter(p => {
+      const answer = p.answers.find(a => a.questionId === question.id);
+      return answer && answer.answer === i;
+    }).length;
+  });
+  const noAnswerCount = totalPlayers - answerCounts.reduce((a, b) => a + b, 0);
   // Count how many players answered each option
   const answerCounts = question.options.map((_, i) =>
     players.filter(p => {
@@ -72,6 +81,12 @@ export function GameResults({ question, players, onNext }: Props) {
         </motion.div>
       </motion.div>
 
+      {/* Answer cards with distribution overlay */}
+      <div className="grid grid-cols-2 gap-4 max-w-4xl w-full mb-10">
+        {question.options.map((opt, i) => {
+          const isCorrect = i === question.correctAnswer;
+          const count = answerCounts[i];
+          const fillRatio = totalPlayers > 0 ? count / totalPlayers : 0;
       {/* Answer cards with distribution */}
       <div className="grid grid-cols-2 gap-4 max-w-4xl w-full mb-6">
         {question.options.map((opt, i) => {
@@ -82,6 +97,17 @@ export function GameResults({ question, players, onNext }: Props) {
           return (
             <motion.div
               key={i}
+              className={`${answerClasses[i]} rounded-2xl p-6 md:p-8 flex flex-col gap-2 shadow-lg relative border border-white/20 overflow-hidden`}
+              initial={{ scale: 1, opacity: 1 }}
+              animate={{
+                scale: isCorrect ? 1.05 : 0.95,
+                opacity: isCorrect ? 1 : 0.4,
+                filter: isCorrect ? "none" : "grayscale(60%)",
+              }}
+              transition={{
+                delay: 0.3 + i * 0.1,
+                type: "spring",
+                stiffness: 200,
               className={`${answerClasses[i]} rounded-2xl overflow-hidden shadow-lg relative border border-white/20`}
               style={{ minHeight: 90 }}
               initial={{ scale: 1, opacity: 1 }}
@@ -92,6 +118,15 @@ export function GameResults({ question, players, onNext }: Props) {
               }}
               transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 200 }}
             >
+              {/* Fill overlay showing answer distribution */}
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 bg-black/30 pointer-events-none"
+                initial={{ height: "0%" }}
+                animate={{ height: `${fillRatio * 100}%` }}
+                transition={{ delay: 0.8 + i * 0.15, duration: 0.8, ease: "easeOut" }}
+              />
+
+              {/* Victory shimmer on correct answer */}
               {/* Fill bar animation - shows distribution */}
               <motion.div
                 className="absolute inset-0 bg-black/20"
@@ -120,6 +155,44 @@ export function GameResults({ question, players, onNext }: Props) {
                 />
               )}
 
+              <div className="flex items-center gap-4 relative z-10">
+                <span className="font-display text-xl md:text-2xl text-white font-bold flex-1">
+                  {opt}
+                </span>
+                {isCorrect && (
+                  <motion.div
+                    className="bg-game-correct rounded-full p-2"
+                    initial={{ scale: 0, rotate: -270 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", delay: 0.6, stiffness: 300 }}
+                  >
+                    <Check className="w-6 h-6 text-white" />
+                  </motion.div>
+                )}
+                {!isCorrect && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 0.5, scale: 1 }}
+                    transition={{ delay: 0.4 + i * 0.1 }}
+                  >
+                    <X className="w-6 h-6 text-white/50" />
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Answer count badge */}
+              <motion.div
+                className="flex items-center gap-1.5 relative z-10"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 + i * 0.15 }}
+              >
+                <Users className="w-4 h-4 text-white/80" />
+                <span className="text-white/90 font-bold text-lg">{count}</span>
+                <span className="text-white/60 text-sm">
+                  {totalPlayers > 0 ? `מתוך ${totalPlayers}` : ""}
+                </span>
+              </motion.div>
               {/* Content */}
               <div className="relative z-10 p-4 md:p-6 flex items-center gap-3">
                 <span className="text-2xl opacity-60 text-white">{answerShapes[i]}</span>
@@ -175,6 +248,16 @@ export function GameResults({ question, players, onNext }: Props) {
         })}
       </div>
 
+      {/* No-answer info */}
+      {noAnswerCount > 0 && (
+        <motion.p
+          className="text-game-dark-gold/50 text-sm mb-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+        >
+          {noAnswerCount} שחקנים לא ענו
+        </motion.p>
       {/* Stats summary */}
       {totalAnswered > 0 && (
         <motion.div
@@ -189,6 +272,9 @@ export function GameResults({ question, players, onNext }: Props) {
       <motion.div
         initial={{ opacity: 0, y: 40, scale: 0.8 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ delay: 1.2, type: "spring", stiffness: 150 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
         transition={{ delay: 0.8, type: "spring", stiffness: 150 }}
         whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
       >

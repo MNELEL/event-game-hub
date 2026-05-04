@@ -10,7 +10,13 @@ import { QuestionList } from "@/components/game/QuestionList";
 import { GameSettingsPanel } from "@/components/game/GameSettingsPanel";
 import { TutorialDialog } from "@/components/game/TutorialDialog";
 import { QuestionImportExport } from "@/components/game/QuestionImportExport";
+import { QuestionTextImport } from "@/components/game/QuestionTextImport";
+import { ActiveGamesList } from "@/components/game/ActiveGamesList";
 import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
+import { useBranding } from "@/hooks/useBranding";
+import { BrandingEditor } from "@/components/game/BrandingEditor";
+import { BackgroundMusicManager } from "@/components/game/BackgroundMusicManager";
+import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette, Music } from "lucide-react";
 import {
   Play, HelpCircle, Settings, List, Plus, Home, LogOut,
   Loader2, FileDown, Users, Trash2, RefreshCw,
@@ -35,6 +41,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const store = useSupabaseQuestions();
+  const { branding } = useBranding();
   const [tab, setTab] = useState<Tab>("questions");
   const [showTutorial, setShowTutorial] = useState(false);
   const [games, setGames] = useState<GameRow[]>([]);
@@ -94,6 +101,7 @@ const Admin = () => {
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate("/")}>
               <Home className="w-5 h-5" />
             </Button>
+            <h1 className="font-display text-2xl font-bold text-foreground">{branding.iconPrimary} {branding.name} - ממשק ניהול</h1>
             <div>
               <h1 className="font-display font-bold text-base text-foreground leading-tight">🧠 החגיגה של חיוש</h1>
               <p className="text-[11px] text-muted-foreground leading-none">ממשק ניהול</p>
@@ -112,6 +120,12 @@ const Admin = () => {
             <Button size="sm" onClick={() => navigate("/host")}>
               <Play className="w-4 h-4 ml-1" />הפעלת משחק
             </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate("/yemot-setup")} className="gap-1">
+              📞 ימות
+            </Button>
+            <Button variant="default" size="sm" onClick={() => navigate("/host")}>
+              <Play className="w-4 h-4 ml-1" />
+              הפעלת משחק
             <Button variant="ghost" size="icon" onClick={signOut}>
               <LogOut className="w-4 h-4" />
             </Button>
@@ -153,6 +167,41 @@ const Admin = () => {
         </div>
       </header>
 
+      <main className="container mx-auto px-4 py-6 max-w-5xl">
+        <Tabs defaultValue="questions" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6 h-12">
+            <TabsTrigger value="questions" className="gap-2 font-display">
+              <List className="w-4 h-4" />
+              שאלות ({store.questions.length})
+            </TabsTrigger>
+            <TabsTrigger value="add" className="gap-2 font-display">
+              <Plus className="w-4 h-4" />
+              הוספת שאלה
+            </TabsTrigger>
+            <TabsTrigger value="games" className="gap-2 font-display">
+              <Gamepad2 className="w-4 h-4" />
+              משחקים
+            </TabsTrigger>
+            <TabsTrigger value="branding" className="gap-2 font-display">
+              <Palette className="w-4 h-4" />
+              מיתוג
+            </TabsTrigger>
+            <TabsTrigger value="music" className="gap-2 font-display">
+              <Music className="w-4 h-4" />
+              מוזיקה
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2 font-display">
+              <Settings className="w-4 h-4" />
+              הגדרות
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="questions">
+            <div className="flex justify-end mb-4 gap-2 flex-wrap">
+              <QuestionTextImport
+                onImport={(imported) => store.updateQuestions([...store.questions, ...imported])}
+                onReplace={(imported) => store.updateQuestions(imported)}
+              />
       {/* Desktop tab bar */}
       <div className="hidden md:flex border-b border-border bg-card px-4 gap-0.5 pt-1">
         {tabConfig.map(({ id, icon: Icon, label }) => (
@@ -183,6 +232,44 @@ const Admin = () => {
                 onReplace={(imported) => store.updateQuestions(imported)}
               />
             </div>
+            <QuestionList
+              questions={store.questions}
+              onRemove={store.removeQuestion}
+              onUpdate={store.updateQuestion}
+            />
+          </TabsContent>
+
+          <TabsContent value="add">
+            <QuestionEditor onAdd={store.addQuestion} />
+          </TabsContent>
+
+          <TabsContent value="games">
+            <ActiveGamesList />
+          </TabsContent>
+
+          <TabsContent value="branding">
+            <div className="flex justify-end mb-3">
+              <Button variant="outline" size="sm" onClick={() => navigate("/branding-preview")} className="gap-2">
+                <Palette className="w-4 h-4" />
+                תצוגה מקדימה והחלפת ערכת צבעים
+              </Button>
+            </div>
+            <BrandingEditor />
+          </TabsContent>
+
+          <TabsContent value="music">
+            <BackgroundMusicManager />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <GameSettingsPanel
+              settings={store.settings}
+              onUpdate={store.updateSettings}
+              questions={store.questions}
+              onResetQuestions={() => store.updateQuestions(defaultQuestions)}
+            />
+          </TabsContent>
+        </Tabs>
             <QuestionList questions={store.questions} onRemove={store.removeQuestion} onUpdate={store.updateQuestion} />
           </div>
         )}

@@ -12,9 +12,10 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const { player_id, game_id, question_id, answer, time_taken, secret_token } = await req.json();
     const { player_id, game_id, question_id, answer, time_taken, session_token } = await req.json();
 
-    if (!player_id || !game_id || !question_id || answer === undefined || time_taken === undefined) {
+    if (!player_id || !game_id || !question_id || answer === undefined || time_taken === undefined || !secret_token) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -25,12 +26,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Verify the player belongs to this game AND the secret token matches
+    const { data: player, error: playerError } = await supabase
+      .from("players")
+      .select("id, game_id, secret_token")
     // 1. Verify player
     const { data: player, error: playerError } = await supabase
       .from("players")
       .select("id, game_id, session_token")
       .eq("id", player_id)
       .eq("game_id", game_id)
+      .eq("secret_token", secret_token)
       .single();
 
     if (playerError || !player) {
@@ -39,6 +45,29 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Verify game is in "question" status and question_id is the active question
+    const { data: game, error: gameError } = await supabase
+      .from("games")
+      .select("status, question_ids, current_question_index")
+      .eq("id", game_id)
+      .single();
+
+    if (gameError || !game || game.status !== "question") {
+      return new Response(JSON.stringify({ error: "Question not active" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const activeQuestionId = (game.question_ids as string[])[game.current_question_index];
+    if (activeQuestionId !== question_id) {
+      return new Response(JSON.stringify({ error: "Wrong question" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if answer already submitted for this question
     if (player.session_token && session_token !== player.session_token) {
       return new Response(JSON.stringify({ error: "Unauthorized: invalid session token" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -95,6 +124,16 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Validate time_taken
+    if (time_taken < 0 || time_taken > question.time_limit) {
+      return new Response(JSON.stringify({ error: "Invalid time" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const correct = answer === question.correct_answer;
+    let points_earned = 0;
     // If still not found, store unscored but don't fail the player
     if (correct_answer === null) {
       const { data: ins } = await supabase
@@ -111,6 +150,8 @@ Deno.serve(async (req) => {
     const correct = answer === correct_answer;
     let points_earned = 0;
     if (correct) {
+      const timeRatio = Math.max(0, 1 - time_taken / question.time_limit);
+      points_earned = Math.round(question.points * (0.5 + 0.5 * timeRatio));
       const timeRatio = Math.max(0, 1 - time_taken / time_limit);
       points_earned = Math.round(points * (0.5 + 0.5 * timeRatio));
     }
@@ -122,6 +163,10 @@ Deno.serve(async (req) => {
       .select().single();
 
     if (insertError) {
+      console.error('Insert error:', insertError);
+      return new Response(JSON.stringify({ error: "Failed to record answer" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       return new Response(JSON.stringify({ error: insertError.message }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -132,6 +177,20 @@ Deno.serve(async (req) => {
       const { error: rpcErr } = await supabase.rpc("increment_player_score" as any, {
         p_player_id: player_id,
         p_points: points_earned,
+      }).then(async ({ error: rpcError }) => {
+        if (rpcError) {
+          const { data: currentPlayer } = await supabase
+            .from("players")
+            .select("score")
+            .eq("id", player_id)
+            .single();
+          if (currentPlayer) {
+            await supabase
+              .from("players")
+              .update({ score: currentPlayer.score + points_earned })
+              .eq("id", player_id);
+          }
+        }
       });
       if (rpcErr) {
         // Fallback: manual update
@@ -148,6 +207,10 @@ Deno.serve(async (req) => {
     );
 
   } catch (err) {
+    console.error('Unhandled error:', err);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     console.error("submit-answer error:", err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
