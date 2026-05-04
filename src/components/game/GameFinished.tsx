@@ -522,6 +522,26 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
           </Button>
         </motion.div>
         <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="gold" size="xl" disabled={exporting} className="gap-3">
+                <Download className="w-5 h-5" />
+                {exporting ? "מייצא..." : "הורדת תוצאות"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="bg-game-cream border-game-border-gold">
+              <DropdownMenuItem onClick={() => { SoundEffects.click(); handleExportPDF(); }} className="gap-2 cursor-pointer">
+                <FileText className="w-4 h-4" />
+                הורד כ-PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { SoundEffects.click(); handleExportImage(); }} className="gap-2 cursor-pointer">
+                <FileImage className="w-4 h-4" />
+                הורד כתמונה (PNG)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
           <Button variant="gold" size="xl" onClick={() => { SoundEffects.click(); onRestart(); }} className="gap-3">
             <RotateCcw className="w-5 h-5" />
             משחק חדש
