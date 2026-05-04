@@ -16,6 +16,7 @@ import { HeroIntro } from "@/components/game/HeroIntro";
 import { usePhonePlayers } from "@/hooks/usePhonePlayers";
 import { IvrSyncIndicator } from "@/components/game/IvrSyncIndicator";
 import { HostLiveStatusPanel } from "@/components/game/HostLiveStatusPanel";
+import { IvrLiveStatusPanel } from "@/components/game/IvrLiveStatusPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { StartAtDebugPanel } from "@/components/game/StartAtDebugPanel";
 import { ClockSkewDialog, type ClockSkewSeverity } from "@/components/game/ClockSkewDialog";
@@ -171,6 +172,17 @@ const GameHost = () => {
         phonePlayers={phonePlayers}
         startAt={startAt}
       />
+
+      <div className="mt-3">
+        <IvrLiveStatusPanel
+          gameStatus={gameState.status as "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished"}
+          currentQuestionIndex={gameState.currentQuestionIndex}
+          totalQuestions={gameState.questions.length}
+          timeRemaining={gameState.timeRemaining}
+          phonePlayers={phonePlayers}
+          startAt={startAt}
+        />
+      </div>
 
       <HeroIntro triggerKey={`${gameState.status}-${gameState.currentQuestionIndex}`} />
 
