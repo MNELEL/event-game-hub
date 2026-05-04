@@ -51,10 +51,7 @@ const STORAGE_KEY = "yemot_webhook_secret";
 
 export default function YemotSetup() {
   const navigate = useNavigate();
-  const [secret, setSecret] = useState<string>(() => {
-    if (typeof window === "undefined") return "";
-    return localStorage.getItem(STORAGE_KEY) ?? "";
-  });
+  const [secret, setSecret] = useState<string>("");
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [extension, setExtension] = useState<string>(() => {
     if (typeof window === "undefined") return "1";
@@ -71,12 +68,9 @@ export default function YemotSetup() {
     setLogs((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch, ts: Date.now() } : l)));
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
     if (secret) {
-      localStorage.setItem(STORAGE_KEY, secret);
       setSavedAt(Date.now());
     } else {
-      localStorage.removeItem(STORAGE_KEY);
       setSavedAt(null);
     }
   }, [secret]);
