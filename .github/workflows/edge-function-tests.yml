@@ -14,6 +14,9 @@ on:
       - ".github/workflows/edge-function-tests.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   # ─── Pure unit tests — always run, no DB required ───────────────────────────
   unit-tests:
