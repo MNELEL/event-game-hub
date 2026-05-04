@@ -254,8 +254,10 @@ export function decideIvrResponse(input: DecideInput): Decision {
       const timeout = Math.min(remaining, POLL_SECONDS);
       const q = state.current_question;
       const introVar = `qintro${state.current_question_index}`;
+      const seenThisQ =
+        (phoneRow?.last_seen_question_index ?? -1) >= state.current_question_index;
       // First poll of this question — read the full question + options once.
-      if (q && !params.has(introVar)) {
+      if (q && !params.has(introVar) && !seenThisQ) {
         const opts = (q.options || []).slice(0, 4)
           .map((o, i) => `${i + 1}. ${o}.`).join(" ");
         const text =
