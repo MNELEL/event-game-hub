@@ -15,6 +15,7 @@ import { useBranding } from "@/hooks/useBranding";
 import { HeroIntro } from "@/components/game/HeroIntro";
 import { usePhonePlayers } from "@/hooks/usePhonePlayers";
 import { IvrSyncIndicator } from "@/components/game/IvrSyncIndicator";
+import { supabase } from "@/integrations/supabase/client";
 
 const GameHost = () => {
   const navigate = useNavigate();
