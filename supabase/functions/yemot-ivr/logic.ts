@@ -16,6 +16,8 @@ export type GameState = {
   time_remaining: number;
   question_ids: string[];
   start_at?: string | null;
+  game_title?: string | null;
+  current_question?: { text: string; options: string[] } | null;
 };
 
 export type PhoneRow = {
