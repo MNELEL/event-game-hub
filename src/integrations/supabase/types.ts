@@ -158,6 +158,7 @@ export type Database = {
           id: string
           question_ids: string[]
           settings: Json
+          start_at: string | null
           status: string
           time_remaining: number
           updated_at: string
@@ -170,6 +171,7 @@ export type Database = {
           id?: string
           question_ids?: string[]
           settings?: Json
+          start_at?: string | null
           status?: string
           time_remaining?: number
           updated_at?: string
@@ -182,6 +184,7 @@ export type Database = {
           id?: string
           question_ids?: string[]
           settings?: Json
+          start_at?: string | null
           status?: string
           time_remaining?: number
           updated_at?: string
