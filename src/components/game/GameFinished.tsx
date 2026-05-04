@@ -35,6 +35,91 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
   const medals = ["🥇", "🥈", "🥉"];
   const [showStats, setShowStats] = useState(false);
   const [showTitles, setShowTitles] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  const categoryWinners = useMemo(() => {
+    const playersWithAnswers = players.filter(p => p.answers.length > 0);
+    const topScorer = sorted[0] || null;
+    let fastest: Player | null = null;
+    let fastestAvg = Infinity;
+    playersWithAnswers.forEach(p => {
+      const avg = p.answers.reduce((s, a) => s + a.time, 0) / p.answers.length;
+      if (avg < fastestAvg) { fastestAvg = avg; fastest = p; }
+    });
+    let mostAccurate: Player | null = null;
+    let bestAcc = -1;
+    playersWithAnswers.forEach(p => {
+      const acc = p.answers.filter(a => a.correct).length / p.answers.length;
+      if (acc > bestAcc) { bestAcc = acc; mostAccurate = p; }
+    });
+    return { topScorer, fastest, fastestAvg, mostAccurate, bestAcc };
+  }, [players, sorted]);
+
+  const handleExportImage = async () => {
+    if (!exportRef.current) return;
+    setExporting(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(exportRef.current, {
+        backgroundColor: "#fdf6e3", scale: 2, useCORS: true,
+      });
+      const link = document.createElement("a");
+      link.download = `תוצאות-משחק-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      toast.success("התמונה הורדה בהצלחה");
+    } catch (e) {
+      console.error(e);
+      toast.error("שגיאה בייצוא תמונה");
+    } finally { setExporting(false); }
+  };
+
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      let y = 20;
+      const rtl = (s: string) => s.split("").reverse().join("");
+
+      doc.setFontSize(22);
+      doc.text(rtl("תוצאות המשחק"), pageW / 2, y, { align: "center" });
+      y += 8;
+      doc.setFontSize(11);
+      doc.text(new Date().toLocaleString("he-IL"), pageW / 2, y, { align: "center" });
+      y += 12;
+
+      doc.setFontSize(16);
+      doc.text(rtl("שלושת הזוכים"), pageW - 15, y, { align: "right" });
+      y += 8;
+      doc.setFontSize(12);
+      const cw = categoryWinners;
+      const lines: string[] = [];
+      if (cw.topScorer) lines.push(`אלוף הניקוד: ${cw.topScorer.name} - ${cw.topScorer.score} נקודות`);
+      if (cw.fastest) lines.push(`אלוף המהירות: ${cw.fastest.name} - ${cw.fastestAvg.toFixed(1)} שניות`);
+      if (cw.mostAccurate) lines.push(`אלוף הדיוק: ${cw.mostAccurate.name} - ${Math.round(cw.bestAcc * 100)}%`);
+      lines.forEach(line => { doc.text(rtl(line), pageW - 15, y, { align: "right" }); y += 7; });
+      y += 6;
+
+      doc.setFontSize(16);
+      doc.text(rtl("טבלת תוצאות"), pageW - 15, y, { align: "right" });
+      y += 8;
+      doc.setFontSize(12);
+      sorted.forEach((p, i) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.text(rtl(`${i + 1}. ${p.name} - ${p.score} נקודות`), pageW - 15, y, { align: "right" });
+        y += 7;
+      });
+
+      doc.save(`תוצאות-משחק-${new Date().toISOString().slice(0, 10)}.pdf`);
+      toast.success("ה-PDF הורד בהצלחה");
+    } catch (e) {
+      console.error(e);
+      toast.error("שגיאה בייצוא PDF");
+    } finally { setExporting(false); }
+  };
 
   useEffect(() => {
     SoundEffects.victory();
