@@ -225,7 +225,7 @@ export function decideIvrResponse(input: DecideInput): Decision {
     };
   }
 
-  if (justJoined && !params.has("joined_intro")) {
+  if (justJoined && !params.has("joined_intro") && !params.has("recovered_intro")) {
     const lobbyStart =
       state.status === "lobby" && state.start_at &&
       new Date(state.start_at).getTime() > now
