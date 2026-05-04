@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.check-yemot-extension]
 verify_jwt = false
+
+[functions.verify-yemot-token]
+verify_jwt = false
