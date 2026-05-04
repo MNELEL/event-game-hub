@@ -99,6 +99,7 @@ export function usePlayerGame() {
               gameStatus: game.status as GameStatus,
               currentQuestionIndex: newQuestionIndex,
               timeRemaining: game.time_remaining,
+              startAt: game.start_at ?? prev.startAt,
               // Reset answer submitted when new question starts
               answerSubmitted: isNewQuestion ? false : prev.answerSubmitted,
             };
