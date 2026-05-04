@@ -204,14 +204,19 @@ export function decideIvrResponse(input: DecideInput): Decision {
       new Date(state.start_at).getTime() > now
         ? formatStartTimeIL(state.start_at)
         : "";
-    const intro = lobbyStart
-      ? `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}. המשחק יתחיל בשעה ${lobbyStart}.`
-      : `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
+    const title = (state.game_title || "").trim();
+    const welcome = title
+      ? `ברוכים הבאים למשחק ${title}.`
+      : `ברוכים הבאים למשחק הטריוויה.`;
+    const registered = `הרשמתך התקבלה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
+    const tail = lobbyStart
+      ? `המשחק יתחיל בשעה ${lobbyStart}. אנא המתן להפעלת המשחק.`
+      : `אנא המתן להפעלת המשחק.`;
     return {
       kind: "wait",
-      text: intro,
+      text: `${welcome} ${registered} ${tail}`,
       valName: "joined_intro",
-      seconds: lobbyStart ? 5 : 3,
+      seconds: lobbyStart ? 7 : 5,
     };
   }
 
