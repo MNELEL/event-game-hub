@@ -1,11 +1,18 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Player, Question } from "@/types/game";
-import { Trophy, RotateCcw, Home, Sparkles, BarChart3, Zap, Target, Crown, Timer } from "lucide-react";
+import { Trophy, RotateCcw, Home, Sparkles, BarChart3, Zap, Target, Crown, Timer, Download, FileImage, FileText } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { fireConfetti } from "@/hooks/useConfetti";
 import { GameStatsPanel } from "./GameStatsPanel";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Props = {
   players: Player[];
