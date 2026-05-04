@@ -149,8 +149,8 @@ export function decideIvrResponse(input: DecideInput): Decision {
       progress = `הסתיימה שאלה ${qNum} מתוך ${total}`;
     }
     const tail = remainingQs > 0
-      ? `נותרו ${remainingQs} שאלות עד סיום המשחק. תוכל לענות במשחק הבא שיתחיל לאחר סיום זה.`
-      : `המשחק לקראת סיום. תוכל לענות במשחק הבא שיתחיל בקרוב.`;
+      ? `נותרו ${remainingQs} שאלות עד סיום המשחק. אנא הישאר על הקו עד סיום המשחק הנוכחי. ברגע שיתחיל משחק חדש, נצרף אותך אוטומטית ותשמע 'ברוכים הבאים', ואז תוכל לענות על השאלות על ידי הקשת 1, 2, 3 או 4.`
+      : `המשחק לקראת סיום. אנא הישאר על הקו. ברגע שיתחיל משחק חדש, נצרף אותך אוטומטית ותשמע 'ברוכים הבאים', ואז תוכל לענות על השאלות על ידי הקשת 1, 2, 3 או 4.`;
 
     const cycle = Math.floor(joinedSecondsAgo / 30);
     const reminderVar = `late_msg_${cycle}`;
@@ -161,13 +161,13 @@ export function decideIvrResponse(input: DecideInput): Decision {
         ? formatStartTimeIL(state.start_at)
         : "";
     const tailWithTime = nextStart
-      ? `המשחק הבא יתחיל בשעה ${nextStart}. אנא הישאר על הקו.`
+      ? `המשחק הבא יתחיל בשעה ${nextStart}. אנא הישאר על הקו ואל תנתק. כשהמשחק יתחיל, תשמע 'ברוכים הבאים' ותוכל לענות על השאלות.`
       : tail;
     if (!params.has(reminderVar)) {
       const intro = cycle === 0
         ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tailWithTime}`
         : `${progress}. ${tailWithTime}`;
-      return { kind: "wait", text: intro, valName: reminderVar, seconds: cycle === 0 ? 8 : 6 };
+      return { kind: "wait", text: intro, valName: reminderVar, seconds: cycle === 0 ? 10 : 6 };
     }
     return { kind: "silent", valName: `late_wait_${cycle}`, seconds: POLL_SECONDS };
   }
