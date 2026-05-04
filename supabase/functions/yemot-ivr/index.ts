@@ -129,25 +129,19 @@ Deno.serve(async (req) => {
         ? `נותרו ${remainingQs} שאלות עד סיום המשחק. תוכל לענות במשחק הבא שיתחיל לאחר סיום זה.`
         : `המשחק לקראת סיום. תוכל לענות במשחק הבא שיתחיל בקרוב.`;
 
-      // First time: full message. Then every ~30 seconds: brief reminder. Otherwise: silent poll.
-      if (!params.has("late_intro")) {
-        const intro = `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tail} אנא הישאר על הקו.`;
-        return ymResp([waitRead(intro, "late_intro", 8)]);
+      // Repeat the reminder every ~30 seconds based on elapsed time since the
+      // caller joined. Between reminders we silently poll so we react instantly
+      // when the host starts a new game.
+      const cycle = Math.floor(joinedSecondsAgo / 30);
+      const reminderVar = `late_msg_${cycle}`;
+      if (!params.has(reminderVar)) {
+        const intro = cycle === 0
+          ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tail} אנא הישאר על הקו עד תחילת המשחק הבא.`
+          : `${progress}. ${tail}`;
+        return ymResp([waitRead(intro, reminderVar, cycle === 0 ? 8 : 6)]);
       }
 
-      const reminderCount = parseInt(params.get("late_reminder_count") || "0", 10);
-      // ~10 polls of 3s = 30s between reminders
-      if (reminderCount >= 10) {
-        const reminder = `${progress}. ${tail}`;
-        // Reset the counter by using a fresh var name each cycle
-        const newVar = `late_reminder_${Date.now()}`;
-        return ymResp([
-          waitRead(reminder, newVar, 6),
-          `read=t-=late_reminder_count=no,1,1,1,No,yes,no,,9,1,Ok,0`,
-        ]);
-      }
-
-      return ymResp([silentPoll(`late_wait_${reminderCount + 1}`), `read=t-=late_reminder_count=no,1,1,1,No,yes,no,,9,1,Ok,${reminderCount + 1}`]);
+      return ymResp([silentPoll(`late_wait_${cycle}`)]);
     }
 
     // 2) Handle answer submission. Use a per-question variable so old digits
