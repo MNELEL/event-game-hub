@@ -33,6 +33,7 @@ export type GameSettings = {
   selectedCategories: string[];
   showLeaderboardAfterEach: boolean;
   shuffleQuestions: boolean;
+  lobbyGraceSeconds: number;
 };
 
 export type GameState = {
