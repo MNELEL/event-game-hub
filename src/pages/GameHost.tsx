@@ -306,6 +306,25 @@ const GameHost = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ClockSkewDialog
+        open={!!clockSkew}
+        info={clockSkew}
+        onCancel={() => {
+          setClockSkew(null);
+          setPendingStart(null);
+        }}
+        onContinue={
+          clockSkew?.severity === "warning" && pendingStart
+            ? () => {
+                const fn = pendingStart;
+                setClockSkew(null);
+                setPendingStart(null);
+                fn();
+              }
+            : undefined
+        }
+      />
     </div>
   );
 };
