@@ -1,3 +1,5 @@
+// AUTO-MIRRORED from supabase/functions/yemot-ivr/logic.ts — keep in sync.
+// Edge functions cannot import across sibling directories at deploy time.
 // Pure IVR decision logic — no network/IO. Easy to unit-test and simulate.
 
 export type GameStatus =

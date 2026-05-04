@@ -15,9 +15,11 @@ import { useBranding } from "@/hooks/useBranding";
 import { HeroIntro } from "@/components/game/HeroIntro";
 import { usePhonePlayers } from "@/hooks/usePhonePlayers";
 import { IvrSyncIndicator } from "@/components/game/IvrSyncIndicator";
+import { HostLiveStatusPanel } from "@/components/game/HostLiveStatusPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { StartAtDebugPanel } from "@/components/game/StartAtDebugPanel";
 import { ClockSkewDialog, type ClockSkewSeverity } from "@/components/game/ClockSkewDialog";
+import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -35,9 +37,10 @@ const GameHost = () => {
   const { branding } = useBranding();
   const phonePlayers = usePhonePlayers(game.gameDbId);
 
-  // Live-track games.start_at while in lobby for the debug clock display.
+  // Live-track games.start_at across all phases so the host live panel can
+  // tell apart "normal" vs "recovery" phone joiners (created_at vs start_at).
   useEffect(() => {
-    if (!game.gameDbId || gameState.status !== "lobby") return;
+    if (!game.gameDbId) return;
     let cancelled = false;
     const fetchStart = async () => {
       const { data } = await supabase
@@ -48,7 +51,9 @@ const GameHost = () => {
       if (!cancelled) setStartAt((data as { start_at: string | null } | null)?.start_at ?? null);
     };
     fetchStart();
-    const iv = setInterval(fetchStart, 2000);
+    // Poll faster while in lobby (countdown UX), slower mid-game.
+    const intervalMs = gameState.status === "lobby" ? 2000 : 10_000;
+    const iv = setInterval(fetchStart, intervalMs);
     const tick = setInterval(() => setNowTick(Date.now()), 1000);
     return () => { cancelled = true; clearInterval(iv); clearInterval(tick); };
   }, [game.gameDbId, gameState.status]);
@@ -153,7 +158,19 @@ const GameHost = () => {
           phonePlayers={phonePlayers}
           currentQuestionIndex={gameState.currentQuestionIndex}
         />
+        <IvrTestCallButton compact />
       </div>
+
+      <HostLiveStatusPanel
+        gameStatus={gameState.status as "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished"}
+        currentQuestionIndex={gameState.currentQuestionIndex}
+        totalQuestions={gameState.questions.length}
+        questionText={gameState.questions[gameState.currentQuestionIndex]?.text}
+        timeRemaining={gameState.timeRemaining}
+        screenPlayersCount={gameState.players.length}
+        phonePlayers={phonePlayers}
+        startAt={startAt}
+      />
 
       <HeroIntro triggerKey={`${gameState.status}-${gameState.currentQuestionIndex}`} />
 
