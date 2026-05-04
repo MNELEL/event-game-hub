@@ -506,6 +506,7 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
           </div>
         </motion.div>
       )}
+      </div>
 
       {/* Action buttons */}
       <motion.div
