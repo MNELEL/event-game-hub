@@ -40,20 +40,72 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
 
   const categoryWinners = useMemo(() => {
     const playersWithAnswers = players.filter(p => p.answers.length > 0);
-    const topScorer = sorted[0] || null;
-    let fastest: Player | null = null;
-    let fastestAvg = Infinity;
-    playersWithAnswers.forEach(p => {
-      const avg = p.answers.reduce((s, a) => s + a.time, 0) / p.answers.length;
-      if (avg < fastestAvg) { fastestAvg = avg; fastest = p; }
+
+    const stats = playersWithAnswers.map(p => {
+      const correct = p.answers.filter(a => a.correct).length;
+      const accuracy = correct / p.answers.length;
+      const avgTime = p.answers.reduce((s, a) => s + a.time, 0) / p.answers.length;
+      return { player: p, accuracy, avgTime, correct, score: p.score };
     });
-    let mostAccurate: Player | null = null;
-    let bestAcc = -1;
-    playersWithAnswers.forEach(p => {
-      const acc = p.answers.filter(a => a.correct).length / p.answers.length;
-      if (acc > bestAcc) { bestAcc = acc; mostAccurate = p; }
-    });
-    return { topScorer, fastest, fastestAvg, mostAccurate, bestAcc };
+
+    // Pick all entries tied for the best `metric` value, then apply tiebreakers
+    // in order. If a tiebreaker resolves to a single winner — return it. If after
+    // all tiebreakers >1 are still equal, return them all (capped at 3) as a true tie.
+    const pickWithTiebreakers = <T extends { player: Player }>(
+      list: T[],
+      metric: (e: T) => number,
+      higherIsBetter: boolean,
+      tiebreakers: Array<(e: T) => number>, // each: higher is better
+    ): T[] => {
+      if (list.length === 0) return [];
+      const best = list.reduce((acc, e) => {
+        const v = metric(e);
+        return higherIsBetter ? Math.max(acc, v) : Math.min(acc, v);
+      }, higherIsBetter ? -Infinity : Infinity);
+      let tied = list.filter(e => metric(e) === best);
+      for (const tb of tiebreakers) {
+        if (tied.length <= 1) break;
+        const tbBest = tied.reduce((acc, e) => Math.max(acc, tb(e)), -Infinity);
+        const next = tied.filter(e => tb(e) === tbBest);
+        if (next.length > 0) tied = next;
+      }
+      return tied.slice(0, 3);
+    };
+
+    // Top score: tiebreak by accuracy → speed
+    const allStats = stats.length > 0 ? stats : sorted.map(p => ({
+      player: p, accuracy: 0, avgTime: Infinity, correct: 0, score: p.score,
+    }));
+    const topScorers = pickWithTiebreakers(
+      allStats, e => e.score, true,
+      [e => e.accuracy, e => -e.avgTime],
+    );
+
+    // Fastest: prefer players with ≥2 answers; tiebreak by accuracy → score
+    const eligibleFast = stats.filter(s => s.player.answers.length >= 2);
+    const fastest = pickWithTiebreakers(
+      eligibleFast.length > 0 ? eligibleFast : stats,
+      e => e.avgTime, false,
+      [e => e.accuracy, e => e.score],
+    );
+
+    // Most accurate: tiebreak by score → speed
+    const eligibleAcc = stats.filter(s => s.player.answers.length >= 2);
+    const mostAccurate = pickWithTiebreakers(
+      eligibleAcc.length > 0 ? eligibleAcc : stats,
+      e => e.accuracy, true,
+      [e => e.score, e => -e.avgTime],
+    );
+
+    return {
+      topScorers, fastest, mostAccurate,
+      // Backwards-compat single picks for PDF export
+      topScorer: topScorers[0]?.player ?? null,
+      fastestPlayer: fastest[0]?.player ?? null,
+      fastestAvg: fastest[0]?.avgTime ?? Infinity,
+      mostAccuratePlayer: mostAccurate[0]?.player ?? null,
+      bestAcc: mostAccurate[0]?.accuracy ?? 0,
+    };
   }, [players, sorted]);
 
   const handleExportImage = async () => {
