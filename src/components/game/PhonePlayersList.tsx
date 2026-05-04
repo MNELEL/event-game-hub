@@ -1,16 +1,33 @@
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, CheckCircle2, Clock } from "lucide-react";
 import { PhonePlayerRow } from "@/hooks/usePhonePlayers";
+import { getCallerSyncState } from "./IvrSyncIndicator";
 
 type Props = {
   phonePlayers: PhonePlayerRow[];
   gameStatus: string;
+  currentQuestionIndex?: number;
 };
 
-export function PhonePlayersList({ phonePlayers, gameStatus }: Props) {
+const dotColor = (s: "synced" | "lagging" | "offline") =>
+  s === "synced"
+    ? "bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.55)]"
+    : s === "lagging"
+    ? "bg-amber-500"
+    : "bg-rose-500";
+
+export function PhonePlayersList({ phonePlayers, gameStatus, currentQuestionIndex = 0 }: Props) {
   const inLobby = phonePlayers.filter(p => p.joined_in_lobby);
   const late = phonePlayers.filter(p => !p.joined_in_lobby);
   const isLobby = gameStatus === "lobby";
+
+  // Live tick so per-caller dots reflect freshness without waiting for a DB event.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const iv = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   return (
     <div className="parchment-card rounded-xl p-5 mb-6 text-right" dir="rtl">
@@ -35,18 +52,32 @@ export function PhonePlayersList({ phonePlayers, gameStatus }: Props) {
               </p>
               <div className="flex flex-wrap gap-2">
                 <AnimatePresence>
-                  {inLobby.map(p => (
-                    <motion.span
-                      key={p.phone}
-                      initial={{ opacity: 0, scale: 0.7 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0 }}
-                      className="flex items-center gap-1 bg-game-gold/20 text-game-dark-gold px-3 py-1 rounded-full text-sm border border-game-border-gold/40 direction-ltr"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                      <span className="font-mono">…{p.phone.slice(-4)}</span>
-                    </motion.span>
-                  ))}
+                  {inLobby.map(p => {
+                    const sync = getCallerSyncState(p, currentQuestionIndex, now);
+                    const label =
+                      sync === "synced"
+                        ? "IVR מסונכרן עכשיו"
+                        : sync === "lagging"
+                        ? "IVR מתעדכן…"
+                        : "IVR לא מגיב";
+                    return (
+                      <motion.span
+                        key={p.phone}
+                        initial={{ opacity: 0, scale: 0.7 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        className="flex items-center gap-1.5 bg-game-gold/20 text-game-dark-gold px-3 py-1 rounded-full text-sm border border-game-border-gold/40 direction-ltr"
+                        title={label}
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full ${dotColor(sync)}`}
+                          aria-label={label}
+                        />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                        <span className="font-mono">…{p.phone.slice(-4)}</span>
+                      </motion.span>
+                    );
+                  })}
                 </AnimatePresence>
               </div>
             </div>

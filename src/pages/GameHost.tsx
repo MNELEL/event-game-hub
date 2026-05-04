@@ -14,6 +14,7 @@ import { Home, Loader2, Settings } from "lucide-react";
 import { useBranding } from "@/hooks/useBranding";
 import { HeroIntro } from "@/components/game/HeroIntro";
 import { usePhonePlayers } from "@/hooks/usePhonePlayers";
+import { IvrSyncIndicator } from "@/components/game/IvrSyncIndicator";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -123,6 +124,10 @@ const GameHost = () => {
           <Settings className="w-5 h-5" />
         </Button>
         <SoundControlPanel />
+        <IvrSyncIndicator
+          phonePlayers={phonePlayers}
+          currentQuestionIndex={gameState.currentQuestionIndex}
+        />
       </div>
 
       <HeroIntro triggerKey={`${gameState.status}-${gameState.currentQuestionIndex}`} />

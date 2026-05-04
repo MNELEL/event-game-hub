@@ -194,7 +194,9 @@ export type Database = {
           game_id: string
           joined_in_lobby: boolean
           last_answer_at: string | null
+          last_poll_at: string | null
           last_question_index: number
+          last_seen_question_index: number | null
           phone: string
           player_id: string
         }
@@ -203,7 +205,9 @@ export type Database = {
           game_id: string
           joined_in_lobby?: boolean
           last_answer_at?: string | null
+          last_poll_at?: string | null
           last_question_index?: number
+          last_seen_question_index?: number | null
           phone: string
           player_id: string
         }
@@ -212,7 +216,9 @@ export type Database = {
           game_id?: string
           joined_in_lobby?: boolean
           last_answer_at?: string | null
+          last_poll_at?: string | null
           last_question_index?: number
+          last_seen_question_index?: number | null
           phone?: string
           player_id?: string
         }

@@ -85,6 +85,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Heartbeat: record that the IVR is actively polling for this caller and
+    // which question index it currently sees. Powers the host's live "IVR sync"
+    // indicator. Best-effort — never block the response.
+    admin
+      .from("phone_players")
+      .update({
+        last_poll_at: new Date().toISOString(),
+        last_seen_question_index: state.current_question_index,
+      })
+      .eq("phone", phone)
+      .eq("game_id", state.game_id)
+      .then(({ error }) => {
+        if (error) console.error("[yemot-ivr] heartbeat error", error);
+      });
+
     return ymResp([decision]);
   } catch (e) {
     console.error("yemot-ivr error", e);
