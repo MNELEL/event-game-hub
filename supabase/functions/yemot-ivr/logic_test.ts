@@ -315,6 +315,10 @@ Deno.test("late joiner message includes 'stay on line for next game' instruction
     if (!d.text.includes("1, 2, 3 או 4")) {
       throw new Error("late joiner message should explain how to answer in the next game");
     }
+    // Terminology consistency: always say "משחק חדש", never "המשחק הבא".
+    if (d.text.includes("המשחק הבא")) {
+      throw new Error("late joiner message must use 'משחק חדש', not 'המשחק הבא'");
+    }
   }
 });
 
