@@ -1,4 +1,5 @@
 # 🧠 חיוש בת מצוה · Chayoush
+# Welcome to your trivia questions and answers project
 
 > משחק טריוויה אינטראקטיבי רב-משתתפים בעברית, בסגנון Kahoot, לאירועים משפחתיים, גיבושים, בת/בר מצווה, כנסים וימי הולדת.
 >
