@@ -165,6 +165,27 @@ const GameHost = () => {
               gameStatus={gameState.status}
               onAddPlayer={game.addPlayer}
               onStart={async () => {
+                // Server-side clock-skew sanity check before starting.
+                const { data: skewRows } = await supabase.rpc("check_clock_skew", {
+                  p_client_now: new Date().toISOString(),
+                  p_warn_seconds: 5,
+                  p_critical_seconds: 30,
+                });
+                const skew = Array.isArray(skewRows) ? skewRows[0] : null;
+                if (skew?.severity === "critical") {
+                  alert(
+                    `❌ פער שעון חריג זוהה (${Number(skew.drift_seconds).toFixed(1)} שניות).\n` +
+                    `המשחק לא יופעל כדי למנוע אי-סנכרון בין מתקשרים.\n\n${skew.message}`
+                  );
+                  return;
+                }
+                if (skew?.severity === "warning") {
+                  const ok = confirm(
+                    `⚠️ פער שעון של ${Number(skew.drift_seconds).toFixed(1)} שניות בין הדפדפן לשרת.\n` +
+                    `התראה נרשמה בלוג. להמשיך בהפעלת המשחק?`
+                  );
+                  if (!ok) return;
+                }
                 const grace = Math.max(0, gameState.settings.lobbyGraceSeconds || 0);
                 const startAtIso = new Date(Date.now() + grace * 1000).toISOString();
                 if (game.gameDbId) {
