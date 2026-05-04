@@ -12,6 +12,7 @@ const defaultSettings: GameSettings = {
   selectedCategories: [],
   showLeaderboardAfterEach: true,
   shuffleQuestions: true,
+  lobbyGraceSeconds: 0,
 };
 
 const STORAGE_KEY = branding.storage.storageKey;
