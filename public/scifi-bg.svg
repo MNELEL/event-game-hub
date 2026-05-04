@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <!-- Deep space background -->
+    <radialGradient id="space" cx="50%" cy="48%" r="70%">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="45%" stop-color="#060d1a"/>
+      <stop offset="100%" stop-color="#020508"/>
+    </radialGradient>
+
+    <!-- Nebula orange/brown -->
+    <radialGradient id="nebula1" cx="30%" cy="35%" r="40%">
+      <stop offset="0%" stop-color="#c4520a" stop-opacity="0.18"/>
+      <stop offset="50%" stop-color="#7a3008" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Nebula blue left -->
+    <radialGradient id="nebula2" cx="70%" cy="60%" r="35%">
+      <stop offset="0%" stop-color="#0a4a8c" stop-opacity="0.20"/>
+      <stop offset="60%" stop-color="#062456" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Nebula teal top -->
+    <radialGradient id="nebula3" cx="55%" cy="20%" r="30%">
+      <stop offset="0%" stop-color="#006688" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Center engine glow -->
+    <radialGradient id="engineglow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00c8ff" stop-opacity="0.22"/>
+      <stop offset="40%" stop-color="#0066aa" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Vignette -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.75"/>
+    </radialGradient>
+
+    <filter id="glow4">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow12">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Base -->
+  <rect width="1400" height="900" fill="url(#space)"/>
+
+  <!-- Nebula clouds -->
+  <rect width="1400" height="900" fill="url(#nebula1)"/>
+  <rect width="1400" height="900" fill="url(#nebula2)"/>
+  <rect width="1400" height="900" fill="url(#nebula3)"/>
+  <rect width="1400" height="900" fill="url(#engineglow)"/>
+
+  <!-- Stars — tiny dots at various opacities -->
+  <g fill="white">
+    <circle cx="45" cy="23" r="0.8" opacity="0.9"/>
+    <circle cx="123" cy="67" r="0.5" opacity="0.7"/>
+    <circle cx="201" cy="145" r="1.0" opacity="0.8"/>
+    <circle cx="89" cy="312" r="0.6" opacity="0.6"/>
+    <circle cx="334" cy="56" r="0.9" opacity="0.9"/>
+    <circle cx="456" cy="189" r="0.5" opacity="0.5"/>
+    <circle cx="578" cy="34" r="1.1" opacity="0.95"/>
+    <circle cx="667" cy="112" r="0.6" opacity="0.7"/>
+    <circle cx="789" cy="78" r="0.8" opacity="0.8"/>
+    <circle cx="901" cy="234" r="0.5" opacity="0.6"/>
+    <circle cx="1023" cy="45" r="1.0" opacity="0.9"/>
+    <circle cx="1145" cy="167" r="0.6" opacity="0.7"/>
+    <circle cx="1267" cy="89" r="0.9" opacity="0.85"/>
+    <circle cx="1356" cy="223" r="0.5" opacity="0.6"/>
+    <circle cx="156" cy="445" r="0.8" opacity="0.7"/>
+    <circle cx="278" cy="567" r="0.5" opacity="0.5"/>
+    <circle cx="400" cy="389" r="1.0" opacity="0.8"/>
+    <circle cx="522" cy="523" r="0.6" opacity="0.6"/>
+    <circle cx="644" cy="456" r="0.8" opacity="0.75"/>
+    <circle cx="766" cy="312" r="0.5" opacity="0.5"/>
+    <circle cx="888" cy="489" r="0.9" opacity="0.85"/>
+    <circle cx="1010" cy="378" r="0.6" opacity="0.7"/>
+    <circle cx="1132" cy="534" r="0.8" opacity="0.8"/>
+    <circle cx="1254" cy="412" r="0.5" opacity="0.6"/>
+    <circle cx="67" cy="678" r="0.9" opacity="0.8"/>
+    <circle cx="189" cy="756" r="0.5" opacity="0.5"/>
+    <circle cx="311" cy="689" r="1.0" opacity="0.85"/>
+    <circle cx="433" cy="823" r="0.6" opacity="0.6"/>
+    <circle cx="700" cy="745" r="0.8" opacity="0.7"/>
+    <circle cx="934" cy="812" r="0.9" opacity="0.8"/>
+    <circle cx="1189" cy="723" r="0.6" opacity="0.65"/>
+    <circle cx="1323" cy="845" r="0.8" opacity="0.75"/>
+    <!-- Brighter stars -->
+    <circle cx="234" cy="198" r="1.5" opacity="0.95"/>
+    <circle cx="712" cy="289" r="1.4" opacity="0.9"/>
+    <circle cx="1089" cy="156" r="1.6" opacity="1.0"/>
+    <circle cx="389" cy="712" r="1.3" opacity="0.88"/>
+    <circle cx="956" cy="634" r="1.5" opacity="0.92"/>
+  </g>
+
+  <!-- Asteroids (dark silhouettes) -->
+  <g fill="#1a1e28" opacity="0.8">
+    <ellipse cx="180" cy="260" rx="18" ry="12" transform="rotate(-20 180 260)"/>
+    <ellipse cx="320" cy="180" rx="10" ry="7" transform="rotate(15 320 180)"/>
+    <ellipse cx="1100" cy="220" rx="14" ry="9" transform="rotate(-35 1100 220)"/>
+    <ellipse cx="1250" cy="380" rx="8" ry="5" transform="rotate(25 1250 380)"/>
+    <ellipse cx="240" cy="580" rx="12" ry="8" transform="rotate(-10 240 580)"/>
+    <ellipse cx="1050" cy="620" rx="16" ry="11" transform="rotate(40 1050 620)"/>
+    <ellipse cx="890" cy="150" rx="9" ry="6" transform="rotate(-25 890 150)"/>
+    <ellipse cx="520" cy="720" rx="11" ry="7" transform="rotate(18 520 720)"/>
+    <ellipse cx="130" cy="720" rx="7" ry="5" transform="rotate(-15 130 720)"/>
+    <ellipse cx="1300" cy="650" rx="13" ry="8" transform="rotate(30 1300 650)"/>
+  </g>
+
+  <!-- Ship silhouette — centered, triangular, dark metallic -->
+  <g transform="translate(700, 450)">
+    <!-- Main body -->
+    <polygon points="0,-120 -90,60 0,30 90,60" fill="#0d1220" opacity="0.95"/>
+    <!-- Center spine -->
+    <rect x="-5" y="-120" width="10" height="160" fill="#141828" opacity="0.9"/>
+    <!-- Wing details -->
+    <polygon points="-90,60 -130,50 -70,40" fill="#111825" opacity="0.85"/>
+    <polygon points="90,60 130,50 70,40" fill="#111825" opacity="0.85"/>
+    <!-- Engine glow bottom -->
+    <ellipse cx="0" cy="62" rx="18" ry="8" fill="#ff6a00" opacity="0.7" filter="url(#glow4)"/>
+    <ellipse cx="-70" cy="55" rx="10" ry="5" fill="#ff8800" opacity="0.5" filter="url(#glow4)"/>
+    <ellipse cx="70" cy="55" rx="10" ry="5" fill="#ff8800" opacity="0.5" filter="url(#glow4)"/>
+    <!-- Top beam emitter -->
+    <rect x="-3" y="-125" width="6" height="12" fill="#00d4ff" opacity="0.9" filter="url(#glow4)"/>
+  </g>
+
+  <!-- Energy beams — cyan, emanating from ship top -->
+  <g filter="url(#glow12)">
+    <!-- Left beam -->
+    <line x1="700" y1="328" x2="400" y2="50" stroke="#00c8ff" stroke-width="2" stroke-opacity="0.55"/>
+    <line x1="700" y1="328" x2="420" y2="60" stroke="#80e8ff" stroke-width="0.8" stroke-opacity="0.35"/>
+    <!-- Right beam -->
+    <line x1="700" y1="328" x2="1000" y2="50" stroke="#00c8ff" stroke-width="2" stroke-opacity="0.55"/>
+    <line x1="700" y1="328" x2="980" y2="60" stroke="#80e8ff" stroke-width="0.8" stroke-opacity="0.35"/>
+  </g>
+
+  <!-- Horizontal energy line -->
+  <line x1="0" y1="450" x2="1400" y2="450" stroke="#00c8ff" stroke-width="1" stroke-opacity="0.12"/>
+  <g filter="url(#glow4)">
+    <!-- Left wing beam -->
+    <line x1="610" y1="510" x2="200" y2="510" stroke="#00aaff" stroke-width="2.5" stroke-opacity="0.6"/>
+    <ellipse cx="200" cy="510" rx="12" ry="6" fill="#00c8ff" opacity="0.8"/>
+    <!-- Right wing beam -->
+    <line x1="790" y1="510" x2="1200" y2="510" stroke="#00aaff" stroke-width="2.5" stroke-opacity="0.6"/>
+    <ellipse cx="1200" cy="510" rx="12" ry="6" fill="#00c8ff" opacity="0.8"/>
+  </g>
+
+  <!-- Small distant ships -->
+  <g fill="#1a2035" opacity="0.7">
+    <polygon points="200,340 190,360 210,360" transform="rotate(15 200 350)"/>
+    <polygon points="1150,290 1140,308 1160,308" transform="rotate(-20 1150 299)"/>
+  </g>
+
+  <!-- Vignette overlay -->
+  <rect width="1400" height="900" fill="url(#vignette)"/>
+</svg>

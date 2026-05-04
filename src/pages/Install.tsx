@@ -40,6 +40,8 @@ export default function Install() {
       <div className="max-w-md w-full text-center space-y-6">
         <div className="text-6xl">{branding.iconPrimary}</div>
         <h1 className="text-3xl font-bold text-foreground">התקן את {branding.name}</h1>
+        <div className="text-6xl">🧠</div>
+        <h1 className="text-3xl font-bold text-foreground">התקן את החגיגה של חיוש</h1>
         <p className="text-muted-foreground">
           התקן את האפליקציה על המכשיר שלך לגישה מהירה וחוויה מלאה — בלי חנות אפליקציות!
         </p>
