@@ -141,10 +141,19 @@ export function decideIvrResponse(input: DecideInput): Decision {
 
     const cycle = Math.floor(joinedSecondsAgo / 30);
     const reminderVar = `late_msg_${cycle}`;
+    // If host scheduled the next game start, announce the exact clock time.
+    const nextStart =
+      state.status === "lobby" && state.start_at &&
+      new Date(state.start_at).getTime() > now
+        ? formatStartTimeIL(state.start_at)
+        : "";
+    const tailWithTime = nextStart
+      ? `המשחק הבא יתחיל בשעה ${nextStart}. אנא הישאר על הקו.`
+      : tail;
     if (!params.has(reminderVar)) {
       const intro = cycle === 0
-        ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tail} אנא הישאר על הקו עד תחילת המשחק הבא.`
-        : `${progress}. ${tail}`;
+        ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tailWithTime}`
+        : `${progress}. ${tailWithTime}`;
       return { kind: "wait", text: intro, valName: reminderVar, seconds: cycle === 0 ? 8 : 6 };
     }
     return { kind: "silent", valName: `late_wait_${cycle}`, seconds: POLL_SECONDS };
