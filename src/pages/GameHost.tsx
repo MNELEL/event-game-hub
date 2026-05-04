@@ -124,6 +124,10 @@ const GameHost = () => {
           <Settings className="w-5 h-5" />
         </Button>
         <SoundControlPanel />
+        <IvrSyncIndicator
+          phonePlayers={phonePlayers}
+          currentQuestionIndex={gameState.currentQuestionIndex}
+        />
       </div>
 
       <HeroIntro triggerKey={`${gameState.status}-${gameState.currentQuestionIndex}`} />
