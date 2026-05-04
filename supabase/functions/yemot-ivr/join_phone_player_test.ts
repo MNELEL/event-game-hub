@@ -190,3 +190,147 @@ Deno.test("join_phone_player: re-call for same phone in same game keeps existing
     await cleanupGame(admin, gameId, [phone]);
   }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Edge-case tests — boundaries around status transitions and the grace window.
+// ─────────────────────────────────────────────────────────────────────────────
+
+Deno.test("edge: caller arriving 50ms BEFORE start_at → joined_in_lobby = true", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(10);
+  const gameId = await createGame(admin, {
+    status: "lobby",
+    startAt: new Date(Date.now() + 200), // tight window
+  });
+  try {
+    // Race the boundary on purpose — call should land just before start_at.
+    await callJoin(admin, phone);
+    const row = await readPhoneRow(admin, phone);
+    assertEquals(row?.joined_in_lobby, true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
+
+Deno.test("edge: caller arriving 50ms AFTER start_at → joined_in_lobby = false", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(11);
+  const gameId = await createGame(admin, {
+    status: "lobby",
+    startAt: new Date(Date.now() - 50),
+  });
+  try {
+    await callJoin(admin, phone);
+    const row = await readPhoneRow(admin, phone);
+    assertEquals(row?.joined_in_lobby, false);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
+
+Deno.test("edge: caller arrives BEFORE host clicks start (start_at NULL) then status flips → row stays joined_in_lobby = true", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(12);
+  const gameId = await createGame(admin, { status: "lobby", startAt: null });
+  try {
+    await callJoin(admin, phone);
+    const before = await readPhoneRow(admin, phone);
+    assertEquals(before?.joined_in_lobby, true);
+    // Host clicks start → status flips to question
+    await admin.from("games").update({
+      status: "question",
+      start_at: new Date(Date.now() - 1_000).toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("id", gameId);
+    // Caller polls again — must NOT be downgraded
+    await callJoin(admin, phone);
+    const after = await readPhoneRow(admin, phone);
+    assertEquals(after?.joined_in_lobby, true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
+
+Deno.test("edge: caller arrives JUST AFTER status flips lobby→question (start_at past) → joined_in_lobby = false", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(13);
+  // Simulate the moment just after the host transition.
+  const gameId = await createGame(admin, {
+    status: "question",
+    startAt: new Date(Date.now() - 100),
+  });
+  try {
+    await callJoin(admin, phone);
+    const row = await readPhoneRow(admin, phone);
+    assertEquals(row?.joined_in_lobby, false);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
+
+Deno.test("edge: caller arrives at the exact moment grace window opens (start_at far future) → joined_in_lobby = true", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(14);
+  const gameId = await createGame(admin, {
+    status: "lobby",
+    startAt: new Date(Date.now() + 60_000),
+  });
+  try {
+    await callJoin(admin, phone);
+    const row = await readPhoneRow(admin, phone);
+    assertEquals(row?.joined_in_lobby, true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
+
+Deno.test("edge: two callers — one before, one after start_at (sequential)", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const earlyPhone = fakePhone(15);
+  const latePhone = fakePhone(16);
+  // Window opens for ~250ms then expires
+  const gameId = await createGame(admin, {
+    status: "lobby",
+    startAt: new Date(Date.now() + 250),
+  });
+  try {
+    await callJoin(admin, earlyPhone); // inside window
+    // Wait until past start_at
+    await new Promise(r => setTimeout(r, 400));
+    await callJoin(admin, latePhone);  // outside window
+    const early = await readPhoneRow(admin, earlyPhone);
+    const late = await readPhoneRow(admin, latePhone);
+    assertEquals(early?.joined_in_lobby, true);
+    assertEquals(late?.joined_in_lobby, false);
+  } finally {
+    await cleanupGame(admin, gameId, [earlyPhone, latePhone]);
+  }
+});
+
+Deno.test("edge: host cancels grace (start_at advanced to now) — caller arriving after gets joined_in_lobby = false", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(17);
+  const gameId = await createGame(admin, {
+    status: "lobby",
+    startAt: new Date(Date.now() + 30_000),
+  });
+  try {
+    // Host clicks "skip and start now" — pull start_at to the past, status will flip momentarily
+    await admin.from("games").update({
+      start_at: new Date(Date.now() - 1).toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("id", gameId);
+    await callJoin(admin, phone);
+    const row = await readPhoneRow(admin, phone);
+    assertEquals(row?.joined_in_lobby, false);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
