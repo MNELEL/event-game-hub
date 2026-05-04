@@ -11,8 +11,20 @@ import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
+// When REQUIRE_DB=1 (set in CI), missing credentials are a hard failure
+// instead of a silent skip — guarantees the integration suite actually ran.
+const REQUIRE_DB = Deno.env.get("REQUIRE_DB") === "1";
+
 function makeClient(): SupabaseClient | null {
-  if (!SUPABASE_URL || !SERVICE_ROLE) return null;
+  if (!SUPABASE_URL || !SERVICE_ROLE) {
+    if (REQUIRE_DB) {
+      throw new Error(
+        "REQUIRE_DB=1 but SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not set. " +
+        "Configure them as repo secrets to run integration tests.",
+      );
+    }
+    return null;
+  }
   return createClient(SUPABASE_URL, SERVICE_ROLE, {
     auth: { persistSession: false },
   });
