@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.setup-yemot-extension]
 verify_jwt = false
+
+[functions.check-yemot-extension]
+verify_jwt = false
