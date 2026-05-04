@@ -271,12 +271,12 @@ export function decideIvrResponse(input: DecideInput): Decision {
     const title = (state.game_title || "").trim();
     const welcome = title
       ? `שלום, ברוכים הבאים למשחק ${title}.`
-      : `שלום, ברוכים הבאים למשחק הטריוויה.`;
+      : `שלום, ברוכים הבאים למשחק.`;
     return {
       kind: "wait",
-      text: `${welcome} נרשמת בשם מתקשר ${phone.slice(-4)}. המשחק כבר התחיל אבל הספקת להצטרף בזמן לשאלה הראשונה. כעת תשמע את השאלה — הקשב לארבע האפשרויות, ובסיום הקש 1, 2, 3 או 4 לבחירת התשובה.`,
+      text: `${welcome} נרשמת בשם מתקשר ${phone.slice(-4)}. המשחק כבר התחיל אבל הספקת להצטרף בזמן לשאלה הראשונה. השאלות מוצגות על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4 לבחירת התשובה.`,
       valName: "recovered_intro",
-      seconds: 9,
+      seconds: 8,
     };
   }
 
