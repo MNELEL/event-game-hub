@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { decideIvrResponse, type GameState, type PhoneRow } from "./logic.ts";
+import { classifyJoiner, decideIvrResponse, type GameState, type PhoneRow } from "./logic.ts";
 
 const NOW = new Date("2026-01-01T12:00:00Z").getTime();
 
