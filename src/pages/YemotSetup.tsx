@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
 import { CallTestWizard } from "@/components/yemot/CallTestWizard";
+import { ApiPermissionsChecklist } from "@/components/yemot/ApiPermissionsChecklist";
 
 const SUPABASE_PROJECT_ID = "wzmspoufqdldcuagsvir";
 const WEBHOOK_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/yemot-ivr`;
@@ -237,6 +238,9 @@ say_error_message=no`;
             </p>
           </div>
         </Card>
+
+        {/* API permissions verification — explains exactly what to enable in Yemot */}
+        <ApiPermissionsChecklist />
 
         {/* Step-by-step call test wizard */}
         <CallTestWizard />
