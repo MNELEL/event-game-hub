@@ -92,7 +92,7 @@ Deno.test("late joiner — first call shows full late-explainer with progress", 
     assertEquals(d.valName, "late_msg_0");
     assertEquals(d.text.includes("4321"), true);
     assertEquals(d.text.includes("שאלה 2 מתוך 3"), true);
-    assertEquals(d.text.includes("משחק הבא"), true);
+    assertEquals(d.text.includes("משחק חדש"), true);
   }
 });
 
