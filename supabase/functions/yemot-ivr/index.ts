@@ -109,13 +109,39 @@ Deno.serve(async (req) => {
 
     // Caller didn't register during the lobby — they must wait for the next game.
     if (!joinedInLobby) {
-      if (justJoined && !params.has("late_intro")) {
-        return ymResp([waitRead(`המשחק כבר התחיל. נרשמת בשם מתקשר ${phone.slice(-4)}, אך לא תוכל לענות על השאלות במשחק הנוכחי. אנא המתן למשחק הבא.`, "late_intro", 6)]);
-      }
       if (state.status === "finished") {
-        return ymResp([hangupMessage("המשחק הסתיים. תודה על ההשתתפות.")]);
+        return ymResp([hangupMessage(`המשחק הסתיים. נרשמת בשם מתקשר ${phone.slice(-4)}. תוכל להשתתף במשחק הבא. תודה רבה.`)]);
       }
-      return ymResp([silentPoll("late_wait")]);
+
+      const total = state.question_ids?.length || 0;
+      const qNum = state.current_question_index + 1;
+      const remainingQs = Math.max(0, total - qNum);
+
+      let progress = "המשחק בעיצומו";
+      if (state.status === "lobby" || state.status === "playing") {
+        progress = "המשחק עומד להתחיל";
+      } else if (state.status === "question") {
+        progress = `כעת מתקיימת שאלה ${qNum} מתוך ${total}`;
+      } else if (state.status === "results" || state.status === "leaderboard") {
+        progress = `הסתיימה שאלה ${qNum} מתוך ${total}`;
+      }
+      const tail = remainingQs > 0
+        ? `נותרו ${remainingQs} שאלות עד סיום המשחק. תוכל לענות במשחק הבא שיתחיל לאחר סיום זה.`
+        : `המשחק לקראת סיום. תוכל לענות במשחק הבא שיתחיל בקרוב.`;
+
+      // Repeat the reminder every ~30 seconds based on elapsed time since the
+      // caller joined. Between reminders we silently poll so we react instantly
+      // when the host starts a new game.
+      const cycle = Math.floor(joinedSecondsAgo / 30);
+      const reminderVar = `late_msg_${cycle}`;
+      if (!params.has(reminderVar)) {
+        const intro = cycle === 0
+          ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tail} אנא הישאר על הקו עד תחילת המשחק הבא.`
+          : `${progress}. ${tail}`;
+        return ymResp([waitRead(intro, reminderVar, cycle === 0 ? 8 : 6)]);
+      }
+
+      return ymResp([silentPoll(`late_wait_${cycle}`)]);
     }
 
     // 2) Handle answer submission. Use a per-question variable so old digits
