@@ -54,6 +54,13 @@ export function usePlayerGame() {
 
     const questionIds = (row.question_ids as string[]) || [];
 
+    // Fetch start_at separately (not returned by RPC)
+    const { data: gameRow } = await supabase
+      .from("games")
+      .select("start_at")
+      .eq("id", row.game_id)
+      .maybeSingle();
+
     setState(prev => ({
       ...prev,
       gameId: row.game_id,
@@ -67,6 +74,7 @@ export function usePlayerGame() {
       questionIds,
       connected: true,
       answerSubmitted: false,
+      startAt: (gameRow as any)?.start_at ?? null,
     }));
 
     return { error: null };
