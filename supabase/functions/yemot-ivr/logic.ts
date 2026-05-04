@@ -16,11 +16,14 @@ export type GameState = {
   time_remaining: number;
   question_ids: string[];
   start_at?: string | null;
+  game_title?: string | null;
+  current_question?: { text: string; options: string[] } | null;
 };
 
 export type PhoneRow = {
   created_at?: string;
   last_question_index?: number;
+  last_seen_question_index?: number;
   joined_in_lobby?: boolean;
 };
 
@@ -202,14 +205,19 @@ export function decideIvrResponse(input: DecideInput): Decision {
       new Date(state.start_at).getTime() > now
         ? formatStartTimeIL(state.start_at)
         : "";
-    const intro = lobbyStart
-      ? `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}. המשחק יתחיל בשעה ${lobbyStart}.`
-      : `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
+    const title = (state.game_title || "").trim();
+    const welcome = title
+      ? `ברוכים הבאים למשחק ${title}.`
+      : `ברוכים הבאים למשחק הטריוויה.`;
+    const registered = `הרשמתך התקבלה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
+    const tail = lobbyStart
+      ? `המשחק יתחיל בשעה ${lobbyStart}. אנא המתן להפעלת המשחק.`
+      : `אנא המתן להפעלת המשחק.`;
     return {
       kind: "wait",
-      text: intro,
+      text: `${welcome} ${registered} ${tail}`,
       valName: "joined_intro",
-      seconds: lobbyStart ? 5 : 3,
+      seconds: lobbyStart ? 7 : 5,
     };
   }
 
@@ -244,9 +252,27 @@ export function decideIvrResponse(input: DecideInput): Decision {
       const total = state.question_ids?.length || 0;
       const remaining = Math.max(1, state.time_remaining || POLL_SECONDS);
       const timeout = Math.min(remaining, POLL_SECONDS);
+      const q = state.current_question;
+      const introVar = `qintro${state.current_question_index}`;
+      const seenThisQ =
+        (phoneRow?.last_seen_question_index ?? -1) >= state.current_question_index;
+      // First poll of this question — read the full question + options once.
+      if (q && !params.has(introVar) && !seenThisQ) {
+        const opts = (q.options || []).slice(0, 4)
+          .map((o, i) => `${i + 1}. ${o}.`).join(" ");
+        const text =
+          `שאלה ${qNum} מתוך ${total}. ${q.text}. ` +
+          `${opts} הקש את מספר התשובה: 1, 2, 3 או 4.`;
+        return {
+          kind: "answer",
+          text,
+          valName: answerVar,
+          seconds: Math.max(timeout, 6),
+        };
+      }
       return {
         kind: "answer",
-        text: `שאלה ${qNum} מתוך ${total}. הקש בין אחת לארבע.`,
+        text: `נותרו ${remaining} שניות. הקש 1, 2, 3 או 4.`,
         valName: answerVar,
         seconds: timeout,
       };
