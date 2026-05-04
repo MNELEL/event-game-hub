@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
 
     const form = new FormData();
     form.append("token", YEMOT_API_TOKEN);
-    form.append("what", path);
+    form.append("path", path);
 
     const ymRes = await fetch("https://www.call2all.co.il/ym/api/DownloadFile", {
       method: "POST",
