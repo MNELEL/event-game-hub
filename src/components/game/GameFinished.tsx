@@ -417,34 +417,25 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
 
       {/* Three Category Winners */}
       {(() => {
-        const playersWithAnswers = players.filter(p => p.answers.length > 0);
-        const topScorer = sorted[0];
-
-        let fastest: Player | null = null;
-        let fastestAvg = Infinity;
-        playersWithAnswers.forEach(p => {
-          const avg = p.answers.reduce((s, a) => s + a.time, 0) / p.answers.length;
-          if (avg < fastestAvg) { fastestAvg = avg; fastest = p; }
-        });
-
-        let mostAccurate: Player | null = null;
-        let bestAcc = -1;
-        playersWithAnswers.forEach(p => {
-          const acc = p.answers.filter(a => a.correct).length / p.answers.length;
-          if (acc > bestAcc) { bestAcc = acc; mostAccurate = p; }
-        });
+        const cw = categoryWinners;
+        const fmtScore = (v: number) => `${v} נק׳`;
+        const fmtTime = (v: number) => `${v.toFixed(1)} שנ׳`;
+        const fmtAcc = (v: number) => `${Math.round(v * 100)}%`;
 
         const cats = [
           { key: "score", emoji: "🏆", title: "אלוף הניקוד", subtitle: "הניקוד הגבוה ביותר",
-            player: topScorer, value: topScorer ? `${topScorer.score} נק׳` : "",
-            color: "text-game-gold", border: "border-game-gold", bg: "from-game-gold/20 to-game-dark-gold/10" },
+            entries: cw.topScorers, value: cw.topScorers[0] ? fmtScore(cw.topScorers[0].score) : "",
+            color: "text-game-gold", border: "border-game-gold", bg: "from-game-gold/20 to-game-dark-gold/10",
+            tieHint: "תיקו לפי ניקוד · הופרד לפי דיוק ואז מהירות" },
           { key: "fast", emoji: "⚡", title: "אלוף המהירות", subtitle: "תגובה מהירה ביותר",
-            player: fastest, value: fastest ? `${fastestAvg.toFixed(1)} שנ׳` : "",
-            color: "text-yellow-400", border: "border-yellow-400/60", bg: "from-yellow-400/20 to-orange-500/10" },
+            entries: cw.fastest, value: cw.fastest[0] ? fmtTime(cw.fastest[0].avgTime) : "",
+            color: "text-yellow-400", border: "border-yellow-400/60", bg: "from-yellow-400/20 to-orange-500/10",
+            tieHint: "תיקו לפי זמן · הופרד לפי דיוק ואז ניקוד" },
           { key: "acc", emoji: "🎯", title: "אלוף הדיוק", subtitle: "אחוז התשובות הנכונות",
-            player: mostAccurate, value: mostAccurate ? `${Math.round(bestAcc * 100)}%` : "",
-            color: "text-emerald-400", border: "border-emerald-400/60", bg: "from-emerald-400/20 to-green-600/10" },
-        ].filter(c => c.player);
+            entries: cw.mostAccurate, value: cw.mostAccurate[0] ? fmtAcc(cw.mostAccurate[0].accuracy) : "",
+            color: "text-emerald-400", border: "border-emerald-400/60", bg: "from-emerald-400/20 to-green-600/10",
+            tieHint: "תיקו לפי דיוק · הופרד לפי ניקוד ואז מהירות" },
+        ].filter(c => c.entries.length > 0);
 
         if (cats.length === 0) return null;
 
@@ -464,34 +455,58 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
             </motion.h3>
             <div className="w-32 mx-auto border-t-2 border-double border-game-border-gold mb-4" />
             <div className="grid grid-cols-1 gap-3">
-              {cats.map((c, i) => (
-                <motion.div
-                  key={c.key}
-                  className={`parchment-card parchment-border-double rounded-xl p-4 flex items-center gap-4 bg-gradient-to-l ${c.bg} border-2 ${c.border}`}
-                  initial={{ opacity: 0, x: 50, scale: 0.9 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  transition={{ delay: 1.7 + i * 0.25, type: "spring", stiffness: 180 }}
-                  whileHover={{ scale: 1.03 }}
-                >
+              {cats.map((c, i) => {
+                const isTie = c.entries.length > 1;
+                return (
                   <motion.div
-                    className="text-5xl"
-                    animate={{ rotate: [0, -8, 8, 0], scale: [1, 1.15, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                    key={c.key}
+                    className={`parchment-card parchment-border-double rounded-xl p-4 flex items-center gap-4 bg-gradient-to-l ${c.bg} border-2 ${c.border}`}
+                    initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={{ delay: 1.7 + i * 0.25, type: "spring", stiffness: 180 }}
+                    whileHover={{ scale: 1.03 }}
                   >
-                    {c.emoji}
+                    <motion.div
+                      className="text-5xl"
+                      animate={{ rotate: [0, -8, 8, 0], scale: [1, 1.15, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                    >
+                      {c.emoji}
+                    </motion.div>
+                    <div className="flex-1 min-w-0 text-right">
+                      <div className={`font-serif text-lg md:text-xl font-bold ${c.color} flex items-center gap-2 justify-end`}>
+                        {c.title}
+                        {isTie && (
+                          <span
+                            className="text-xs font-sans font-bold px-2 py-0.5 rounded-full bg-game-gold/30 text-game-dark-gold border border-game-border-gold"
+                            title={c.tieHint}
+                          >
+                            תיקו · {c.entries.length}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-game-dark-gold/60 text-xs mb-1">{c.subtitle}</div>
+                      <div className="font-serif text-xl text-game-dark-gold font-bold leading-tight">
+                        {c.entries.map((e, idx) => (
+                          <span key={e.player.id}>
+                            {idx > 0 && <span className="text-game-dark-gold/50 mx-1">·</span>}
+                            <span className="truncate inline-block max-w-[160px] align-bottom">{e.player.name}</span>
+                          </span>
+                        ))}
+                      </div>
+                      <div className={`font-serif text-base ${c.color} font-bold`}>{c.value}</div>
+                      {isTie && (
+                        <div className="text-game-dark-gold/50 text-[11px] mt-1 italic">{c.tieHint}</div>
+                      )}
+                    </div>
                   </motion.div>
-                  <div className="flex-1 min-w-0 text-right">
-                    <div className={`font-serif text-lg md:text-xl font-bold ${c.color}`}>{c.title}</div>
-                    <div className="text-game-dark-gold/60 text-xs mb-1">{c.subtitle}</div>
-                    <div className="font-serif text-xl text-game-dark-gold font-bold truncate">{c.player!.name}</div>
-                    <div className={`font-serif text-base ${c.color} font-bold`}>{c.value}</div>
-                  </div>
-                </motion.div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
         );
       })()}
+
 
       {/* Leaderboard */}
       {sorted.length > 0 && (
