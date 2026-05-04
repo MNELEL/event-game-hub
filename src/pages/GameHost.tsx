@@ -24,6 +24,7 @@ const GameHost = () => {
   const { gameState } = game;
   const [gameReady, setGameReady] = useState(false);
   const { branding } = useBranding();
+  const phonePlayers = usePhonePlayers(game.gameDbId);
 
   // Create or resume game session when questions are loaded
   useEffect(() => {
