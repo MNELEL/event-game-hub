@@ -159,6 +159,17 @@ const GameHost = () => {
         />
       </div>
 
+      <HostLiveStatusPanel
+        gameStatus={gameState.status as "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished"}
+        currentQuestionIndex={gameState.currentQuestionIndex}
+        totalQuestions={gameState.questions.length}
+        questionText={gameState.questions[gameState.currentQuestionIndex]?.question}
+        timeRemaining={gameState.timeRemaining}
+        screenPlayersCount={gameState.players.length}
+        phonePlayers={phonePlayers}
+        startAt={startAt}
+      />
+
       <HeroIntro triggerKey={`${gameState.status}-${gameState.currentQuestionIndex}`} />
 
       <AnimatePresence mode="wait">
