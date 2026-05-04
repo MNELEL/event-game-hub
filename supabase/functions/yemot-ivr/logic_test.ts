@@ -66,7 +66,12 @@ Deno.test("lobby joiner — gets the active question prompt", () => {
   const d = decideIvrResponse({
     phone: "0501234567",
     params,
-    state: baseState({ status: "question", current_question_index: 1, time_remaining: 10 }),
+    state: baseState({
+      status: "question",
+      current_question_index: 1,
+      time_remaining: 10,
+      current_question: { text: "שאלה לדוגמה", options: ["א", "ב", "ג", "ד"] },
+    }),
     phoneRow: lobbyRow(60, -1),
     now: NOW,
   });
