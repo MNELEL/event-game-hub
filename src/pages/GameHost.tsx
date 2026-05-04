@@ -163,7 +163,7 @@ const GameHost = () => {
         gameStatus={gameState.status as "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished"}
         currentQuestionIndex={gameState.currentQuestionIndex}
         totalQuestions={gameState.questions.length}
-        questionText={gameState.questions[gameState.currentQuestionIndex]?.question}
+        questionText={gameState.questions[gameState.currentQuestionIndex]?.text}
         timeRemaining={gameState.timeRemaining}
         screenPlayersCount={gameState.players.length}
         phonePlayers={phonePlayers}
