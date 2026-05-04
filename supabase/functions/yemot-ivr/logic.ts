@@ -132,14 +132,41 @@ export function decideIvrResponse(input: DecideInput): Decision {
     return { kind: "silent", valName: `late_wait_${cycle}`, seconds: POLL_SECONDS };
   }
 
-  // Caller is in lobby — handle answer submission first
+  // Caller is in lobby — handle answer submission first.
+  // Dedupe: never submit twice for the same question, even if Yemot replays
+  // the q${idx} param across subsequent polls. We rely on three signals:
+  //   1) phoneRow.last_question_index (persisted after RPC)
+  //   2) ack${idx} sentinel var set on the previous response
+  //   3) submitted${idx} client-tracked sentinel
   const answerVar = `q${state.current_question_index}`;
+  const ackVar = `ack${state.current_question_index}`;
+  const submittedVar = `submitted${state.current_question_index}`;
   const answerInput = (params.get(answerVar) || "").trim();
-  if (answerInput && state.status === "question" && !alreadyAnsweredCurrent) {
+  const alreadySubmittedThisCall =
+    params.has(ackVar) || params.has(submittedVar);
+  if (
+    answerInput &&
+    state.status === "question" &&
+    !alreadyAnsweredCurrent &&
+    !alreadySubmittedThisCall
+  ) {
     const digit = parseInt(answerInput, 10);
     if (digit >= 1 && digit <= 4) {
       return { kind: "submitAnswer", digit, questionIndex: state.current_question_index };
     }
+  }
+
+  // If we already answered (in DB or in this call), short-circuit to silent poll
+  // so a stale q${idx} param can never re-trigger a submission.
+  if (
+    state.status === "question" &&
+    (alreadyAnsweredCurrent || alreadySubmittedThisCall)
+  ) {
+    return {
+      kind: "silent",
+      valName: `done${state.current_question_index}`,
+      seconds: POLL_SECONDS,
+    };
   }
 
   if (justJoined && !params.has("joined_intro")) {
