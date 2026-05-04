@@ -9,6 +9,8 @@ export type PhonePlayerRow = {
   created_at: string;
   last_question_index: number;
   last_answer_at: string | null;
+  last_poll_at: string | null;
+  last_seen_question_index: number | null;
 };
 
 export function usePhonePlayers(gameDbId: string | null) {
