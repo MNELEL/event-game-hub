@@ -15,6 +15,7 @@ type PlayerGameState = {
   questionIds: string[];
   connected: boolean;
   answerSubmitted: boolean;
+  startAt: string | null;
 };
 
 export function usePlayerGame() {
