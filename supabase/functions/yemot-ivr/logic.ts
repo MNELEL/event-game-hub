@@ -23,6 +23,7 @@ export type GameState = {
 export type PhoneRow = {
   created_at?: string;
   last_question_index?: number;
+  last_seen_question_index?: number;
   joined_in_lobby?: boolean;
 };
 
