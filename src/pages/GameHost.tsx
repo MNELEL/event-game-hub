@@ -19,6 +19,7 @@ import { HostLiveStatusPanel } from "@/components/game/HostLiveStatusPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { StartAtDebugPanel } from "@/components/game/StartAtDebugPanel";
 import { ClockSkewDialog, type ClockSkewSeverity } from "@/components/game/ClockSkewDialog";
+import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -157,6 +158,7 @@ const GameHost = () => {
           phonePlayers={phonePlayers}
           currentQuestionIndex={gameState.currentQuestionIndex}
         />
+        <IvrTestCallButton compact />
       </div>
 
       <HostLiveStatusPanel
