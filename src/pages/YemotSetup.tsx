@@ -209,6 +209,35 @@ say_error_message=no`;
           </p>
         </div>
 
+        {/* Trivia module replacement notice */}
+        <Card className="p-5 border-2 border-amber-500/50 bg-amber-500/5 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <h2 className="font-bold text-foreground">חשוב — אם הוגדר אצלך "מודול טריוויה" בימות</h2>
+          </div>
+          <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+            <p>
+              מודול הטריוויה המובנה של ימות הוא מערכת <strong>עצמאית לחלוטין</strong>: הוא מנהל בעצמו שאלות, ניקוד ומשתתפים, ו<strong>לא מתחבר</strong> לאפליקציה הזו.
+            </p>
+            <p>
+              כדי שמתקשרים יצטרפו למשחק שאת מנהלת מהמסך — צריך להחליף את הגדרת השלוחה מ"מודול טריוויה" לשלוחה מסוג <code dir="ltr" className="bg-muted px-1 rounded">API</code> שמדברת עם השרת שלנו.
+            </p>
+            <div className="bg-background/60 border border-border rounded-md p-3 space-y-1.5">
+              <div className="font-semibold text-foreground text-sm">איך עושים את זה:</div>
+              <ol className="list-decimal pr-5 space-y-1 text-xs">
+                <li>היכנסי לפאנל ימות → <strong>ניהול מערכת</strong> → <strong>שלוחות</strong>.</li>
+                <li>אתרי את השלוחה (למשל <code dir="ltr">1</code>) שכרגע מוגדרת כ"טריוויה".</li>
+                <li>שני אותה ל-<strong>"שלוחת API"</strong> — או פשוט מחקי את התוכן הקיים שלה.</li>
+                <li>חזרי לכאן ולחצי <strong>"הגדר את השלוחה אצלי בימות"</strong> — זה יכתוב את <code dir="ltr">ext.ini</code> הנכון אוטומטית.</li>
+                <li>חייגי שוב — עכשיו תשמעי את ההודעות של האפליקציה במקום הטריוויה של ימות.</li>
+              </ol>
+            </div>
+            <p className="text-xs">
+              <strong>דרך מהירה יותר:</strong> ההגדרה האוטומטית למטה דורסת את קובץ <code dir="ltr">ext.ini</code> בשלוחה הנבחרת. אם הטריוויה הוגדרה רק על ידי קובץ <code dir="ltr">ext.ini</code> בשלוחה זו — לחיצה אחת תספיק. אם היא הוגדרה כמודול ייעודי בפאנל — צריך קודם להסיר את הגדרת המודול בפאנל.
+            </p>
+          </div>
+        </Card>
+
         {/* Step-by-step call test wizard */}
         <CallTestWizard />
 
