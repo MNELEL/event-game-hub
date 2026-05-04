@@ -107,6 +107,16 @@ export function decideIvrResponse(input: DecideInput): Decision {
   const joinedInLobby = phoneRow?.joined_in_lobby === true;
   const lastAnsweredIdx = phoneRow?.last_question_index ?? -1;
   const alreadyAnsweredCurrent = lastAnsweredIdx >= state.current_question_index;
+  // Auto-recovery: caller was admitted via the first-question grace window
+  // (host already pressed Start, but we're still on question 1). Identified by:
+  //   - they're in-lobby
+  //   - the game is mid-question on the very first question
+  //   - they joined within the last few seconds (so this is likely their first poll)
+  const isFirstQuestionRecovery =
+    joinedInLobby &&
+    state.status === "question" &&
+    state.current_question_index === 0 &&
+    joinedSecondsAgo < 15;
 
   // After the RPC accepted/rejected an answer, just acknowledge and silently poll.
   if (answerSubmission) {
@@ -139,8 +149,8 @@ export function decideIvrResponse(input: DecideInput): Decision {
       progress = `הסתיימה שאלה ${qNum} מתוך ${total}`;
     }
     const tail = remainingQs > 0
-      ? `נותרו ${remainingQs} שאלות עד סיום המשחק. תוכל לענות במשחק הבא שיתחיל לאחר סיום זה.`
-      : `המשחק לקראת סיום. תוכל לענות במשחק הבא שיתחיל בקרוב.`;
+      ? `נותרו ${remainingQs} שאלות עד סיום המשחק. אנא הישאר על הקו עד סיום המשחק הנוכחי. ברגע שיתחיל משחק חדש, נצרף אותך אוטומטית ותשמע 'ברוכים הבאים', ואז תוכל לענות על השאלות על ידי הקשת 1, 2, 3 או 4.`
+      : `המשחק לקראת סיום. אנא הישאר על הקו. ברגע שיתחיל משחק חדש, נצרף אותך אוטומטית ותשמע 'ברוכים הבאים', ואז תוכל לענות על השאלות על ידי הקשת 1, 2, 3 או 4.`;
 
     const cycle = Math.floor(joinedSecondsAgo / 30);
     const reminderVar = `late_msg_${cycle}`;
@@ -151,13 +161,13 @@ export function decideIvrResponse(input: DecideInput): Decision {
         ? formatStartTimeIL(state.start_at)
         : "";
     const tailWithTime = nextStart
-      ? `המשחק הבא יתחיל בשעה ${nextStart}. אנא הישאר על הקו.`
+      ? `המשחק הבא יתחיל בשעה ${nextStart}. אנא הישאר על הקו ואל תנתק. כשהמשחק יתחיל, תשמע 'ברוכים הבאים' ותוכל לענות על השאלות.`
       : tail;
     if (!params.has(reminderVar)) {
       const intro = cycle === 0
         ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tailWithTime}`
         : `${progress}. ${tailWithTime}`;
-      return { kind: "wait", text: intro, valName: reminderVar, seconds: cycle === 0 ? 8 : 6 };
+      return { kind: "wait", text: intro, valName: reminderVar, seconds: cycle === 0 ? 10 : 6 };
     }
     return { kind: "silent", valName: `late_wait_${cycle}`, seconds: POLL_SECONDS };
   }
@@ -199,7 +209,23 @@ export function decideIvrResponse(input: DecideInput): Decision {
     };
   }
 
-  if (justJoined && !params.has("joined_intro")) {
+  // Recovery intro: caller dialed in after host pressed Start, but the first
+  // question is still active so they were auto-admitted. Play this once before
+  // the question is read so the experience is clear.
+  if (isFirstQuestionRecovery && !params.has("recovered_intro")) {
+    const title = (state.game_title || "").trim();
+    const welcome = title
+      ? `שלום, ברוכים הבאים למשחק ${title}.`
+      : `שלום, ברוכים הבאים למשחק הטריוויה.`;
+    return {
+      kind: "wait",
+      text: `${welcome} נרשמת בשם מתקשר ${phone.slice(-4)}. המשחק כבר התחיל אבל הספקת להצטרף בזמן לשאלה הראשונה. כעת תשמע את השאלה — הקשב לארבע האפשרויות, ובסיום הקש 1, 2, 3 או 4 לבחירת התשובה.`,
+      valName: "recovered_intro",
+      seconds: 9,
+    };
+  }
+
+  if (justJoined && !params.has("joined_intro") && !params.has("recovered_intro")) {
     const lobbyStart =
       state.status === "lobby" && state.start_at &&
       new Date(state.start_at).getTime() > now
@@ -260,8 +286,14 @@ export function decideIvrResponse(input: DecideInput): Decision {
       if (q && !params.has(introVar) && !seenThisQ) {
         const opts = (q.options || []).slice(0, 4)
           .map((o, i) => `${i + 1}. ${o}.`).join(" ");
+        // For question 1, add a brief listening hint (unless we just played the
+        // recovery intro, which already explained how to answer).
+        const firstQHint =
+          state.current_question_index === 0 && !params.has("recovered_intro")
+            ? "זוהי השאלה הראשונה. הקשב היטב לארבע האפשרויות. "
+            : "";
         const text =
-          `שאלה ${qNum} מתוך ${total}. ${q.text}. ` +
+          `${firstQHint}שאלה ${qNum} מתוך ${total}. ${q.text}. ` +
           `${opts} הקש את מספר התשובה: 1, 2, 3 או 4.`;
         return {
           kind: "answer",

@@ -58,6 +58,19 @@ Deno.serve(async (req) => {
 
     const state = joinData[0] as GameState;
 
+    // Log auto-recovery cases (host pressed Start before caller dialed in,
+    // but caller still made it into the first-question grace window).
+    if (
+      state.status !== "lobby" &&
+      typeof (state as any).current_question_index === "number" &&
+      (state as any).current_question_index === 0
+    ) {
+      console.log(
+        "[yemot-ivr] caller likely admitted via first-question grace window",
+        { phoneTail: phone.slice(-4), status: state.status, gameId: state.game_id }
+      );
+    }
+
     // Fetch start_at + settings (for title) so we can announce the game.
     const { data: gameRow } = await admin
       .from("games")
