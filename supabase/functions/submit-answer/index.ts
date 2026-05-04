@@ -12,9 +12,10 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const { player_id, game_id, question_id, answer, time_taken, secret_token } = await req.json();
     const { player_id, game_id, question_id, answer, time_taken, session_token } = await req.json();
 
-    if (!player_id || !game_id || !question_id || answer === undefined || time_taken === undefined) {
+    if (!player_id || !game_id || !question_id || answer === undefined || time_taken === undefined || !secret_token) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -31,6 +32,7 @@ Deno.serve(async (req) => {
       .select("id, game_id, session_token")
       .eq("id", player_id)
       .eq("game_id", game_id)
+      .eq("secret_token", secret_token)
       .single();
 
     if (playerError || !player) {

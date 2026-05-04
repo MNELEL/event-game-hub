@@ -14,6 +14,14 @@ type Props = {
   onHome: () => void;
 };
 
+type SpecialTitle = {
+  emoji: string;
+  title: string;
+  playerName: string;
+  detail: string;
+  icon: React.ReactNode;
+};
+
 export function GameFinished({ players, questions, onRestart, onHome }: Props) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
@@ -24,7 +32,7 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
   useEffect(() => {
     SoundEffects.victory();
     fireConfetti();
-    // Sequence the reveal
+4    // Sequence the reveal
     setTimeout(() => setPhase("podium"), 1200);
     setTimeout(() => setPhase("stats"), 2800);
     setTimeout(() => setPhase("buttons"), 4000);
@@ -116,6 +124,77 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
               <p className="text-game-dark-gold/60 font-serif text-lg">המשחק הסתיים — הנה התוצאות הסופיות</p>
             </motion.div>
 
+      {/* Special titles section */}
+      {showTitles && specialTitles.length > 0 && (
+        <motion.div
+          className="w-full max-w-md mb-8 relative z-10"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, type: "spring" }}
+        >
+          <motion.h3
+            className="font-serif text-2xl text-game-dark-gold text-center mb-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            ✨ תארים מיוחדים
+          </motion.h3>
+          <div className="grid grid-cols-1 gap-3">
+            {specialTitles.map((title, i) => (
+              <motion.div
+                key={i}
+                className="parchment-card rounded-xl p-4 flex items-center gap-3 border border-game-border-gold/50"
+                initial={{ opacity: 0, x: -30, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ delay: i * 0.2, type: "spring", stiffness: 180 }}
+              >
+                <motion.span
+                  className="text-3xl"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1.5, delay: i * 0.3, repeat: 2 }}
+                >
+                  {title.emoji}
+                </motion.span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    {title.icon}
+                    <span className="font-serif text-lg text-game-dark-gold font-bold">{title.title}</span>
+                  </div>
+                  <p className="text-game-gold font-bold">{title.playerName}</p>
+                  <p className="text-game-dark-gold/50 text-sm">{title.detail}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Action buttons */}
+      <motion.div
+        className="flex flex-wrap gap-4 relative z-10 justify-center"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5 }}
+      >
+        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
+          <Button variant="gold" size="xl" onClick={() => { SoundEffects.click(); setShowStats(true); }} className="gap-3">
+            <BarChart3 className="w-5 h-5" />
+            סטטיסטיקות
+          </Button>
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
+          <Button variant="gold" size="xl" onClick={() => { SoundEffects.click(); onRestart(); }} className="gap-3">
+            <RotateCcw className="w-5 h-5" />
+            משחק חדש
+          </Button>
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
+          <Button variant="outline" size="xl" onClick={() => { SoundEffects.click(); onHome(); }} className="gap-3 border-game-border-gold text-game-dark-gold hover:bg-game-cream">
+            <Home className="w-5 h-5" />
+            דף הבית
+          </Button>
+        </motion.div>
+      </motion.div>
             {/* Podium */}
             <div className="space-y-3 mb-6">
               {sorted.slice(0, Math.min(sorted.length, 5)).map((player, idx) => (

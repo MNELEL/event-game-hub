@@ -1,11 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff } from "lucide-react";
 import { ThemeButton } from "@/components/game/ThemeButton";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { branding } = useBranding();
+
+  const glows = useMemo(
+    () =>
+      [...Array(20)].map(() => ({
+        width: Math.random() * 100 + 20,
+        height: Math.random() * 100 + 20,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        duration: Math.random() * 4 + 3,
+        delay: Math.random() * 2,
+      })),
+    []
+  );
 
   return (
     // 1. `main` landmark — fixes "Document does not have a main landmark"
@@ -18,13 +33,13 @@ const Index = () => {
             key={i}
             className="absolute rounded-full bg-game-glow/10"
             style={{
-              width: Math.random() * 100 + 20,
-              height: Math.random() * 100 + 20,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              width: g.width,
+              height: g.height,
+              left: `${g.left}%`,
+              top: `${g.top}%`,
             }}
             animate={{ y: [0, -30, 0], opacity: [0.1, 0.3, 0.1] }}
-            transition={{ duration: Math.random() * 4 + 3, repeat: Infinity, delay: Math.random() * 2 }}
+            transition={{ duration: g.duration, repeat: Infinity, delay: g.delay }}
           />
         ))}
       </div>
@@ -52,9 +67,9 @@ const Index = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          מתאים לאירועים משפחתיים, ערבי גיבוש, כנסים, ימי הולדת, בת/בר מצווה ועוד...
+          חוויה אינטראקטיבית מיוחדת לכבוד בת המצווה — שאלות על חיוש, על המשפחה ועל החברים.
           <br />
-          פשוט ליצור, קל להפעיל, בלתי נשכח!
+          כולם משחקים מהטלפון, צוברים נקודות ומקבלים תארים בסוף הערב!
         </motion.p>
 
         <motion.div
@@ -93,6 +108,10 @@ const Index = () => {
             <WifiOff className="w-5 h-5" aria-hidden="true" />
             משחק אופליין
           </Button>
+          <Button variant="outline" size="lg" onClick={() => navigate("/about")} className="gap-2">
+            <Info className="w-5 h-5" />
+            אודות
+          </Button>
         </motion.div>
 
         {/* Feature cards — H2 instead of H3 to fix heading order (H1→H2, not H1→H3) */}
@@ -110,8 +129,8 @@ const Index = () => {
           ].map((feature, i) => (
             <motion.div
               key={i}
-              className="bg-game-surface/50 backdrop-blur-sm rounded-2xl p-6 border border-game-glow/20"
-              whileHover={{ scale: 1.05, borderColor: "hsl(250 80% 65% / 0.5)" }}
+              className="bg-game-parchment/70 backdrop-blur-sm rounded-2xl p-6 border-2 border-game-border-gold/40 shadow-md"
+              whileHover={{ scale: 1.05, borderColor: "hsl(35 55% 53% / 0.7)" }}
             >
               <feature.icon className="w-10 h-10 text-game-gold mx-auto mb-3" aria-hidden="true" />
               {/* 4. H2 — fixes sequential heading order (was H3) */}

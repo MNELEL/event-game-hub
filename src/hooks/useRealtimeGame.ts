@@ -16,6 +16,8 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
   });
   const [gameDbId, setGameDbId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
 
   // Subscribe to players joining in realtime
   useEffect(() => {
@@ -42,7 +44,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
       .subscribe();
 
     // Also load existing players
-    supabase.from("players").select("*").eq("game_id", gameDbId).then(({ data }) => {
+    supabase.from("players_public").select("*").eq("game_id", gameDbId).then(({ data }) => {
       if (data) {
         const players: Player[] = data.map(p => ({
           id: p.id,
@@ -57,40 +59,46 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     return () => { supabase.removeChannel(channel); };
   }, [gameDbId]);
 
-  // Subscribe to player answers in realtime
+  // Subscribe to player answers in realtime (always active while game exists)
   useEffect(() => {
-    if (!gameDbId || gameState.status !== "question") return;
+    if (!gameDbId) return;
 
     const channel = supabase
-      .channel(`game-answers-${gameDbId}-${gameState.currentQuestionIndex}`)
+      .channel(`game-answers-${gameDbId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "player_answers", filter: `game_id=eq.${gameDbId}` },
         (payload) => {
           const ans = payload.new;
-          setGameState(prev => ({
-            ...prev,
-            players: prev.players.map(p =>
-              p.id === ans.player_id
-                ? {
-                    ...p,
-                    score: p.score + (ans.points_earned || 0),
-                    answers: [...p.answers, {
-                      questionId: ans.question_id,
-                      answer: ans.answer,
-                      correct: ans.correct,
-                      time: ans.time_taken,
-                    }],
-                  }
-                : p
-            ),
-          }));
+          setGameState(prev => {
+            // Avoid duplicate answers
+            const player = prev.players.find(p => p.id === ans.player_id);
+            if (player?.answers.some(a => a.questionId === ans.question_id)) return prev;
+
+            return {
+              ...prev,
+              players: prev.players.map(p =>
+                p.id === ans.player_id
+                  ? {
+                      ...p,
+                      score: p.score + (ans.points_earned || 0),
+                      answers: [...p.answers, {
+                        questionId: ans.question_id,
+                        answer: ans.answer,
+                        correct: ans.correct,
+                        time: ans.time_taken,
+                      }],
+                    }
+                  : p
+              ),
+            };
+          });
         }
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [gameDbId, gameState.status, gameState.currentQuestionIndex]);
+  }, [gameDbId]);
 
   // Create game session in DB
   const createGame = useCallback(async () => {
@@ -149,14 +157,15 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
   }, [updateGameInDb]);
 
   const showQuestion = useCallback(async () => {
-    const timeLimit = gameState.questions[gameState.currentQuestionIndex]?.timeLimit || 15;
-    await updateGameInDb("question", gameState.currentQuestionIndex);
+    const currentState = gameStateRef.current;
+    if (currentState.status === "finished") return;
     
-    // Also update time_remaining in DB for player sync
+    const timeLimit = currentState.questions[currentState.currentQuestionIndex]?.timeLimit || 15;
+    
     if (gameDbId) {
       await supabase.from("games").update({
         status: "question",
-        current_question_index: gameState.currentQuestionIndex,
+        current_question_index: currentState.currentQuestionIndex,
         time_remaining: timeLimit,
       }).eq("id", gameDbId);
     }
@@ -166,7 +175,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
       status: "question",
       timeRemaining: timeLimit,
     }));
-  }, [gameState.currentQuestionIndex, gameState.questions, gameDbId, updateGameInDb]);
+  }, [gameDbId]);
 
   const showResults = useCallback(async () => {
     await updateGameInDb("results");
@@ -192,27 +201,30 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     setGameState(prev => ({ ...prev, status: "leaderboard" }));
   }, [updateGameInDb]);
 
-  const nextQuestion = useCallback(async () => {
-    setGameState(prev => {
-      const nextIdx = prev.currentQuestionIndex + 1;
-      if (nextIdx >= prev.questions.length) {
-        updateGameInDb("finished");
-        return { ...prev, status: "finished" };
-      }
-      return {
+  // Returns true if game is finished after this call
+  const nextQuestion = useCallback(async (): Promise<boolean> => {
+    const currentState = gameStateRef.current;
+    const nextIdx = currentState.currentQuestionIndex + 1;
+    if (nextIdx >= currentState.questions.length) {
+      await updateGameInDb("finished");
+      setGameState(prev => ({ ...prev, status: "finished" }));
+      return true;
+    } else {
+      setGameState(prev => ({
         ...prev,
         currentQuestionIndex: nextIdx,
-        timeRemaining: prev.questions[nextIdx].timeLimit,
-      };
-    });
+        timeRemaining: prev.questions[nextIdx]?.timeLimit || 15,
+      }));
+      return false;
+    }
   }, [updateGameInDb]);
 
   const tick = useCallback(() => {
     setGameState(prev => {
       if (prev.timeRemaining <= 0) return prev;
       const newTime = prev.timeRemaining - 1;
-      // Update DB every 5 seconds for player sync
-      if (gameDbId && newTime % 5 === 0) {
+      // Update DB every second for player sync
+      if (gameDbId) {
         supabase.from("games").update({ time_remaining: newTime }).eq("id", gameDbId);
       }
       return { ...prev, timeRemaining: newTime };
@@ -221,7 +233,6 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
 
   const addPlayer = useCallback(async (name: string) => {
     if (!gameDbId) {
-      // Fallback: add locally
       const player: Player = {
         id: Math.random().toString(36).substring(2, 10),
         name,
@@ -235,7 +246,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     const { data } = await supabase.from("players").insert({
       game_id: gameDbId,
       name,
-    }).select().single();
+    }).select("id, name, score, game_id, connected, created_at").single();
 
     if (data) {
       return { id: data.id, name: data.name, score: 0, answers: [] } as Player;
@@ -260,9 +271,47 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
     });
   }, [gameDbId, settings]);
 
+  // Resume an existing game from DB
+  const resumeGame = useCallback(async (gameId: string, allQuestions: Question[]) => {
+    const { data: gameData } = await supabase.from("games").select("*").eq("id", gameId).single();
+    if (!gameData) return null;
+
+    const questionMap = new Map(allQuestions.map(q => [q.id, q]));
+    const gameQuestions = (gameData.question_ids as string[])
+      .map(id => questionMap.get(id))
+      .filter(Boolean) as Question[];
+
+    const { data: playersData } = await supabase.from("players_public").select("*").eq("game_id", gameId);
+    const { data: answersData } = await supabase.from("player_answers").select("*").eq("game_id", gameId);
+
+    const players: Player[] = (playersData || []).map(p => ({
+      id: p.id,
+      name: p.name,
+      score: p.score,
+      answers: (answersData || [])
+        .filter(a => a.player_id === p.id)
+        .map(a => ({ questionId: a.question_id, answer: a.answer, correct: a.correct, time: a.time_taken })),
+    }));
+
+    const parsedSettings = gameData.settings as unknown as GameSettings;
+
+    setGameDbId(gameId);
+    setGameState({
+      status: gameData.status as GameState["status"],
+      currentQuestionIndex: gameData.current_question_index,
+      questions: gameQuestions,
+      players,
+      settings: parsedSettings || settings,
+      timeRemaining: gameData.time_remaining,
+      gameCode: gameData.code,
+    });
+
+    return gameData;
+  }, [settings]);
+
   return {
     gameState, setGameState, gameDbId,
-    createGame, startGame, showQuestion, showResults, showLeaderboard,
+    createGame, resumeGame, startGame, showQuestion, showResults, showLeaderboard,
     nextQuestion, tick, addPlayer, resetGame,
   };
 }
