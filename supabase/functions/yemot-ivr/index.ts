@@ -104,6 +104,9 @@ Deno.serve(async (req) => {
     const justJoined = joinedSecondsAgo < 12;
     const joinedInLobby = phoneRow?.joined_in_lobby === true;
 
+    const lastAnsweredIdx = phoneRow?.last_question_index ?? -1;
+    const alreadyAnsweredCurrent = lastAnsweredIdx >= state.current_question_index;
+
     // Caller didn't register during the lobby — they must wait for the next game.
     if (!joinedInLobby) {
       if (justJoined && !params.has("late_intro")) {
@@ -112,14 +115,14 @@ Deno.serve(async (req) => {
       if (state.status === "finished") {
         return ymResp([hangupMessage("המשחק הסתיים. תודה על ההשתתפות.")]);
       }
-      return ymResp([waitRead("המשחק בעיצומו. אנא המתן לסיום ולמשחק הבא.", "late_wait", 8)]);
+      return ymResp([silentPoll("late_wait")]);
     }
 
     // 2) Handle answer submission. Use a per-question variable so old digits
     // are never reused automatically on the next question.
     const answerVar = `q${state.current_question_index}`;
-    const answerInput = (params.get(answerVar) || params.get("answer") || params.get("ApiYFLastInput") || "").trim();
-    if (answerInput && state.status === "question") {
+    const answerInput = (params.get(answerVar) || "").trim();
+    if (answerInput && state.status === "question" && !alreadyAnsweredCurrent) {
       const digit = parseInt(answerInput, 10);
       if (digit >= 1 && digit <= 4) {
         const { data: answerData, error: answerErr } = await admin.rpc("submit_phone_answer", {
@@ -129,37 +132,45 @@ Deno.serve(async (req) => {
         });
         if (answerErr) console.error("[yemot-ivr] answer error", answerErr);
         const accepted = Array.isArray(answerData) && answerData[0]?.accepted;
-        return ymResp([waitRead(accepted ? "תשובתך נקלטה. ממתין לשאלה הבאה." : "כבר נקלטה תשובה לשאלה זו. ממתין לשאלה הבאה.", `wait${state.current_question_index}`, 5)]);
+        return ymResp([waitRead(accepted ? "תשובתך נקלטה." : "כבר נקלטה תשובה.", `ack${state.current_question_index}`, 2)]);
       }
     }
 
-    const introVar = `joined${state.current_question_index}`;
+    const introVar = `joined_intro`;
     if (justJoined && !params.has(introVar)) {
       return ymResp([waitRead(`הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`, introVar, 3)]);
     }
 
-    // 3) Branch by game status. Waiting states use read with timeout so Yemot
-    // calls us again and stays synchronized with the host screen.
+    // 3) Branch by game status. Short polling keeps every state in sync with
+    // the host screen — when the host advances/changes timing we react within
+    // POLL_SECONDS.
     switch (state.status) {
-      case "lobby": {
-        return ymResp([waitRead("ממתין לתחילת המשחק.", "lobby_wait", 5)]);
-      }
+      case "lobby":
+        return ymResp([silentPoll("lobby_wait")]);
+
+      case "playing":
+        return ymResp([silentPoll("playing_wait")]);
 
       case "question": {
+        // Already answered this question? Just wait silently for the next one.
+        if (alreadyAnsweredCurrent) {
+          return ymResp([silentPoll(`done${state.current_question_index}`)]);
+        }
         const qNum = state.current_question_index + 1;
         const total = state.question_ids?.length || 0;
-        const timeout = Math.max(3, Math.min(state.time_remaining || 15, 60));
+        // Cap timeout to POLL_SECONDS so we re-sync if host changes the timer
+        // or moves to the next question early. Yemot will keep re-asking
+        // the same question variable until the caller types a digit.
+        const remaining = Math.max(1, state.time_remaining || POLL_SECONDS);
+        const timeout = Math.min(remaining, POLL_SECONDS);
         return ymResp([
-          answerRead(`שאלה מספר ${qNum} מתוך ${total}. הקש ספרה בין אחת לארבע.`, answerVar, timeout),
+          answerRead(`שאלה ${qNum} מתוך ${total}. הקש בין אחת לארבע.`, answerVar, timeout),
         ]);
       }
 
       case "results":
       case "leaderboard":
-        return ymResp([waitRead("ממתין לשאלה הבאה.", "between_wait", 5)]);
-
-      case "playing":
-        return ymResp([waitRead("המשחק מתחיל. ממתין לשאלה.", "playing_wait", 3)]);
+        return ymResp([silentPoll("between_wait")]);
 
       case "finished":
       default:
