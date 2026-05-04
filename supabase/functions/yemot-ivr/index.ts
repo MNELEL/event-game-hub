@@ -109,13 +109,45 @@ Deno.serve(async (req) => {
 
     // Caller didn't register during the lobby — they must wait for the next game.
     if (!joinedInLobby) {
-      if (justJoined && !params.has("late_intro")) {
-        return ymResp([waitRead(`המשחק כבר התחיל. נרשמת בשם מתקשר ${phone.slice(-4)}, אך לא תוכל לענות על השאלות במשחק הנוכחי. אנא המתן למשחק הבא.`, "late_intro", 6)]);
-      }
       if (state.status === "finished") {
-        return ymResp([hangupMessage("המשחק הסתיים. תודה על ההשתתפות.")]);
+        return ymResp([hangupMessage(`המשחק הסתיים. נרשמת בשם מתקשר ${phone.slice(-4)}. תוכל להשתתף במשחק הבא. תודה רבה.`)]);
       }
-      return ymResp([silentPoll("late_wait")]);
+
+      const total = state.question_ids?.length || 0;
+      const qNum = state.current_question_index + 1;
+      const remainingQs = Math.max(0, total - qNum);
+
+      let progress = "המשחק בעיצומו";
+      if (state.status === "lobby" || state.status === "playing") {
+        progress = "המשחק עומד להתחיל";
+      } else if (state.status === "question") {
+        progress = `כעת מתקיימת שאלה ${qNum} מתוך ${total}`;
+      } else if (state.status === "results" || state.status === "leaderboard") {
+        progress = `הסתיימה שאלה ${qNum} מתוך ${total}`;
+      }
+      const tail = remainingQs > 0
+        ? `נותרו ${remainingQs} שאלות עד סיום המשחק. תוכל לענות במשחק הבא שיתחיל לאחר סיום זה.`
+        : `המשחק לקראת סיום. תוכל לענות במשחק הבא שיתחיל בקרוב.`;
+
+      // First time: full message. Then every ~30 seconds: brief reminder. Otherwise: silent poll.
+      if (!params.has("late_intro")) {
+        const intro = `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tail} אנא הישאר על הקו.`;
+        return ymResp([waitRead(intro, "late_intro", 8)]);
+      }
+
+      const reminderCount = parseInt(params.get("late_reminder_count") || "0", 10);
+      // ~10 polls of 3s = 30s between reminders
+      if (reminderCount >= 10) {
+        const reminder = `${progress}. ${tail}`;
+        // Reset the counter by using a fresh var name each cycle
+        const newVar = `late_reminder_${Date.now()}`;
+        return ymResp([
+          waitRead(reminder, newVar, 6),
+          `read=t-=late_reminder_count=no,1,1,1,No,yes,no,,9,1,Ok,0`,
+        ]);
+      }
+
+      return ymResp([silentPoll(`late_wait_${reminderCount + 1}`), `read=t-=late_reminder_count=no,1,1,1,No,yes,no,,9,1,Ok,${reminderCount + 1}`]);
     }
 
     // 2) Handle answer submission. Use a per-question variable so old digits
