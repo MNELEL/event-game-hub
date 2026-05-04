@@ -15,6 +15,7 @@ type PlayerGameState = {
   questionIds: string[];
   connected: boolean;
   answerSubmitted: boolean;
+  startAt: string | null;
 };
 
 export function usePlayerGame() {
@@ -30,6 +31,7 @@ export function usePlayerGame() {
     questionIds: [],
     connected: false,
     answerSubmitted: false,
+    startAt: null,
   });
 
   // Join a game by code
@@ -52,6 +54,13 @@ export function usePlayerGame() {
 
     const questionIds = (row.question_ids as string[]) || [];
 
+    // Fetch start_at separately (not returned by RPC)
+    const { data: gameRow } = await supabase
+      .from("games")
+      .select("start_at")
+      .eq("id", row.game_id)
+      .maybeSingle();
+
     setState(prev => ({
       ...prev,
       gameId: row.game_id,
@@ -65,6 +74,7 @@ export function usePlayerGame() {
       questionIds,
       connected: true,
       answerSubmitted: false,
+      startAt: (gameRow as any)?.start_at ?? null,
     }));
 
     return { error: null };
@@ -89,6 +99,7 @@ export function usePlayerGame() {
               gameStatus: game.status as GameStatus,
               currentQuestionIndex: newQuestionIndex,
               timeRemaining: game.time_remaining,
+              startAt: game.start_at ?? prev.startAt,
               // Reset answer submitted when new question starts
               answerSubmitted: isNewQuestion ? false : prev.answerSubmitted,
             };

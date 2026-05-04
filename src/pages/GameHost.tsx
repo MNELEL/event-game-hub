@@ -15,6 +15,7 @@ import { useBranding } from "@/hooks/useBranding";
 import { HeroIntro } from "@/components/game/HeroIntro";
 import { usePhonePlayers } from "@/hooks/usePhonePlayers";
 import { IvrSyncIndicator } from "@/components/game/IvrSyncIndicator";
+import { supabase } from "@/integrations/supabase/client";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -141,8 +142,12 @@ const GameHost = () => {
               phonePlayers={phonePlayers}
               gameStatus={gameState.status}
               onAddPlayer={game.addPlayer}
-              onStart={() => {
+              onStart={async () => {
                 const grace = Math.max(0, gameState.settings.lobbyGraceSeconds || 0);
+                const startAtIso = new Date(Date.now() + grace * 1000).toISOString();
+                if (game.gameDbId) {
+                  await supabase.from("games").update({ start_at: startAtIso }).eq("id", game.gameDbId);
+                }
                 if (grace === 0) {
                   game.startGame();
                   setTimeout(() => game.showQuestion(), 100);
@@ -163,8 +168,11 @@ const GameHost = () => {
                 }, 1000);
               }}
               graceCountdown={graceCountdown}
-              onCancelGrace={() => {
+              onCancelGrace={async () => {
                 setGraceCountdown(null);
+                if (game.gameDbId) {
+                  await supabase.from("games").update({ start_at: new Date().toISOString() }).eq("id", game.gameDbId);
+                }
                 game.startGame();
                 setTimeout(() => game.showQuestion(), 100);
               }}

@@ -133,13 +133,27 @@ const PlayerJoin = () => {
 
   // Connected - waiting in lobby
   if (state.gameStatus === "lobby") {
+    const startAt = state.startAt ? new Date(state.startAt) : null;
+    const startInFuture = startAt && startAt.getTime() > Date.now();
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <CheckCircle className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-3xl text-game-dark-gold mb-2">שלום {state.playerName}! 👋</h2>
-          <p className="text-game-dark-gold/60 text-lg mb-6">מחכים שהמשחק יתחיל...</p>
+          {startInFuture ? (
+            <div className="mb-6">
+              <p className="text-game-dark-gold/70 text-base mb-1">המשחק יתחיל ב</p>
+              <p className="font-mono text-3xl font-bold text-game-gold direction-ltr">
+                {startAt!.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+              </p>
+              <p className="text-sm text-game-dark-gold/60 mt-1">
+                {startAt!.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
+              </p>
+            </div>
+          ) : (
+            <p className="text-game-dark-gold/60 text-lg mb-6">מחכים שהמשחק יתחיל...</p>
+          )}
           <motion.div
             className="w-8 h-8 border-4 border-game-gold/30 border-t-game-gold rounded-full mx-auto"
             animate={{ rotate: 360 }}

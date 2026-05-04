@@ -15,6 +15,7 @@ export type GameState = {
   current_question_index: number;
   time_remaining: number;
   question_ids: string[];
+  start_at?: string | null;
 };
 
 export type PhoneRow = {
@@ -47,6 +48,23 @@ export type Decision =
     };
 
 export const POLL_SECONDS = 3;
+
+// Format an ISO timestamp as Israeli local "HH:MM" (Asia/Jerusalem).
+// Used to announce the exact game start time to phone callers.
+export function formatStartTimeIL(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const fmt = new Intl.DateTimeFormat("he-IL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Jerusalem",
+      hour12: false,
+    });
+    return fmt.format(d);
+  } catch {
+    return "";
+  }
+}
 
 export function cleanPhone(phone: string): string {
   return phone.replace(/[^0-9]/g, "");
@@ -123,10 +141,19 @@ export function decideIvrResponse(input: DecideInput): Decision {
 
     const cycle = Math.floor(joinedSecondsAgo / 30);
     const reminderVar = `late_msg_${cycle}`;
+    // If host scheduled the next game start, announce the exact clock time.
+    const nextStart =
+      state.status === "lobby" && state.start_at &&
+      new Date(state.start_at).getTime() > now
+        ? formatStartTimeIL(state.start_at)
+        : "";
+    const tailWithTime = nextStart
+      ? `המשחק הבא יתחיל בשעה ${nextStart}. אנא הישאר על הקו.`
+      : tail;
     if (!params.has(reminderVar)) {
       const intro = cycle === 0
-        ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tail} אנא הישאר על הקו עד תחילת המשחק הבא.`
-        : `${progress}. ${tail}`;
+        ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tailWithTime}`
+        : `${progress}. ${tailWithTime}`;
       return { kind: "wait", text: intro, valName: reminderVar, seconds: cycle === 0 ? 8 : 6 };
     }
     return { kind: "silent", valName: `late_wait_${cycle}`, seconds: POLL_SECONDS };
@@ -170,12 +197,38 @@ export function decideIvrResponse(input: DecideInput): Decision {
   }
 
   if (justJoined && !params.has("joined_intro")) {
+    const lobbyStart =
+      state.status === "lobby" && state.start_at &&
+      new Date(state.start_at).getTime() > now
+        ? formatStartTimeIL(state.start_at)
+        : "";
+    const intro = lobbyStart
+      ? `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}. המשחק יתחיל בשעה ${lobbyStart}.`
+      : `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
     return {
       kind: "wait",
-      text: `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`,
+      text: intro,
       valName: "joined_intro",
-      seconds: 3,
+      seconds: lobbyStart ? 5 : 3,
     };
+  }
+
+  // Periodically remind in-lobby callers of the exact start time while they wait.
+  if (state.status === "lobby" && state.start_at) {
+    const startMs = new Date(state.start_at).getTime();
+    if (startMs > now) {
+      const lobbyStart = formatStartTimeIL(state.start_at);
+      const cycle = Math.floor(joinedSecondsAgo / 30);
+      const reminderVar = `lobby_time_${cycle}`;
+      if (cycle > 0 && !params.has(reminderVar)) {
+        return {
+          kind: "wait",
+          text: `המשחק יתחיל בשעה ${lobbyStart}. אנא הישאר על הקו.`,
+          valName: reminderVar,
+          seconds: 5,
+        };
+      }
+    }
   }
 
   switch (state.status) {

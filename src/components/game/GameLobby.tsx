@@ -300,17 +300,36 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
           >
-            <p className="font-serif text-game-dark-gold text-lg mb-1">המשחק יתחיל בעוד</p>
-            <motion.div
-              key={graceCountdown}
-              initial={{ scale: 1.4, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-5xl font-bold text-game-gold mb-2"
-            >
-              {graceCountdown}
-            </motion.div>
-            <p className="text-sm text-game-dark-gold/60 mb-3">מתקשרים יכולים עדיין להצטרף</p>
-            <Button variant="gold" size="sm" onClick={onCancelGrace}>
+            <p className="font-serif text-game-dark-gold text-lg mb-2">המשחק יתחיל ב</p>
+            {(() => {
+              const startAt = new Date(Date.now() + graceCountdown * 1000);
+              const dateStr = startAt.toLocaleDateString("he-IL", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              });
+              const timeStr = startAt.toLocaleTimeString("he-IL", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              });
+              return (
+                <>
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-4xl font-bold text-game-gold direction-ltr"
+                  >
+                    {timeStr}
+                  </motion.div>
+                  <p className="text-base text-game-dark-gold/80 mt-1">{dateStr}</p>
+                  <p className="text-xs text-game-dark-gold/50 mt-2">
+                    בעוד {graceCountdown} שניות · מתקשרים יכולים עדיין להצטרף
+                  </p>
+                </>
+              );
+            })()}
+            <Button variant="gold" size="sm" onClick={onCancelGrace} className="mt-3">
               דלג והתחל מיד
             </Button>
           </motion.div>
