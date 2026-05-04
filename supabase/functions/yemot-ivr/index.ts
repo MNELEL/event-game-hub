@@ -33,13 +33,22 @@ function hangupMessage(text: string): string {
   return `id_list_message=${tts(text)}.g-hangup`;
 }
 
-function waitRead(text: string, valName: string, seconds = 5): string {
+// Short poll cycle keeps the IVR re-checking server state so it can advance
+// to the next question (or react to status changes) within a few seconds.
+const POLL_SECONDS = 3;
+
+function waitRead(text: string, valName: string, seconds = POLL_SECONDS): string {
   // read=<messages>=<val_name>,<re-enter>,<max>,<min>,<sec_wait>,<playback>,<block_*>,<block_0>,<replace>,<allowed>,<attempts>,<allow_empty>,<empty_val>
   return `read=${tts(text)}=${valName},no,1,1,${seconds},No,yes,no,,9,1,Ok,None`;
 }
 
 function answerRead(text: string, valName: string, seconds: number): string {
   return `read=${tts(text)}=${valName},no,1,1,${seconds},No,yes,no,,1.2.3.4,1,Ok,None`;
+}
+
+// Silent short re-poll (no TTS) — used to align quickly with host state changes
+function silentPoll(valName: string, seconds = POLL_SECONDS): string {
+  return `read=t-=${valName},no,1,1,${seconds},No,yes,no,,9,1,Ok,None`;
 }
 
 Deno.serve(async (req) => {
