@@ -217,6 +217,9 @@ export function GameQuestionDisplay({ question, questionNumber, totalQuestions, 
             >
               {answerShapes[i]}
             </motion.span>
+            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-white/25 text-white font-display text-xl font-bold border border-white/40">
+              {i + 1}
+            </span>
             <span className="font-display text-xl md:text-2xl text-white font-bold">
               {opt}
             </span>
