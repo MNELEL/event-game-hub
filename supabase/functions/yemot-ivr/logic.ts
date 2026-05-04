@@ -286,8 +286,14 @@ export function decideIvrResponse(input: DecideInput): Decision {
       if (q && !params.has(introVar) && !seenThisQ) {
         const opts = (q.options || []).slice(0, 4)
           .map((o, i) => `${i + 1}. ${o}.`).join(" ");
+        // For question 1, add a brief listening hint (unless we just played the
+        // recovery intro, which already explained how to answer).
+        const firstQHint =
+          state.current_question_index === 0 && !params.has("recovered_intro")
+            ? "זוהי השאלה הראשונה. הקשב היטב לארבע האפשרויות. "
+            : "";
         const text =
-          `שאלה ${qNum} מתוך ${total}. ${q.text}. ` +
+          `${firstQHint}שאלה ${qNum} מתוך ${total}. ${q.text}. ` +
           `${opts} הקש את מספר התשובה: 1, 2, 3 או 4.`;
         return {
           kind: "answer",
