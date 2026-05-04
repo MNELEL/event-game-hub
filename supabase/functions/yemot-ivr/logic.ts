@@ -1,0 +1,181 @@
+// Pure IVR decision logic — no network/IO. Easy to unit-test and simulate.
+
+export type GameStatus =
+  | "lobby"
+  | "playing"
+  | "question"
+  | "results"
+  | "leaderboard"
+  | "finished";
+
+export type GameState = {
+  player_id: string;
+  game_id: string;
+  status: GameStatus;
+  current_question_index: number;
+  time_remaining: number;
+  question_ids: string[];
+};
+
+export type PhoneRow = {
+  created_at?: string;
+  last_question_index?: number;
+  joined_in_lobby?: boolean;
+};
+
+export type DecideInput = {
+  phone: string;
+  params: URLSearchParams;
+  state: GameState;
+  phoneRow?: PhoneRow;
+  now?: number;
+  // Whether an answer was just accepted by the RPC (for the post-submit branch)
+  answerSubmission?: { digit: number; accepted: boolean };
+};
+
+export type Decision =
+  | { kind: "hangup"; text: string }
+  | { kind: "wait"; text: string; valName: string; seconds: number }
+  | { kind: "answer"; text: string; valName: string; seconds: number }
+  | { kind: "silent"; valName: string; seconds: number }
+  | {
+      // Indicates the handler should call submit_phone_answer with this digit,
+      // then call decideIvrResponse again with answerSubmission populated.
+      kind: "submitAnswer";
+      digit: number;
+      questionIndex: number;
+    };
+
+export const POLL_SECONDS = 3;
+
+export function cleanPhone(phone: string): string {
+  return phone.replace(/[^0-9]/g, "");
+}
+
+export function tts(text: string): string {
+  return "t-" + text.replace(/[.\-"'&|=,]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+export function renderDecision(d: Decision): string {
+  switch (d.kind) {
+    case "hangup":
+      return `id_list_message=${tts(d.text)}.g-hangup`;
+    case "wait":
+      return `read=${tts(d.text)}=${d.valName},no,1,1,${d.seconds},No,yes,no,,9,1,Ok,None`;
+    case "answer":
+      return `read=${tts(d.text)}=${d.valName},no,1,1,${d.seconds},No,yes,no,,1.2.3.4,1,Ok,None`;
+    case "silent":
+      return `read=t-=${d.valName},no,1,1,${d.seconds},No,yes,no,,9,1,Ok,None`;
+    case "submitAnswer":
+      return `__submitAnswer:${d.questionIndex}:${d.digit}`;
+  }
+}
+
+export function decideIvrResponse(input: DecideInput): Decision {
+  const { phone, params, state, phoneRow, answerSubmission } = input;
+  const now = input.now ?? Date.now();
+
+  if (!phone) {
+    return { kind: "hangup", text: "לא זוהה מספר מתקשר." };
+  }
+
+  const joinedSecondsAgo = phoneRow?.created_at
+    ? (now - new Date(phoneRow.created_at).getTime()) / 1000
+    : 999;
+  const justJoined = joinedSecondsAgo < 12;
+  const joinedInLobby = phoneRow?.joined_in_lobby === true;
+  const lastAnsweredIdx = phoneRow?.last_question_index ?? -1;
+  const alreadyAnsweredCurrent = lastAnsweredIdx >= state.current_question_index;
+
+  // After the RPC accepted/rejected an answer, just acknowledge and silently poll.
+  if (answerSubmission) {
+    return {
+      kind: "wait",
+      text: answerSubmission.accepted ? "תשובתך נקלטה." : "כבר נקלטה תשובה.",
+      valName: `ack${state.current_question_index}`,
+      seconds: 2,
+    };
+  }
+
+  // Late joiners — never allowed to answer in this game.
+  if (!joinedInLobby) {
+    if (state.status === "finished") {
+      return {
+        kind: "hangup",
+        text: `המשחק הסתיים. נרשמת בשם מתקשר ${phone.slice(-4)}. תוכל להשתתף במשחק הבא. תודה רבה.`,
+      };
+    }
+    const total = state.question_ids?.length || 0;
+    const qNum = state.current_question_index + 1;
+    const remainingQs = Math.max(0, total - qNum);
+
+    let progress = "המשחק בעיצומו";
+    if (state.status === "lobby" || state.status === "playing") {
+      progress = "המשחק עומד להתחיל";
+    } else if (state.status === "question") {
+      progress = `כעת מתקיימת שאלה ${qNum} מתוך ${total}`;
+    } else if (state.status === "results" || state.status === "leaderboard") {
+      progress = `הסתיימה שאלה ${qNum} מתוך ${total}`;
+    }
+    const tail = remainingQs > 0
+      ? `נותרו ${remainingQs} שאלות עד סיום המשחק. תוכל לענות במשחק הבא שיתחיל לאחר סיום זה.`
+      : `המשחק לקראת סיום. תוכל לענות במשחק הבא שיתחיל בקרוב.`;
+
+    const cycle = Math.floor(joinedSecondsAgo / 30);
+    const reminderVar = `late_msg_${cycle}`;
+    if (!params.has(reminderVar)) {
+      const intro = cycle === 0
+        ? `שלום, נרשמת בשם מתקשר ${phone.slice(-4)}. ${progress}. הצטרפת לאחר תחילת המשחק ולכן לא תוכל לענות על השאלות הנוכחיות. ${tail} אנא הישאר על הקו עד תחילת המשחק הבא.`
+        : `${progress}. ${tail}`;
+      return { kind: "wait", text: intro, valName: reminderVar, seconds: cycle === 0 ? 8 : 6 };
+    }
+    return { kind: "silent", valName: `late_wait_${cycle}`, seconds: POLL_SECONDS };
+  }
+
+  // Caller is in lobby — handle answer submission first
+  const answerVar = `q${state.current_question_index}`;
+  const answerInput = (params.get(answerVar) || "").trim();
+  if (answerInput && state.status === "question" && !alreadyAnsweredCurrent) {
+    const digit = parseInt(answerInput, 10);
+    if (digit >= 1 && digit <= 4) {
+      return { kind: "submitAnswer", digit, questionIndex: state.current_question_index };
+    }
+  }
+
+  if (justJoined && !params.has("joined_intro")) {
+    return {
+      kind: "wait",
+      text: `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`,
+      valName: "joined_intro",
+      seconds: 3,
+    };
+  }
+
+  switch (state.status) {
+    case "lobby":
+      return { kind: "silent", valName: "lobby_wait", seconds: POLL_SECONDS };
+    case "playing":
+      return { kind: "silent", valName: "playing_wait", seconds: POLL_SECONDS };
+    case "question": {
+      if (alreadyAnsweredCurrent) {
+        return { kind: "silent", valName: `done${state.current_question_index}`, seconds: POLL_SECONDS };
+      }
+      const qNum = state.current_question_index + 1;
+      const total = state.question_ids?.length || 0;
+      const remaining = Math.max(1, state.time_remaining || POLL_SECONDS);
+      const timeout = Math.min(remaining, POLL_SECONDS);
+      return {
+        kind: "answer",
+        text: `שאלה ${qNum} מתוך ${total}. הקש בין אחת לארבע.`,
+        valName: answerVar,
+        seconds: timeout,
+      };
+    }
+    case "results":
+    case "leaderboard":
+      return { kind: "silent", valName: "between_wait", seconds: POLL_SECONDS };
+    case "finished":
+    default:
+      return { kind: "hangup", text: "המשחק הסתיים. תודה על ההשתתפות." };
+  }
+}
