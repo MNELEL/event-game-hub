@@ -191,6 +191,42 @@ export type Database = {
         }
         Relationships: []
       }
+      join_phone_player_audit: {
+        Row: {
+          created_at: string
+          game_id: string | null
+          game_status: string | null
+          id: string
+          joined_in_lobby: boolean
+          outcome: string
+          phone_tail: string
+          reason: string
+          start_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          game_id?: string | null
+          game_status?: string | null
+          id?: string
+          joined_in_lobby: boolean
+          outcome: string
+          phone_tail: string
+          reason: string
+          start_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          game_id?: string | null
+          game_status?: string | null
+          id?: string
+          joined_in_lobby?: boolean
+          outcome?: string
+          phone_tail?: string
+          reason?: string
+          start_at?: string | null
+        }
+        Relationships: []
+      }
       phone_players: {
         Row: {
           created_at: string

@@ -636,3 +636,196 @@ Deno.test("race: status flips lobby→question while 25 calls in-flight → no p
     await cleanupGame(admin, gameId, phones);
   }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Audit-log tests — verify that the RAISE LOG line emitted by
+// join_phone_player matches the actual decision. The function mirrors every
+// log message into public.join_phone_player_audit, which is what we assert
+// against here (postgres_logs aren't reachable from a Deno test).
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function readLatestAudit(admin: SupabaseClient, phone: string) {
+  const tail = phone.slice(-4);
+  const { data } = await admin
+    .from("join_phone_player_audit")
+    .select("phone_tail,game_id,game_status,start_at,joined_in_lobby,reason,outcome,created_at")
+    .eq("phone_tail", tail)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data as {
+    phone_tail: string; game_id: string | null; game_status: string | null;
+    start_at: string | null; joined_in_lobby: boolean; reason: string; outcome: string;
+  } | null;
+}
+
+async function clearAudit(admin: SupabaseClient, phone: string) {
+  await admin.from("join_phone_player_audit").delete().eq("phone_tail", phone.slice(-4));
+}
+
+Deno.test("log: eligible (lobby + start_at NULL) writes 'eligible: status=lobby AND start_at IS NULL ...'", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(50001);
+  await clearAudit(admin, phone);
+  const gameId = await createGame(admin, { status: "lobby", startAt: null });
+  try {
+    await callJoin(admin, phone);
+    const audit = await readLatestAudit(admin, phone);
+    assertEquals(audit?.outcome, "eligible");
+    assertEquals(audit?.joined_in_lobby, true);
+    assertEquals(audit?.game_id, gameId);
+    assertEquals(audit?.reason.startsWith("eligible: status=lobby AND "), true);
+    assertEquals(audit?.reason.includes("start_at IS NULL"), true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+    await clearAudit(admin, phone);
+  }
+});
+
+Deno.test("log: eligible (lobby + future start_at) reason mentions 'inside grace window' with seconds left", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(50002);
+  await clearAudit(admin, phone);
+  const gameId = await createGame(admin, {
+    status: "lobby", startAt: new Date(Date.now() + 20_000),
+  });
+  try {
+    await callJoin(admin, phone);
+    const audit = await readLatestAudit(admin, phone);
+    assertEquals(audit?.outcome, "eligible");
+    assertEquals(audit?.joined_in_lobby, true);
+    assertEquals(audit?.reason.includes("now()<start_at"), true);
+    assertEquals(/inside grace window, \d+s left/.test(audit?.reason ?? ""), true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+    await clearAudit(admin, phone);
+  }
+});
+
+Deno.test("log: late due to expired grace writes 'late: now()>=start_at (Ns past start)'", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(50003);
+  await clearAudit(admin, phone);
+  const gameId = await createGame(admin, {
+    status: "lobby", startAt: new Date(Date.now() - 5_000),
+  });
+  try {
+    await callJoin(admin, phone);
+    const audit = await readLatestAudit(admin, phone);
+    assertEquals(audit?.outcome, "late");
+    assertEquals(audit?.joined_in_lobby, false);
+    assertEquals(audit?.reason.startsWith("late: "), true);
+    assertEquals(/now\(\)>=start_at \(\d+s past start\)/.test(audit?.reason ?? ""), true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+    await clearAudit(admin, phone);
+  }
+});
+
+Deno.test("log: late due to status≠lobby writes 'late: status=question (not lobby)'", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(50004);
+  await clearAudit(admin, phone);
+  const gameId = await createGame(admin, {
+    status: "question", startAt: new Date(Date.now() + 30_000),
+  });
+  try {
+    await callJoin(admin, phone);
+    const audit = await readLatestAudit(admin, phone);
+    assertEquals(audit?.outcome, "late");
+    assertEquals(audit?.joined_in_lobby, false);
+    assertEquals(audit?.reason.includes("status=question (not lobby)"), true);
+    // grace_ok was true (start_at future), so the AND clause must NOT appear
+    assertEquals(audit?.reason.includes(" AND "), false);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+    await clearAudit(admin, phone);
+  }
+});
+
+Deno.test("log: late due to BOTH status≠lobby AND grace expired joins reasons with ' AND '", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(50005);
+  await clearAudit(admin, phone);
+  const gameId = await createGame(admin, {
+    status: "question", startAt: new Date(Date.now() - 5_000),
+  });
+  try {
+    await callJoin(admin, phone);
+    const audit = await readLatestAudit(admin, phone);
+    assertEquals(audit?.outcome, "late");
+    assertEquals(audit?.joined_in_lobby, false);
+    assertEquals(audit?.reason.includes("status=question (not lobby)"), true);
+    assertEquals(audit?.reason.includes(" AND "), true);
+    assertEquals(audit?.reason.includes("now()>=start_at"), true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+    await clearAudit(admin, phone);
+  }
+});
+
+Deno.test("log: returning caller writes 'returning' outcome and preserves prior joined_in_lobby flag", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(50006);
+  await clearAudit(admin, phone);
+  const gameId = await createGame(admin, { status: "lobby", startAt: null });
+  try {
+    await callJoin(admin, phone); // first call → eligible
+    // Flip past grace
+    await admin.from("games").update({
+      start_at: new Date(Date.now() - 1_000).toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("id", gameId);
+    await callJoin(admin, phone); // second call → returning
+    const audit = await readLatestAudit(admin, phone);
+    assertEquals(audit?.outcome, "returning");
+    assertEquals(audit?.joined_in_lobby, true, "must preserve previously granted in-lobby flag");
+    assertEquals(audit?.reason.startsWith("returning caller, keeping joined_in_lobby="), true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+    await clearAudit(admin, phone);
+  }
+});
+
+Deno.test("log: invalid_phone writes outcome='invalid_phone' even though function throws", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = "12"; // <4 digits
+  await clearAudit(admin, phone);
+  const { error } = await admin.rpc("join_phone_player", { p_phone: phone });
+  assertEquals(error?.message?.includes("invalid_phone"), true);
+  const audit = await readLatestAudit(admin, phone);
+  assertEquals(audit?.outcome, "invalid_phone");
+  assertEquals(audit?.joined_in_lobby, false);
+  assertEquals(audit?.reason.includes("invalid_phone (len<4)"), true);
+  await clearAudit(admin, phone);
+});
+
+Deno.test("log: every audit row's joined_in_lobby flag matches its outcome category", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  // Sample the most recent audit rows from this test run and assert invariant.
+  const { data } = await admin
+    .from("join_phone_player_audit")
+    .select("outcome,joined_in_lobby,reason")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  const rows = (data ?? []) as Array<{ outcome: string; joined_in_lobby: boolean; reason: string }>;
+  for (const r of rows) {
+    if (r.outcome === "eligible") {
+      assertEquals(r.joined_in_lobby, true, `eligible row must be true: ${r.reason}`);
+      assertEquals(r.reason.startsWith("eligible:"), true);
+    } else if (r.outcome === "late") {
+      assertEquals(r.joined_in_lobby, false, `late row must be false: ${r.reason}`);
+      assertEquals(r.reason.startsWith("late:"), true);
+    } else if (r.outcome === "invalid_phone" || r.outcome === "no_active_game") {
+      assertEquals(r.joined_in_lobby, false);
+    }
+  }
+});
