@@ -197,12 +197,38 @@ export function decideIvrResponse(input: DecideInput): Decision {
   }
 
   if (justJoined && !params.has("joined_intro")) {
+    const lobbyStart =
+      state.status === "lobby" && state.start_at &&
+      new Date(state.start_at).getTime() > now
+        ? formatStartTimeIL(state.start_at)
+        : "";
+    const intro = lobbyStart
+      ? `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}. המשחק יתחיל בשעה ${lobbyStart}.`
+      : `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
     return {
       kind: "wait",
-      text: `הצטרפת בהצלחה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`,
+      text: intro,
       valName: "joined_intro",
-      seconds: 3,
+      seconds: lobbyStart ? 5 : 3,
     };
+  }
+
+  // Periodically remind in-lobby callers of the exact start time while they wait.
+  if (state.status === "lobby" && state.start_at) {
+    const startMs = new Date(state.start_at).getTime();
+    if (startMs > now) {
+      const lobbyStart = formatStartTimeIL(state.start_at);
+      const cycle = Math.floor(joinedSecondsAgo / 30);
+      const reminderVar = `lobby_time_${cycle}`;
+      if (cycle > 0 && !params.has(reminderVar)) {
+        return {
+          kind: "wait",
+          text: `המשחק יתחיל בשעה ${lobbyStart}. אנא הישאר על הקו.`,
+          valName: reminderVar,
+          seconds: 5,
+        };
+      }
+    }
   }
 
   switch (state.status) {
