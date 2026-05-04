@@ -292,7 +292,7 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
           </AnimatePresence>
         </div>
 
-        <PhonePlayersList phonePlayers={phonePlayers} gameStatus={gameStatus} />
+        <PhonePlayersList phonePlayers={phonePlayers} gameStatus={gameStatus} currentQuestionIndex={0} />
 
         {graceCountdown && graceCountdown > 0 ? (
           <motion.div
