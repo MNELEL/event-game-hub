@@ -17,6 +17,7 @@ import { usePhonePlayers } from "@/hooks/usePhonePlayers";
 import { IvrSyncIndicator } from "@/components/game/IvrSyncIndicator";
 import { supabase } from "@/integrations/supabase/client";
 import { StartAtDebugPanel } from "@/components/game/StartAtDebugPanel";
+import { ClockSkewDialog, type ClockSkewSeverity } from "@/components/game/ClockSkewDialog";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ const GameHost = () => {
   const [graceCountdown, setGraceCountdown] = useState<number | null>(null);
   const [startAt, setStartAt] = useState<string | null>(null);
   const [nowTick, setNowTick] = useState<number>(Date.now());
+  const [clockSkew, setClockSkew] = useState<{ severity: ClockSkewSeverity; driftSeconds: number; serverMessage?: string } | null>(null);
+  const [pendingStart, setPendingStart] = useState<(() => void) | null>(null);
   const { branding } = useBranding();
   const phonePlayers = usePhonePlayers(game.gameDbId);
 
@@ -165,6 +168,32 @@ const GameHost = () => {
               gameStatus={gameState.status}
               onAddPlayer={game.addPlayer}
               onStart={async () => {
+                const proceedStart = () => {
+                  const grace = Math.max(0, gameState.settings.lobbyGraceSeconds || 0);
+                  const startAtIso = new Date(Date.now() + grace * 1000).toISOString();
+                  if (game.gameDbId) {
+                    supabase.from("games").update({ start_at: startAtIso }).eq("id", game.gameDbId);
+                  }
+                  if (grace === 0) {
+                    game.startGame();
+                    setTimeout(() => game.showQuestion(), 100);
+                    return;
+                  }
+                  setGraceCountdown(grace);
+                  let remaining = grace;
+                  const iv = setInterval(() => {
+                    remaining -= 1;
+                    if (remaining <= 0) {
+                      clearInterval(iv);
+                      setGraceCountdown(null);
+                      game.startGame();
+                      setTimeout(() => game.showQuestion(), 100);
+                    } else {
+                      setGraceCountdown(remaining);
+                    }
+                  }, 1000);
+                };
+
                 // Server-side clock-skew sanity check before starting.
                 const { data: skewRows } = await supabase.rpc("check_clock_skew", {
                   p_client_now: new Date().toISOString(),
@@ -173,42 +202,24 @@ const GameHost = () => {
                 });
                 const skew = Array.isArray(skewRows) ? skewRows[0] : null;
                 if (skew?.severity === "critical") {
-                  alert(
-                    `❌ פער שעון חריג זוהה (${Number(skew.drift_seconds).toFixed(1)} שניות).\n` +
-                    `המשחק לא יופעל כדי למנוע אי-סנכרון בין מתקשרים.\n\n${skew.message}`
-                  );
+                  setClockSkew({
+                    severity: "critical",
+                    driftSeconds: Number(skew.drift_seconds),
+                    serverMessage: skew.message,
+                  });
+                  setPendingStart(null);
                   return;
                 }
                 if (skew?.severity === "warning") {
-                  const ok = confirm(
-                    `⚠️ פער שעון של ${Number(skew.drift_seconds).toFixed(1)} שניות בין הדפדפן לשרת.\n` +
-                    `התראה נרשמה בלוג. להמשיך בהפעלת המשחק?`
-                  );
-                  if (!ok) return;
-                }
-                const grace = Math.max(0, gameState.settings.lobbyGraceSeconds || 0);
-                const startAtIso = new Date(Date.now() + grace * 1000).toISOString();
-                if (game.gameDbId) {
-                  await supabase.from("games").update({ start_at: startAtIso }).eq("id", game.gameDbId);
-                }
-                if (grace === 0) {
-                  game.startGame();
-                  setTimeout(() => game.showQuestion(), 100);
+                  setClockSkew({
+                    severity: "warning",
+                    driftSeconds: Number(skew.drift_seconds),
+                    serverMessage: skew.message,
+                  });
+                  setPendingStart(() => proceedStart);
                   return;
                 }
-                setGraceCountdown(grace);
-                let remaining = grace;
-                const iv = setInterval(() => {
-                  remaining -= 1;
-                  if (remaining <= 0) {
-                    clearInterval(iv);
-                    setGraceCountdown(null);
-                    game.startGame();
-                    setTimeout(() => game.showQuestion(), 100);
-                  } else {
-                    setGraceCountdown(remaining);
-                  }
-                }, 1000);
+                proceedStart();
               }}
               graceCountdown={graceCountdown}
               onCancelGrace={async () => {
@@ -295,6 +306,25 @@ const GameHost = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ClockSkewDialog
+        open={!!clockSkew}
+        info={clockSkew}
+        onCancel={() => {
+          setClockSkew(null);
+          setPendingStart(null);
+        }}
+        onContinue={
+          clockSkew?.severity === "warning" && pendingStart
+            ? () => {
+                const fn = pendingStart;
+                setClockSkew(null);
+                setPendingStart(null);
+                fn();
+              }
+            : undefined
+        }
+      />
     </div>
   );
 };
