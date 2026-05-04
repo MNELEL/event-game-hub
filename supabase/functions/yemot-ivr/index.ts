@@ -84,15 +84,27 @@ Deno.serve(async (req) => {
 
     const { data: phoneRows } = await admin
       .from("phone_players")
-      .select("created_at,last_question_index")
+      .select("created_at,last_question_index,joined_in_lobby")
       .eq("phone", phone)
       .eq("game_id", state.game_id)
       .limit(1);
-    const phoneRow = phoneRows?.[0] as { created_at?: string; last_question_index?: number } | undefined;
+    const phoneRow = phoneRows?.[0] as { created_at?: string; last_question_index?: number; joined_in_lobby?: boolean } | undefined;
     const joinedSecondsAgo = phoneRow?.created_at
       ? (Date.now() - new Date(phoneRow.created_at).getTime()) / 1000
       : 999;
     const justJoined = joinedSecondsAgo < 12;
+    const joinedInLobby = phoneRow?.joined_in_lobby === true;
+
+    // Caller didn't register during the lobby — they must wait for the next game.
+    if (!joinedInLobby) {
+      if (justJoined && !params.has("late_intro")) {
+        return ymResp([waitRead(`המשחק כבר התחיל. נרשמת בשם מתקשר ${phone.slice(-4)}, אך לא תוכל לענות על השאלות במשחק הנוכחי. אנא המתן למשחק הבא.`, "late_intro", 6)]);
+      }
+      if (state.status === "finished") {
+        return ymResp([hangupMessage("המשחק הסתיים. תודה על ההשתתפות.")]);
+      }
+      return ymResp([waitRead("המשחק בעיצומו. אנא המתן לסיום ולמשחק הבא.", "late_wait", 8)]);
+    }
 
     // 2) Handle answer submission. Use a per-question variable so old digits
     // are never reused automatically on the next question.
