@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
+import { CallTestWizard } from "@/components/yemot/CallTestWizard";
 
 const SUPABASE_PROJECT_ID = "wzmspoufqdldcuagsvir";
 const WEBHOOK_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/yemot-ivr`;
@@ -207,6 +208,9 @@ say_error_message=no`;
             חבר את השלוחה שלך כדי שמתקשרים יוכלו להצטרף למשחק ולענות בהקשת מקשים
           </p>
         </div>
+
+        {/* Step-by-step call test wizard */}
+        <CallTestWizard />
 
         {/* Auto setup */}
         <Card className="p-5 border-2 border-emerald-500/40 bg-emerald-500/5 space-y-3">
