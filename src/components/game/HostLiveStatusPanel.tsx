@@ -254,12 +254,9 @@ export function HostLiveStatusPanel({
                   <div className="flex items-center gap-2 flex-wrap">
                     <IvrTestCallButton />
                     <a
-                      href="https://github.com/lovable-dev/IVR_HEBREW_GUIDE"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        // Try to open the local md doc — falls back to a toast in dev.
-                        window.open("/docs/IVR_HEBREW_GUIDE.md", "_blank", "noopener");
-                      }}
+                      href="/ivr-guide"
+                      target="_blank"
+                      rel="noopener"
                       className="inline-flex items-center gap-1 text-xs text-game-dark-gold/80 hover:text-game-dark-gold underline-offset-2 hover:underline"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
