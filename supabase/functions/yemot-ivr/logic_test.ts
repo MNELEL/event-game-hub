@@ -322,7 +322,9 @@ Deno.test("late joiner message includes 'stay on line for next game' instruction
   }
 });
 
-Deno.test("first-question hint plays for normal lobby joiner (no recovery intro)", () => {
+Deno.test("question prompt is keypad-only — does NOT read question text aloud", () => {
+  // The phone is a keypad-only device. Question text + options live on the
+  // host screen. The IVR must never read the question text via TTS.
   const params = new URLSearchParams({ joined_intro: "Ok" });
   const d = decideIvrResponse({
     phone: "0501234567",
@@ -330,15 +332,21 @@ Deno.test("first-question hint plays for normal lobby joiner (no recovery intro)
     state: baseState({
       status: "question",
       current_question_index: 0,
-      current_question: { text: "מה?", options: ["א", "ב", "ג", "ד"] },
+      current_question: { text: "מה הבירה של ישראל?", options: ["א", "ב", "ג", "ד"] },
     }),
     phoneRow: lobbyRow(20, -1),
     now: NOW,
   });
   assertEquals(d.kind, "answer");
   if (d.kind === "answer") {
-    if (!d.text.includes("זוהי השאלה הראשונה")) {
-      throw new Error("first-question hint should play for normal joiners");
+    if (d.text.includes("מה הבירה של ישראל")) {
+      throw new Error("IVR must NOT read question text aloud — keypad only");
+    }
+    if (!d.text.includes("מוצגת על המסך")) {
+      throw new Error("prompt should tell the caller the question is on the screen");
+    }
+    if (!d.text.includes("1, 2, 3 או 4")) {
+      throw new Error("prompt should tell the caller to press 1-4");
     }
   }
 });
