@@ -1,11 +1,18 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Player, Question } from "@/types/game";
-import { Trophy, RotateCcw, Home, Sparkles, BarChart3, Zap, Target, Crown, Timer } from "lucide-react";
+import { Trophy, RotateCcw, Home, Sparkles, BarChart3, Zap, Target, Crown, Timer, Download, FileImage, FileText } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { fireConfetti } from "@/hooks/useConfetti";
 import { GameStatsPanel } from "./GameStatsPanel";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Props = {
   players: Player[];
@@ -28,6 +35,91 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
   const medals = ["🥇", "🥈", "🥉"];
   const [showStats, setShowStats] = useState(false);
   const [showTitles, setShowTitles] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  const categoryWinners = useMemo(() => {
+    const playersWithAnswers = players.filter(p => p.answers.length > 0);
+    const topScorer = sorted[0] || null;
+    let fastest: Player | null = null;
+    let fastestAvg = Infinity;
+    playersWithAnswers.forEach(p => {
+      const avg = p.answers.reduce((s, a) => s + a.time, 0) / p.answers.length;
+      if (avg < fastestAvg) { fastestAvg = avg; fastest = p; }
+    });
+    let mostAccurate: Player | null = null;
+    let bestAcc = -1;
+    playersWithAnswers.forEach(p => {
+      const acc = p.answers.filter(a => a.correct).length / p.answers.length;
+      if (acc > bestAcc) { bestAcc = acc; mostAccurate = p; }
+    });
+    return { topScorer, fastest, fastestAvg, mostAccurate, bestAcc };
+  }, [players, sorted]);
+
+  const handleExportImage = async () => {
+    if (!exportRef.current) return;
+    setExporting(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(exportRef.current, {
+        backgroundColor: "#fdf6e3", scale: 2, useCORS: true,
+      });
+      const link = document.createElement("a");
+      link.download = `תוצאות-משחק-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      toast.success("התמונה הורדה בהצלחה");
+    } catch (e) {
+      console.error(e);
+      toast.error("שגיאה בייצוא תמונה");
+    } finally { setExporting(false); }
+  };
+
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      let y = 20;
+      const rtl = (s: string) => s.split("").reverse().join("");
+
+      doc.setFontSize(22);
+      doc.text(rtl("תוצאות המשחק"), pageW / 2, y, { align: "center" });
+      y += 8;
+      doc.setFontSize(11);
+      doc.text(new Date().toLocaleString("he-IL"), pageW / 2, y, { align: "center" });
+      y += 12;
+
+      doc.setFontSize(16);
+      doc.text(rtl("שלושת הזוכים"), pageW - 15, y, { align: "right" });
+      y += 8;
+      doc.setFontSize(12);
+      const cw = categoryWinners;
+      const lines: string[] = [];
+      if (cw.topScorer) lines.push(`אלוף הניקוד: ${cw.topScorer.name} - ${cw.topScorer.score} נקודות`);
+      if (cw.fastest) lines.push(`אלוף המהירות: ${cw.fastest.name} - ${cw.fastestAvg.toFixed(1)} שניות`);
+      if (cw.mostAccurate) lines.push(`אלוף הדיוק: ${cw.mostAccurate.name} - ${Math.round(cw.bestAcc * 100)}%`);
+      lines.forEach(line => { doc.text(rtl(line), pageW - 15, y, { align: "right" }); y += 7; });
+      y += 6;
+
+      doc.setFontSize(16);
+      doc.text(rtl("טבלת תוצאות"), pageW - 15, y, { align: "right" });
+      y += 8;
+      doc.setFontSize(12);
+      sorted.forEach((p, i) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.text(rtl(`${i + 1}. ${p.name} - ${p.score} נקודות`), pageW - 15, y, { align: "right" });
+        y += 7;
+      });
+
+      doc.save(`תוצאות-משחק-${new Date().toISOString().slice(0, 10)}.pdf`);
+      toast.success("ה-PDF הורד בהצלחה");
+    } catch (e) {
+      console.error(e);
+      toast.error("שגיאה בייצוא PDF");
+    } finally { setExporting(false); }
+  };
 
   useEffect(() => {
     SoundEffects.victory();
@@ -170,6 +262,7 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
         </motion.div>
       ))}
 
+      <div ref={exportRef} className="w-full flex flex-col items-center relative z-10">
       {/* Winner announcement */}
       <motion.div
         className="text-center mb-6 relative z-10"
@@ -413,6 +506,7 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
           </div>
         </motion.div>
       )}
+      </div>
 
       {/* Action buttons */}
       <motion.div
@@ -426,6 +520,26 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
             <BarChart3 className="w-5 h-5" />
             סטטיסטיקות
           </Button>
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="gold" size="xl" disabled={exporting} className="gap-3">
+                <Download className="w-5 h-5" />
+                {exporting ? "מייצא..." : "הורדת תוצאות"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="bg-game-cream border-game-border-gold">
+              <DropdownMenuItem onClick={() => { SoundEffects.click(); handleExportPDF(); }} className="gap-2 cursor-pointer">
+                <FileText className="w-4 h-4" />
+                הורד כ-PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { SoundEffects.click(); handleExportImage(); }} className="gap-2 cursor-pointer">
+                <FileImage className="w-4 h-4" />
+                הורד כתמונה (PNG)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </motion.div>
         <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
           <Button variant="gold" size="xl" onClick={() => { SoundEffects.click(); onRestart(); }} className="gap-3">
