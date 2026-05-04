@@ -189,6 +189,7 @@ export type Database = {
         Row: {
           created_at: string
           game_id: string
+          joined_in_lobby: boolean
           last_answer_at: string | null
           last_question_index: number
           phone: string
@@ -197,6 +198,7 @@ export type Database = {
         Insert: {
           created_at?: string
           game_id: string
+          joined_in_lobby?: boolean
           last_answer_at?: string | null
           last_question_index?: number
           phone: string
@@ -205,6 +207,7 @@ export type Database = {
         Update: {
           created_at?: string
           game_id?: string
+          joined_in_lobby?: boolean
           last_answer_at?: string | null
           last_question_index?: number
           phone?: string
