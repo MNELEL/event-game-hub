@@ -209,6 +209,22 @@ export function decideIvrResponse(input: DecideInput): Decision {
     };
   }
 
+  // Recovery intro: caller dialed in after host pressed Start, but the first
+  // question is still active so they were auto-admitted. Play this once before
+  // the question is read so the experience is clear.
+  if (isFirstQuestionRecovery && !params.has("recovered_intro")) {
+    const title = (state.game_title || "").trim();
+    const welcome = title
+      ? `שלום, ברוכים הבאים למשחק ${title}.`
+      : `שלום, ברוכים הבאים למשחק הטריוויה.`;
+    return {
+      kind: "wait",
+      text: `${welcome} נרשמת בשם מתקשר ${phone.slice(-4)}. המשחק כבר התחיל אבל הספקת להצטרף בזמן לשאלה הראשונה. כעת תשמע את השאלה — הקשב לארבע האפשרויות, ובסיום הקש 1, 2, 3 או 4 לבחירת התשובה.`,
+      valName: "recovered_intro",
+      seconds: 9,
+    };
+  }
+
   if (justJoined && !params.has("joined_intro")) {
     const lobbyStart =
       state.status === "lobby" && state.start_at &&
