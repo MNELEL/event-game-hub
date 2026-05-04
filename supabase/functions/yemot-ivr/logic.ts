@@ -107,6 +107,16 @@ export function decideIvrResponse(input: DecideInput): Decision {
   const joinedInLobby = phoneRow?.joined_in_lobby === true;
   const lastAnsweredIdx = phoneRow?.last_question_index ?? -1;
   const alreadyAnsweredCurrent = lastAnsweredIdx >= state.current_question_index;
+  // Auto-recovery: caller was admitted via the first-question grace window
+  // (host already pressed Start, but we're still on question 1). Identified by:
+  //   - they're in-lobby
+  //   - the game is mid-question on the very first question
+  //   - they joined within the last few seconds (so this is likely their first poll)
+  const isFirstQuestionRecovery =
+    joinedInLobby &&
+    state.status === "question" &&
+    state.current_question_index === 0 &&
+    joinedSecondsAgo < 15;
 
   // After the RPC accepted/rejected an answer, just acknowledge and silently poll.
   if (answerSubmission) {
