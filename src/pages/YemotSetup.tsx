@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2, CheckCircle2, XCircle, Circle } from "lucide-react";
+import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2, CheckCircle2, XCircle, Circle, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
 
 const SUPABASE_PROJECT_ID = "wzmspoufqdldcuagsvir";
 const WEBHOOK_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/yemot-ivr`;
@@ -161,6 +162,13 @@ say_error_message=no`;
             <ArrowRight className="w-4 h-4" />
             חזרה לניהול
           </Button>
+          <div className="flex items-center gap-2">
+            <IvrTestCallButton />
+            <Button variant="outline" size="sm" onClick={() => navigate("/ivr-guide")} className="gap-1">
+              <BookOpen className="w-4 h-4" />
+              מדריך IVR
+            </Button>
+          </div>
         </div>
 
         <div className="text-center space-y-2">
