@@ -251,9 +251,25 @@ export function decideIvrResponse(input: DecideInput): Decision {
       const total = state.question_ids?.length || 0;
       const remaining = Math.max(1, state.time_remaining || POLL_SECONDS);
       const timeout = Math.min(remaining, POLL_SECONDS);
+      const q = state.current_question;
+      const introVar = `qintro${state.current_question_index}`;
+      // First poll of this question — read the full question + options once.
+      if (q && !params.has(introVar)) {
+        const opts = (q.options || []).slice(0, 4)
+          .map((o, i) => `${i + 1}. ${o}.`).join(" ");
+        const text =
+          `שאלה ${qNum} מתוך ${total}. ${q.text}. ` +
+          `${opts} הקש את מספר התשובה: 1, 2, 3 או 4.`;
+        return {
+          kind: "answer",
+          text,
+          valName: answerVar,
+          seconds: Math.max(timeout, 6),
+        };
+      }
       return {
         kind: "answer",
-        text: `שאלה ${qNum} מתוך ${total}. הקש בין אחת לארבע.`,
+        text: `נותרו ${remaining} שניות. הקש 1, 2, 3 או 4.`,
         valName: answerVar,
         seconds: timeout,
       };
