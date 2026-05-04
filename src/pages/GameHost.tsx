@@ -30,6 +30,8 @@ const GameHost = () => {
   const [graceCountdown, setGraceCountdown] = useState<number | null>(null);
   const [startAt, setStartAt] = useState<string | null>(null);
   const [nowTick, setNowTick] = useState<number>(Date.now());
+  const [clockSkew, setClockSkew] = useState<{ severity: ClockSkewSeverity; driftSeconds: number; serverMessage?: string } | null>(null);
+  const [pendingStart, setPendingStart] = useState<(() => void) | null>(null);
   const { branding } = useBranding();
   const phonePlayers = usePhonePlayers(game.gameDbId);
 
