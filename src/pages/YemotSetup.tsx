@@ -237,7 +237,49 @@ say_error_message=no`;
               {autoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
               הגדר את השלוחה אצלי בימות
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={runCheck}
+              disabled={checkLoading}
+              className="gap-2"
+            >
+              {checkLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              בדוק תצורה
+            </Button>
           </div>
+
+          {checkResult && (
+            <div className={`rounded-md border p-3 space-y-2 ${checkResult.ok ? "border-emerald-500/40 bg-emerald-500/5" : "border-destructive/40 bg-destructive/5"}`}>
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                {checkResult.ok ? (
+                  <><ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> השלוחה מחוברת בצורה תקינה לימות</>
+                ) : checkResult.exists ? (
+                  <><AlertCircle className="w-4 h-4 text-destructive" /> נמצאו בעיות בקובץ ext.ini</>
+                ) : (
+                  <><XCircle className="w-4 h-4 text-destructive" /> הקובץ לא נמצא בימות — הרץ "הגדר את השלוחה" קודם</>
+                )}
+              </div>
+              {checkResult.checks?.length > 0 && (
+                <ul className="space-y-1 text-xs">
+                  {checkResult.checks.map((c) => (
+                    <li key={c.key} className="flex items-start gap-2">
+                      {c.ok
+                        ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                        : <XCircle className="w-3.5 h-3.5 text-destructive mt-0.5 shrink-0" />}
+                      <div className="flex-1">
+                        <div className="text-foreground">{c.key}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono break-all" dir="ltr">{c.detail}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {checkResult.message && (
+                <div className="text-xs text-muted-foreground">{checkResult.message}</div>
+              )}
+            </div>
+          )}
           <p className="text-[11px] text-muted-foreground">
             זה יעדכן את הנתיב <code dir="ltr">ivr2:/{extension || "1"}/ext.ini</code> במערכת שלך.
           </p>
