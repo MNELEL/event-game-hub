@@ -61,6 +61,12 @@ export default function YemotSetup() {
     return localStorage.getItem("yemot_extension") || "1";
   });
   const [autoLoading, setAutoLoading] = useState(false);
+  const [checkLoading, setCheckLoading] = useState(false);
+  type CheckItem = { key: string; ok: boolean; detail: string };
+  type CheckResult =
+    | { ok: boolean; exists: boolean; path: string; checks: CheckItem[]; raw?: string; message?: string }
+    | null;
+  const [checkResult, setCheckResult] = useState<CheckResult>(null);
   type LogStatus = "pending" | "running" | "success" | "error";
   type LogEntry = { id: string; label: string; status: LogStatus; detail?: string; ts: number };
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -69,6 +75,27 @@ export default function YemotSetup() {
     setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
   const updateLog = (id: string, patch: Partial<LogEntry>) =>
     setLogs((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch, ts: Date.now() } : l)));
+
+  const runCheck = async () => {
+    const ext = (extension || "1").replace(/[^0-9]/g, "");
+    if (!ext) { toast.error("יש להזין מספר שלוחה תקין"); return; }
+    setCheckLoading(true);
+    setCheckResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("check-yemot-extension", {
+        body: { extension: ext },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setCheckResult(data as CheckResult);
+      if ((data as any)?.ok) toast.success("השלוחה מוגדרת כראוי בימות");
+      else toast.error("נמצאו בעיות בתצורת השלוחה");
+    } catch (e: any) {
+      toast.error(e?.message || "בדיקת התצורה נכשלה");
+    } finally {
+      setCheckLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
