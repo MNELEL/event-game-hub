@@ -368,6 +368,47 @@ say_error_message=no`}
           )}
         </Card>
 
+        {/* Troubleshooting: "Security Error" when calling */}
+        <Card className="p-5 border-2 border-destructive/40 bg-destructive/5 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-destructive" />
+            <h2 className="font-bold text-foreground">קיבלתי "שגיאת אבטחה" כשחייגתי לשלוחה</h2>
+          </div>
+          <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+            <p>
+              ההודעה <em>"השלוחה אינה ניתנת להפעלה עקב חוסר בהגדרות"</em> מגיעה מימות עצמה — לא מהאפליקציה.
+              בדקנו בלוגים שלנו: <strong>הבקשה לא הגיעה לשרת בכלל</strong>, ימות חוסמת אותה לפני יציאה.
+              סיבות אפשריות (לפי הסדר):
+            </p>
+            <ol className="list-decimal pr-5 space-y-2 text-foreground">
+              <li>
+                <strong>נסי שלוחה אחרת.</strong> לפעמים שלוחה 1 שמורה כשלוחת ברירת מחדל מיוחדת. שני את המספר ל-<code dir="ltr">2</code> למעלה, לחצי "הגדר את השלוחה אצלי בימות", וחייגי לשלוחה 2.
+              </li>
+              <li>
+                <strong>הרשאת "API יוצא" לא מופעלת בחשבון.</strong> זו הרשאה ברמת חשבון שצריך לבקש מתמיכת ימות (לא ניתן להפעיל מהפאנל).
+              </li>
+            </ol>
+            <div className="bg-background/80 border border-border rounded-md p-3 space-y-2">
+              <div className="font-semibold text-foreground text-sm">הודעה מוכנה לשליחה לתמיכת ימות:</div>
+              <div className="text-xs text-muted-foreground">
+                שלחי במייל ל-<code dir="ltr">support@call2all.co.il</code> או חייגי <code dir="ltr">077-2222-100</code>.
+              </div>
+              <CopyBox
+                value={`שלום,
+יש לי שלוחה מסוג type=api (שלוחה ${extension || "1"}) שאמורה לקרוא ל-webhook חיצוני בכתובת:
+${WEBHOOK_URL}
+
+כשמתקשרים לשלוחה אני מקבל הודעת "שגיאת אבטחה - השלוחה אינה ניתנת להפעלה עקב חוסר בהגדרות".
+אנא הפעילו עבור החשבון שלי הרשאת API יוצא (outbound API) לדומיין supabase.co.
+
+מספר מערכת: 0772267604
+תודה!`}
+                label="טקסט מלא להעתקה:"
+              />
+            </div>
+          </div>
+        </Card>
+
         {/* Quick URL */}
         <Card className="p-5 border-2 border-primary/40 bg-primary/5 space-y-3">
           <div className="flex items-center gap-2">
