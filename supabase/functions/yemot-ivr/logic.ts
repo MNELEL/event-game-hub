@@ -289,16 +289,16 @@ export function decideIvrResponse(input: DecideInput): Decision {
     const title = (state.game_title || "").trim();
     const welcome = title
       ? `ברוכים הבאים למשחק ${title}.`
-      : `ברוכים הבאים למשחק הטריוויה.`;
+      : `ברוכים הבאים למשחק.`;
     const registered = `הרשמתך התקבלה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
     const tail = lobbyStart
-      ? `המשחק יתחיל בשעה ${lobbyStart}. אנא המתן להפעלת המשחק.`
-      : `אנא המתן להפעלת המשחק.`;
+      ? `המשחק יתחיל בשעה ${lobbyStart}. אנא המתן להפעלת המשחק. השאלות יוצגו על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4.`
+      : `אנא המתן להפעלת המשחק. השאלות יוצגו על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4.`;
     return {
       kind: "wait",
       text: `${welcome} ${registered} ${tail}`,
       valName: "joined_intro",
-      seconds: lobbyStart ? 7 : 5,
+      seconds: lobbyStart ? 8 : 6,
     };
   }
 
