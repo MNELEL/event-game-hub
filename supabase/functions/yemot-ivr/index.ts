@@ -58,18 +58,40 @@ Deno.serve(async (req) => {
 
     const state = joinData[0] as GameState;
 
-    // Fetch start_at (not returned by the RPC) so we can announce the exact
-    // game start time to callers.
+    // Fetch start_at + settings (for title) so we can announce the game.
     const { data: gameRow } = await admin
       .from("games")
-      .select("start_at")
+      .select("start_at,settings,question_ids,current_question_index")
       .eq("id", state.game_id)
       .maybeSingle();
-    state.start_at = (gameRow as { start_at: string | null } | null)?.start_at ?? null;
+    const g = gameRow as
+      | { start_at: string | null; settings: any; question_ids: string[]; current_question_index: number }
+      | null;
+    state.start_at = g?.start_at ?? null;
+    state.game_title = (g?.settings && typeof g.settings === "object")
+      ? (g.settings.title as string | undefined) ?? null
+      : null;
+
+    // Fetch the current question text + options so the IVR can read it aloud.
+    state.current_question = null;
+    if (g && Array.isArray(g.question_ids) && g.question_ids[g.current_question_index]) {
+      const qid = g.question_ids[g.current_question_index];
+      const { data: qRow } = await admin
+        .from("questions")
+        .select("text,options")
+        .eq("id", qid)
+        .maybeSingle();
+      if (qRow) {
+        state.current_question = {
+          text: (qRow as any).text as string,
+          options: ((qRow as any).options as string[]) || [],
+        };
+      }
+    }
 
     const { data: phoneRows } = await admin
       .from("phone_players")
-      .select("created_at,last_question_index,joined_in_lobby")
+      .select("created_at,last_question_index,last_seen_question_index,joined_in_lobby")
       .eq("phone", phone)
       .eq("game_id", state.game_id)
       .limit(1);
