@@ -49,6 +49,23 @@ export type Decision =
 
 export const POLL_SECONDS = 3;
 
+// Format an ISO timestamp as Israeli local "HH:MM" (Asia/Jerusalem).
+// Used to announce the exact game start time to phone callers.
+export function formatStartTimeIL(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const fmt = new Intl.DateTimeFormat("he-IL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Jerusalem",
+      hour12: false,
+    });
+    return fmt.format(d);
+  } catch {
+    return "";
+  }
+}
+
 export function cleanPhone(phone: string): string {
   return phone.replace(/[^0-9]/g, "");
 }
