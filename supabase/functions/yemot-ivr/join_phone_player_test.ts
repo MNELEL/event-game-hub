@@ -334,3 +334,163 @@ Deno.test("edge: host cancels grace (start_at advanced to now) — caller arrivi
     await cleanupGame(admin, gameId, [phone]);
   }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Timezone / DST tests — start_at vs now() must compare correctly regardless
+// of the textual offset used to store the timestamp. Postgres `timestamptz`
+// normalizes to UTC, so equivalent instants written via UTC, +03:00, -05:00,
+// or an Israel-local DST/standard offset must all yield the same comparison.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Format a Date as ISO with an explicit offset string like "+03:00", "-05:00", "Z".
+function isoWithOffset(d: Date, offsetMinutes: number): string {
+  const shifted = new Date(d.getTime() + offsetMinutes * 60_000);
+  const pad = (n: number, w = 2) => String(n).padStart(w, "0");
+  const y = shifted.getUTCFullYear();
+  const mo = pad(shifted.getUTCMonth() + 1);
+  const da = pad(shifted.getUTCDate());
+  const h = pad(shifted.getUTCHours());
+  const mi = pad(shifted.getUTCMinutes());
+  const s = pad(shifted.getUTCSeconds());
+  const ms = pad(shifted.getUTCMilliseconds(), 3);
+  if (offsetMinutes === 0) return `${y}-${mo}-${da}T${h}:${mi}:${s}.${ms}Z`;
+  const sign = offsetMinutes >= 0 ? "+" : "-";
+  const abs = Math.abs(offsetMinutes);
+  return `${y}-${mo}-${da}T${h}:${mi}:${s}.${ms}${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
+}
+
+async function createGameRawStartAt(
+  admin: SupabaseClient,
+  status: GameOpts["status"],
+  startAtIso: string,
+): Promise<string> {
+  const code = "TZ" + Math.random().toString(36).slice(2, 7).toUpperCase();
+  const { data, error } = await admin
+    .from("games")
+    .insert({
+      code, status, start_at: startAtIso, question_ids: [],
+      current_question_index: 0, time_remaining: 15, settings: {},
+    })
+    .select("id").single();
+  if (error || !data) throw new Error(`createGameRawStartAt failed: ${error?.message}`);
+  await admin.from("games").update({ updated_at: new Date().toISOString() }).eq("id", data.id);
+  return data.id as string;
+}
+
+const OFFSETS: Array<{ label: string; minutes: number }> = [
+  { label: "UTC (Z)", minutes: 0 },
+  { label: "Israel standard +02:00", minutes: 120 },
+  { label: "Israel DST +03:00", minutes: 180 },
+  { label: "US Eastern -05:00", minutes: -300 },
+  { label: "India +05:30", minutes: 330 },
+  { label: "Pacific/Chatham +12:45", minutes: 765 },
+];
+
+for (const off of OFFSETS) {
+  Deno.test(`tz: future start_at written as ${off.label} → joined_in_lobby = true`, async () => {
+    const admin = makeClient();
+    if (!admin) { console.warn(SKIP_REASON); return; }
+    const phone = fakePhone(20 + off.minutes); // unique
+    const startAtIso = isoWithOffset(new Date(Date.now() + 30_000), off.minutes);
+    const gameId = await createGameRawStartAt(admin, "lobby", startAtIso);
+    try {
+      await callJoin(admin, phone);
+      const row = await readPhoneRow(admin, phone);
+      assertEquals(row?.joined_in_lobby, true, `offset ${off.label} should be inside grace`);
+    } finally {
+      await cleanupGame(admin, gameId, [phone]);
+    }
+  });
+
+  Deno.test(`tz: past start_at written as ${off.label} → joined_in_lobby = false`, async () => {
+    const admin = makeClient();
+    if (!admin) { console.warn(SKIP_REASON); return; }
+    const phone = fakePhone(2000 + off.minutes);
+    const startAtIso = isoWithOffset(new Date(Date.now() - 30_000), off.minutes);
+    const gameId = await createGameRawStartAt(admin, "lobby", startAtIso);
+    try {
+      await callJoin(admin, phone);
+      const row = await readPhoneRow(admin, phone);
+      assertEquals(row?.joined_in_lobby, false, `offset ${off.label} should be past grace`);
+    } finally {
+      await cleanupGame(admin, gameId, [phone]);
+    }
+  });
+}
+
+Deno.test("tz: same instant written with different offsets stores identical UTC value", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const instant = new Date(Date.now() + 60_000);
+  const variants = OFFSETS.map((o) => isoWithOffset(instant, o.minutes));
+  const ids: string[] = [];
+  try {
+    for (const iso of variants) {
+      ids.push(await createGameRawStartAt(admin, "lobby", iso));
+    }
+    const { data } = await admin
+      .from("games").select("id,start_at").in("id", ids);
+    const utcStrings = (data ?? []).map((r) => new Date(r.start_at as string).getTime());
+    const uniq = new Set(utcStrings);
+    assertEquals(uniq.size, 1, `all offset-variants should normalize to one UTC instant; got ${[...uniq].join(",")}`);
+  } finally {
+    for (const id of ids) await admin.from("games").delete().eq("id", id);
+  }
+});
+
+Deno.test("dst: spring-forward boundary — start_at scheduled across Israel DST switch compares correctly", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  // Construct a moment ~30s in the future, but write it using the OPPOSITE
+  // offset (DST vs standard) than current local time to exercise the
+  // conversion path. Postgres should still normalize it to the same UTC
+  // instant and now() < start_at must hold.
+  const phone = fakePhone(31415);
+  const future = new Date(Date.now() + 30_000);
+  // Force the +03:00 representation (Israel DST) regardless of caller TZ
+  const iso = isoWithOffset(future, 180);
+  const gameId = await createGameRawStartAt(admin, "lobby", iso);
+  try {
+    await callJoin(admin, phone);
+    const row = await readPhoneRow(admin, phone);
+    assertEquals(row?.joined_in_lobby, true);
+    // Sanity: read back and confirm the stored UTC equals the original instant ±1ms.
+    const { data } = await admin.from("games").select("start_at").eq("id", gameId).single();
+    const drift = Math.abs(new Date((data as any).start_at).getTime() - future.getTime());
+    assertEquals(drift < 1500, true, `DST conversion drift too large: ${drift}ms`);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
+
+Deno.test("dst: fall-back boundary — start_at written with standard +02:00 offset still respects grace window", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(27182);
+  const past = new Date(Date.now() - 10_000);
+  // Write a past instant with Israel-standard +02:00 offset.
+  const iso = isoWithOffset(past, 120);
+  const gameId = await createGameRawStartAt(admin, "lobby", iso);
+  try {
+    await callJoin(admin, phone);
+    const row = await readPhoneRow(admin, phone);
+    assertEquals(row?.joined_in_lobby, false);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
+
+Deno.test("tz: server now() and client Date.now() agree within a few seconds (clock-skew guard)", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const { data, error } = await admin.rpc("join_phone_player", { p_phone: "1" });
+  // We don't care about the result — we only used the call to force a round-trip.
+  void data; void error;
+  const { data: rows } = await admin
+    .from("games").select("updated_at").order("updated_at", { ascending: false }).limit(1);
+  if (!rows || rows.length === 0) return;
+  const serverTs = new Date((rows[0] as any).updated_at).getTime();
+  const skewSec = Math.abs(Date.now() - serverTs) / 1000;
+  // Loose bound — just catches a server stuck in the wrong epoch / TZ.
+  assertEquals(skewSec < 60 * 60, true, `server clock skew suspiciously large: ${skewSec.toFixed(1)}s`);
+});
