@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2, CheckCircle2, XCircle, Circle, BookOpen } from "lucide-react";
+import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2, CheckCircle2, XCircle, Circle, BookOpen, ShieldCheck, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +61,12 @@ export default function YemotSetup() {
     return localStorage.getItem("yemot_extension") || "1";
   });
   const [autoLoading, setAutoLoading] = useState(false);
+  const [checkLoading, setCheckLoading] = useState(false);
+  type CheckItem = { key: string; ok: boolean; detail: string };
+  type CheckResult =
+    | { ok: boolean; exists: boolean; path: string; checks: CheckItem[]; raw?: string; message?: string }
+    | null;
+  const [checkResult, setCheckResult] = useState<CheckResult>(null);
   type LogStatus = "pending" | "running" | "success" | "error";
   type LogEntry = { id: string; label: string; status: LogStatus; detail?: string; ts: number };
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -69,6 +75,27 @@ export default function YemotSetup() {
     setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
   const updateLog = (id: string, patch: Partial<LogEntry>) =>
     setLogs((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch, ts: Date.now() } : l)));
+
+  const runCheck = async () => {
+    const ext = (extension || "1").replace(/[^0-9]/g, "");
+    if (!ext) { toast.error("יש להזין מספר שלוחה תקין"); return; }
+    setCheckLoading(true);
+    setCheckResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("check-yemot-extension", {
+        body: { extension: ext },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setCheckResult(data as CheckResult);
+      if ((data as any)?.ok) toast.success("השלוחה מוגדרת כראוי בימות");
+      else toast.error("נמצאו בעיות בתצורת השלוחה");
+    } catch (e: any) {
+      toast.error(e?.message || "בדיקת התצורה נכשלה");
+    } finally {
+      setCheckLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -210,7 +237,49 @@ say_error_message=no`;
               {autoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
               הגדר את השלוחה אצלי בימות
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={runCheck}
+              disabled={checkLoading}
+              className="gap-2"
+            >
+              {checkLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              בדוק תצורה
+            </Button>
           </div>
+
+          {checkResult && (
+            <div className={`rounded-md border p-3 space-y-2 ${checkResult.ok ? "border-emerald-500/40 bg-emerald-500/5" : "border-destructive/40 bg-destructive/5"}`}>
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                {checkResult.ok ? (
+                  <><ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> השלוחה מחוברת בצורה תקינה לימות</>
+                ) : checkResult.exists ? (
+                  <><AlertCircle className="w-4 h-4 text-destructive" /> נמצאו בעיות בקובץ ext.ini</>
+                ) : (
+                  <><XCircle className="w-4 h-4 text-destructive" /> הקובץ לא נמצא בימות — הרץ "הגדר את השלוחה" קודם</>
+                )}
+              </div>
+              {checkResult.checks?.length > 0 && (
+                <ul className="space-y-1 text-xs">
+                  {checkResult.checks.map((c) => (
+                    <li key={c.key} className="flex items-start gap-2">
+                      {c.ok
+                        ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                        : <XCircle className="w-3.5 h-3.5 text-destructive mt-0.5 shrink-0" />}
+                      <div className="flex-1">
+                        <div className="text-foreground">{c.key}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono break-all" dir="ltr">{c.detail}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {checkResult.message && (
+                <div className="text-xs text-muted-foreground">{checkResult.message}</div>
+              )}
+            </div>
+          )}
           <p className="text-[11px] text-muted-foreground">
             זה יעדכן את הנתיב <code dir="ltr">ivr2:/{extension || "1"}/ext.ini</code> במערכת שלך.
           </p>
