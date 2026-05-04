@@ -494,3 +494,145 @@ Deno.test("tz: server now() and client Date.now() agree within a few seconds (cl
   // Loose bound — just catches a server stuck in the wrong epoch / TZ.
   assertEquals(skewSec < 60 * 60, true, `server clock skew suspiciously large: ${skewSec.toFixed(1)}s`);
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Concurrency / race tests — many callers hitting join_phone_player in
+// parallel right around the start_at boundary. The invariant under test:
+// NO caller may receive joined_in_lobby = true once now() >= start_at.
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function callJoinSafe(admin: SupabaseClient, phone: string) {
+  try { return await callJoin(admin, phone); }
+  catch (e) { return { error: (e as Error).message }; }
+}
+
+Deno.test("race: 20 callers in parallel, all BEFORE start_at → all joined_in_lobby = true", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phones = Array.from({ length: 20 }, (_, i) => fakePhone(40000 + i));
+  const gameId = await createGame(admin, {
+    status: "lobby",
+    startAt: new Date(Date.now() + 10_000), // wide window — all should be inside
+  });
+  try {
+    await Promise.all(phones.map((p) => callJoinSafe(admin, p)));
+    const { data } = await admin
+      .from("phone_players").select("phone,joined_in_lobby").in("phone", phones);
+    const rows = (data ?? []) as Array<{ phone: string; joined_in_lobby: boolean }>;
+    assertEquals(rows.length, phones.length);
+    const wrong = rows.filter((r) => r.joined_in_lobby !== true);
+    assertEquals(wrong.length, 0, `expected all true, late: ${wrong.map(r=>r.phone).join(",")}`);
+  } finally {
+    await cleanupGame(admin, gameId, phones);
+  }
+});
+
+Deno.test("race: 20 callers in parallel, all AFTER start_at → none get joined_in_lobby = true", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phones = Array.from({ length: 20 }, (_, i) => fakePhone(41000 + i));
+  const gameId = await createGame(admin, {
+    status: "lobby",
+    startAt: new Date(Date.now() - 5_000), // already expired
+  });
+  try {
+    await Promise.all(phones.map((p) => callJoinSafe(admin, p)));
+    const { data } = await admin
+      .from("phone_players").select("phone,joined_in_lobby").in("phone", phones);
+    const rows = (data ?? []) as Array<{ phone: string; joined_in_lobby: boolean }>;
+    const granted = rows.filter((r) => r.joined_in_lobby === true);
+    assertEquals(granted.length, 0, `none should be in lobby, granted to: ${granted.map(r=>r.phone).join(",")}`);
+  } finally {
+    await cleanupGame(admin, gameId, phones);
+  }
+});
+
+Deno.test("race: 30 callers fired in parallel as start_at flips mid-flight → only pre-flip callers get joined_in_lobby; post-flip get false", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phones = Array.from({ length: 30 }, (_, i) => fakePhone(42000 + i));
+  // Open a tight grace window. The host (this test) will yank start_at into
+  // the past after the first wave is dispatched. The DB clock decides per row.
+  const startAt = new Date(Date.now() + 400);
+  const gameId = await createGame(admin, { status: "lobby", startAt });
+  try {
+    // Wave 1: half the callers race to land BEFORE start_at.
+    const wave1 = phones.slice(0, 15).map((p) => callJoinSafe(admin, p));
+    // Force the boundary closed mid-flight.
+    setTimeout(() => {
+      admin.from("games").update({
+        start_at: new Date(Date.now() - 1).toISOString(),
+        updated_at: new Date().toISOString(),
+      }).eq("id", gameId).then(() => {});
+    }, 100);
+    await Promise.all(wave1);
+    // Wait until we are definitely past the original start_at.
+    await new Promise((r) => setTimeout(r, 500));
+    // Wave 2: the rest race AFTER the boundary is closed.
+    const wave2 = phones.slice(15).map((p) => callJoinSafe(admin, p));
+    await Promise.all(wave2);
+
+    const { data } = await admin
+      .from("phone_players").select("phone,joined_in_lobby").in("phone", phones);
+    const rows = (data ?? []) as Array<{ phone: string; joined_in_lobby: boolean }>;
+    const w2Phones = new Set(phones.slice(15));
+    const w2Granted = rows.filter((r) => w2Phones.has(r.phone) && r.joined_in_lobby === true);
+    // Hard invariant: NOBODY in wave 2 may have been granted in-lobby status.
+    assertEquals(w2Granted.length, 0, `wave-2 callers wrongly in lobby: ${w2Granted.map(r=>r.phone).join(",")}`);
+  } finally {
+    await cleanupGame(admin, gameId, phones);
+  }
+});
+
+Deno.test("race: same phone called concurrently 10× → exactly one phone_players row, no duplicate players", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phone = fakePhone(43000);
+  const gameId = await createGame(admin, {
+    status: "lobby",
+    startAt: new Date(Date.now() + 10_000),
+  });
+  try {
+    await Promise.all(Array.from({ length: 10 }, () => callJoinSafe(admin, phone)));
+    const { data: rows } = await admin
+      .from("phone_players").select("phone,player_id,joined_in_lobby").eq("phone", phone);
+    assertEquals((rows ?? []).length, 1, "phone_players must dedupe by phone");
+    assertEquals((rows as any[])[0].joined_in_lobby, true);
+  } finally {
+    await cleanupGame(admin, gameId, [phone]);
+  }
+});
+
+Deno.test("race: status flips lobby→question while 25 calls in-flight → no post-flip caller granted", async () => {
+  const admin = makeClient();
+  if (!admin) { console.warn(SKIP_REASON); return; }
+  const phones = Array.from({ length: 25 }, (_, i) => fakePhone(44000 + i));
+  const gameId = await createGame(admin, { status: "lobby", startAt: null });
+  try {
+    // Fire half before flip.
+    const before = phones.slice(0, 10).map((p) => callJoinSafe(admin, p));
+    await Promise.all(before);
+    // Host flips status away from lobby.
+    await admin.from("games").update({
+      status: "question",
+      start_at: new Date(Date.now() - 100).toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("id", gameId);
+    // Fire the rest in parallel after the flip.
+    const after = phones.slice(10).map((p) => callJoinSafe(admin, p));
+    await Promise.all(after);
+
+    const { data } = await admin
+      .from("phone_players").select("phone,joined_in_lobby").in("phone", phones);
+    const rows = (data ?? []) as Array<{ phone: string; joined_in_lobby: boolean }>;
+    const afterSet = new Set(phones.slice(10));
+    const wronglyGranted = rows.filter((r) => afterSet.has(r.phone) && r.joined_in_lobby === true);
+    assertEquals(wronglyGranted.length, 0, `post-flip callers wrongly in lobby: ${wronglyGranted.map(r=>r.phone).join(",")}`);
+    // And the pre-flip wave should all be in lobby.
+    const beforeSet = new Set(phones.slice(0, 10));
+    const preMissed = rows.filter((r) => beforeSet.has(r.phone) && r.joined_in_lobby !== true);
+    assertEquals(preMissed.length, 0, `pre-flip callers wrongly excluded: ${preMissed.map(r=>r.phone).join(",")}`);
+  } finally {
+    await cleanupGame(admin, gameId, phones);
+  }
+});
