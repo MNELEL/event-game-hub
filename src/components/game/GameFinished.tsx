@@ -486,7 +486,7 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
                         )}
                       </div>
                       <div className="text-game-dark-gold/60 text-xs mb-1">{c.subtitle}</div>
-                      <div className="font-serif text-xl text-game-dark-gold font-bold leading-tight">
+                      <div className="font-serif text-xl text-game-dark-gold font-bold leading-tight mb-2">
                         {c.entries.map((e, idx) => (
                           <span key={e.player.id}>
                             {idx > 0 && <span className="text-game-dark-gold/50 mx-1">·</span>}
@@ -494,9 +494,41 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
                           </span>
                         ))}
                       </div>
-                      <div className={`font-serif text-base ${c.color} font-bold`}>{c.value}</div>
+                      <div className={`font-serif text-base ${c.color} font-bold mb-2`}>{c.value}</div>
+
+                      {/* Per-winner detailed performance stats */}
+                      <div className="space-y-1.5">
+                        {c.entries.map((e) => {
+                          const total = e.player.answers.length;
+                          return (
+                            <div
+                              key={`stats-${e.player.id}`}
+                              className="flex flex-wrap gap-1.5 text-[11px] font-sans"
+                            >
+                              {c.entries.length > 1 && (
+                                <span className="text-game-dark-gold/70 font-bold ml-1">
+                                  {e.player.name}:
+                                </span>
+                              )}
+                              <span className="px-2 py-0.5 rounded-full bg-game-cream/60 border border-game-border-gold/40 text-game-dark-gold">
+                                ✓ {e.correct}/{total} נכון
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full bg-game-cream/60 border border-game-border-gold/40 text-game-dark-gold">
+                                🎯 {Math.round(e.accuracy * 100)}% דיוק
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full bg-game-cream/60 border border-game-border-gold/40 text-game-dark-gold">
+                                ⏱ {Number.isFinite(e.avgTime) ? `${e.avgTime.toFixed(1)} שנ׳` : "—"} ממוצע
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full bg-game-cream/60 border border-game-border-gold/40 text-game-dark-gold">
+                                🏆 {e.score} נק׳
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
                       {isTie && (
-                        <div className="text-game-dark-gold/50 text-[11px] mt-1 italic">{c.tieHint}</div>
+                        <div className="text-game-dark-gold/50 text-[11px] mt-2 italic">{c.tieHint}</div>
                       )}
                     </div>
                   </motion.div>
