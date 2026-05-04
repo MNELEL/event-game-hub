@@ -259,6 +259,84 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
         );
       })()}
 
+      {/* Three Category Winners */}
+      {(() => {
+        const playersWithAnswers = players.filter(p => p.answers.length > 0);
+        const topScorer = sorted[0];
+
+        let fastest: Player | null = null;
+        let fastestAvg = Infinity;
+        playersWithAnswers.forEach(p => {
+          const avg = p.answers.reduce((s, a) => s + a.time, 0) / p.answers.length;
+          if (avg < fastestAvg) { fastestAvg = avg; fastest = p; }
+        });
+
+        let mostAccurate: Player | null = null;
+        let bestAcc = -1;
+        playersWithAnswers.forEach(p => {
+          const acc = p.answers.filter(a => a.correct).length / p.answers.length;
+          if (acc > bestAcc) { bestAcc = acc; mostAccurate = p; }
+        });
+
+        const cats = [
+          { key: "score", emoji: "🏆", title: "אלוף הניקוד", subtitle: "הניקוד הגבוה ביותר",
+            player: topScorer, value: topScorer ? `${topScorer.score} נק׳` : "",
+            color: "text-game-gold", border: "border-game-gold", bg: "from-game-gold/20 to-game-dark-gold/10" },
+          { key: "fast", emoji: "⚡", title: "אלוף המהירות", subtitle: "תגובה מהירה ביותר",
+            player: fastest, value: fastest ? `${fastestAvg.toFixed(1)} שנ׳` : "",
+            color: "text-yellow-400", border: "border-yellow-400/60", bg: "from-yellow-400/20 to-orange-500/10" },
+          { key: "acc", emoji: "🎯", title: "אלוף הדיוק", subtitle: "אחוז התשובות הנכונות",
+            player: mostAccurate, value: mostAccurate ? `${Math.round(bestAcc * 100)}%` : "",
+            color: "text-emerald-400", border: "border-emerald-400/60", bg: "from-emerald-400/20 to-green-600/10" },
+        ].filter(c => c.player);
+
+        if (cats.length === 0) return null;
+
+        return (
+          <motion.div
+            className="w-full max-w-md mb-8 relative z-10"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.6 }}
+          >
+            <motion.h3
+              className="font-serif text-2xl md:text-3xl text-game-dark-gold text-center mb-3"
+              animate={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              ✨ שלושת הזוכים ✨
+            </motion.h3>
+            <div className="w-32 mx-auto border-t-2 border-double border-game-border-gold mb-4" />
+            <div className="grid grid-cols-1 gap-3">
+              {cats.map((c, i) => (
+                <motion.div
+                  key={c.key}
+                  className={`parchment-card parchment-border-double rounded-xl p-4 flex items-center gap-4 bg-gradient-to-l ${c.bg} border-2 ${c.border}`}
+                  initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  transition={{ delay: 1.7 + i * 0.25, type: "spring", stiffness: 180 }}
+                  whileHover={{ scale: 1.03 }}
+                >
+                  <motion.div
+                    className="text-5xl"
+                    animate={{ rotate: [0, -8, 8, 0], scale: [1, 1.15, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                  >
+                    {c.emoji}
+                  </motion.div>
+                  <div className="flex-1 min-w-0 text-right">
+                    <div className={`font-serif text-lg md:text-xl font-bold ${c.color}`}>{c.title}</div>
+                    <div className="text-game-dark-gold/60 text-xs mb-1">{c.subtitle}</div>
+                    <div className="font-serif text-xl text-game-dark-gold font-bold truncate">{c.player!.name}</div>
+                    <div className={`font-serif text-base ${c.color} font-bold`}>{c.value}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        );
+      })()}
+
       {/* Leaderboard */}
       {sorted.length > 0 && (
         <div className="w-full max-w-md space-y-2.5 mb-6 relative z-10">
