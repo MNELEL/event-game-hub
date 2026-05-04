@@ -18,9 +18,11 @@ type Props = {
   onAddPlayer: (name: string) => Player | Promise<Player | null>;
   onStart: () => void;
   questionsCount: number;
+  graceCountdown?: number | null;
+  onCancelGrace?: () => void;
 };
 
-export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPlayer, onStart, questionsCount }: Props) {
+export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPlayer, onStart, questionsCount, graceCountdown, onCancelGrace }: Props) {
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
   const { branding } = useBranding();
