@@ -22,7 +22,7 @@ import {
   type GameStatus,
   type JoinerKind,
   type PhoneRow,
-} from "../yemot-ivr/logic.ts";
+} from "./logic.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

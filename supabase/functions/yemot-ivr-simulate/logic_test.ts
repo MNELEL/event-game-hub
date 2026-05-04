@@ -3,7 +3,7 @@
 // integration testing through the host UI. Here we just guard that the imports
 // resolve and `classifyJoiner` behaves as advertised.)
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { classifyJoiner } from "../yemot-ivr/logic.ts";
+import { classifyJoiner } from "./logic.ts";
 
 Deno.test("simulator: import boundary — classifyJoiner is callable", () => {
   const k = classifyJoiner(
