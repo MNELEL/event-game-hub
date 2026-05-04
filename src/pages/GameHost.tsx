@@ -16,6 +16,7 @@ import { HeroIntro } from "@/components/game/HeroIntro";
 import { usePhonePlayers } from "@/hooks/usePhonePlayers";
 import { IvrSyncIndicator } from "@/components/game/IvrSyncIndicator";
 import { supabase } from "@/integrations/supabase/client";
+import { StartAtDebugPanel } from "@/components/game/StartAtDebugPanel";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -26,8 +27,28 @@ const GameHost = () => {
   const { gameState } = game;
   const [gameReady, setGameReady] = useState(false);
   const [graceCountdown, setGraceCountdown] = useState<number | null>(null);
+  const [startAt, setStartAt] = useState<string | null>(null);
+  const [nowTick, setNowTick] = useState<number>(Date.now());
   const { branding } = useBranding();
   const phonePlayers = usePhonePlayers(game.gameDbId);
+
+  // Live-track games.start_at while in lobby for the debug clock display.
+  useEffect(() => {
+    if (!game.gameDbId || gameState.status !== "lobby") return;
+    let cancelled = false;
+    const fetchStart = async () => {
+      const { data } = await supabase
+        .from("games")
+        .select("start_at")
+        .eq("id", game.gameDbId)
+        .maybeSingle();
+      if (!cancelled) setStartAt((data as { start_at: string | null } | null)?.start_at ?? null);
+    };
+    fetchStart();
+    const iv = setInterval(fetchStart, 2000);
+    const tick = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => { cancelled = true; clearInterval(iv); clearInterval(tick); };
+  }, [game.gameDbId, gameState.status]);
 
   // Create or resume game session when questions are loaded
   useEffect(() => {
@@ -136,6 +157,7 @@ const GameHost = () => {
       <AnimatePresence mode="wait">
         {gameState.status === "lobby" && (
           <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }} transition={{ duration: 0.4 }}>
+            <StartAtDebugPanel startAt={startAt} now={nowTick} />
             <GameLobby
               gameCode={gameState.gameCode}
               players={gameState.players}
