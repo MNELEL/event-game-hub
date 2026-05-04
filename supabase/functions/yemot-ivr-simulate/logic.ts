@@ -190,7 +190,7 @@ export function decideIvrResponse(input: DecideInput): Decision {
     if (state.status === "finished") {
       return {
         kind: "hangup",
-        text: `המשחק הסתיים. נרשמת בשם מתקשר ${phone.slice(-4)}. תוכל להשתתף במשחק הבא. תודה רבה.`,
+        text: `המשחק הסתיים. נרשמת בשם מתקשר ${phone.slice(-4)}. תוכל להשתתף במשחק חדש. תודה רבה.`,
       };
     }
     const total = state.question_ids?.length || 0;
@@ -218,7 +218,7 @@ export function decideIvrResponse(input: DecideInput): Decision {
         ? formatStartTimeIL(state.start_at)
         : "";
     const tailWithTime = nextStart
-      ? `המשחק הבא יתחיל בשעה ${nextStart}. אנא הישאר על הקו ואל תנתק. כשהמשחק יתחיל, תשמע 'ברוכים הבאים' ותוכל לענות על השאלות.`
+      ? `משחק חדש יתחיל בשעה ${nextStart}. אנא הישאר על הקו ואל תנתק. כשהמשחק יתחיל, תשמע 'ברוכים הבאים' ותוכל לענות על השאלות על ידי הקשת 1, 2, 3 או 4.`
       : tail;
     if (!params.has(reminderVar)) {
       const intro = cycle === 0
