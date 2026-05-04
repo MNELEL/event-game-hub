@@ -15,6 +15,7 @@ export type GameState = {
   current_question_index: number;
   time_remaining: number;
   question_ids: string[];
+  start_at?: string | null;
 };
 
 export type PhoneRow = {
