@@ -19,6 +19,7 @@ const OfflineGame = lazy(() => import("./pages/OfflineGame"));
 const About = lazy(() => import("./pages/About"));
 const BrandingPreview = lazy(() => import("./pages/BrandingPreview"));
 const YemotSetup = lazy(() => import("./pages/YemotSetup"));
+const IvrGuide = lazy(() => import("./pages/IvrGuide"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const RouteFallback = () => (
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
         <Route path="/yemot-setup" element={<ProtectedRoute><YemotSetup /></ProtectedRoute>} />
+        <Route path="/ivr-guide" element={<ProtectedRoute><IvrGuide /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
