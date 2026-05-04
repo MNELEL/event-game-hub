@@ -7,16 +7,20 @@ import { Play, UserPlus, Users, Monitor, Phone, QrCode } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { useBranding } from "@/hooks/useBranding";
+import { PhonePlayersList } from "./PhonePlayersList";
+import { PhonePlayerRow } from "@/hooks/usePhonePlayers";
 
 type Props = {
   gameCode: string;
   players: Player[];
+  phonePlayers: PhonePlayerRow[];
+  gameStatus: string;
   onAddPlayer: (name: string) => Player | Promise<Player | null>;
   onStart: () => void;
   questionsCount: number;
 };
 
-export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCount }: Props) {
+export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPlayer, onStart, questionsCount }: Props) {
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
   const { branding } = useBranding();
