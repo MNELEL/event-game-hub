@@ -17,6 +17,7 @@ import { usePhonePlayers } from "@/hooks/usePhonePlayers";
 import { IvrSyncIndicator } from "@/components/game/IvrSyncIndicator";
 import { supabase } from "@/integrations/supabase/client";
 import { StartAtDebugPanel } from "@/components/game/StartAtDebugPanel";
+import { ClockSkewDialog, type ClockSkewSeverity } from "@/components/game/ClockSkewDialog";
 
 const GameHost = () => {
   const navigate = useNavigate();
