@@ -12,32 +12,56 @@ on:
   workflow_dispatch:
 
 jobs:
-  yemot-ivr-tests:
+  # ─── Pure unit tests — always run, no DB required ───────────────────────────
+  unit-tests:
+    name: unit (logic only)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      # Optional: set as GitHub repo secrets to run the integration tests
-      # against the live database. Without them, integration tests skip
-      # gracefully and only the pure-logic + boundary tests assert.
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
+      - uses: denoland/setup-deno@v2
         with:
           deno-version: v1.x
-
-      - name: Run join_phone_player tests
-        run: |
-          deno test \
-            --allow-net --allow-env \
-            supabase/functions/yemot-ivr/join_phone_player_test.ts
-
       - name: Run logic unit tests
         run: |
           deno test \
             --allow-net --allow-env \
             supabase/functions/yemot-ivr/logic_test.ts
+
+  # ─── Integration tests — REQUIRE DB secrets, fail loudly if missing ─────────
+  integration-tests:
+    name: integration (vs Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # Set REQUIRE_DB=1 so tests assert the secrets are present and never silently skip.
+      REQUIRE_DB: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required secrets are configured
+        run: |
+          missing=0
+          if [ -z "${SUPABASE_URL}" ]; then
+            echo "::error::Missing required secret SUPABASE_URL. Add it under Settings → Secrets and variables → Actions."
+            missing=1
+          fi
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY}" ]; then
+            echo "::error::Missing required secret SUPABASE_SERVICE_ROLE_KEY. Add it under Settings → Secrets and variables → Actions."
+            missing=1
+          fi
+          if [ "$missing" = "1" ]; then exit 1; fi
+          echo "Both secrets present — running integration tests against the live DB."
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.x
+
+      - name: Run join_phone_player integration tests
+        run: |
+          deno test \
+            --allow-net --allow-env \
+            supabase/functions/yemot-ivr/join_phone_player_test.ts
