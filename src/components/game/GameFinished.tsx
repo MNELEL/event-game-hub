@@ -149,9 +149,20 @@ export function GameFinished({ players, questions, onRestart, onHome }: Props) {
       doc.setFontSize(12);
       const cw = categoryWinners;
       const lines: string[] = [];
-      if (cw.topScorer) lines.push(`אלוף הניקוד: ${cw.topScorer.name} - ${cw.topScorer.score} נקודות`);
-      if (cw.fastest) lines.push(`אלוף המהירות: ${cw.fastest.name} - ${cw.fastestAvg.toFixed(1)} שניות`);
-      if (cw.mostAccurate) lines.push(`אלוף הדיוק: ${cw.mostAccurate.name} - ${Math.round(cw.bestAcc * 100)}%`);
+      const joinNames = (entries: Array<{ player: Player }>) =>
+        entries.map(e => e.player.name).join(" + ");
+      if (cw.topScorers.length > 0) {
+        const tag = cw.topScorers.length > 1 ? " (תיקו)" : "";
+        lines.push(`אלוף הניקוד${tag}: ${joinNames(cw.topScorers)} - ${cw.topScorers[0].score} נקודות`);
+      }
+      if (cw.fastest.length > 0) {
+        const tag = cw.fastest.length > 1 ? " (תיקו)" : "";
+        lines.push(`אלוף המהירות${tag}: ${joinNames(cw.fastest)} - ${cw.fastest[0].avgTime.toFixed(1)} שניות`);
+      }
+      if (cw.mostAccurate.length > 0) {
+        const tag = cw.mostAccurate.length > 1 ? " (תיקו)" : "";
+        lines.push(`אלוף הדיוק${tag}: ${joinNames(cw.mostAccurate)} - ${Math.round(cw.mostAccurate[0].accuracy * 100)}%`);
+      }
       lines.forEach(line => { doc.text(rtl(line), pageW - 15, y, { align: "right" }); y += 7; });
       y += 6;
 
