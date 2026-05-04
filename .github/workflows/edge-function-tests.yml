@@ -1,0 +1,43 @@
+name: edge-function-tests
+
+on:
+  push:
+    paths:
+      - "supabase/functions/**"
+      - ".github/workflows/edge-function-tests.yml"
+  pull_request:
+    paths:
+      - "supabase/functions/**"
+      - ".github/workflows/edge-function-tests.yml"
+  workflow_dispatch:
+
+jobs:
+  yemot-ivr-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Optional: set as GitHub repo secrets to run the integration tests
+      # against the live database. Without them, integration tests skip
+      # gracefully and only the pure-logic + boundary tests assert.
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.x
+
+      - name: Run join_phone_player tests
+        run: |
+          deno test \
+            --allow-net --allow-env \
+            supabase/functions/yemot-ivr/join_phone_player_test.ts
+
+      - name: Run logic unit tests
+        run: |
+          deno test \
+            --allow-net --allow-env \
+            supabase/functions/yemot-ivr/logic_test.ts
