@@ -110,7 +110,9 @@ export function HostLiveStatusPanel({
         title="לוח סטטוס Live"
       >
         <Activity className="w-4 h-4" />
-        <span className="text-[10px] font-bold writing-vertical-rl">LIVE</span>
+        <span className="text-[10px] font-bold tracking-wider [writing-mode:vertical-rl] [text-orientation:mixed]">
+          LIVE
+        </span>
         {showRecoveryProof && (
           <motion.span
             animate={{ scale: [1, 1.3, 1] }}
