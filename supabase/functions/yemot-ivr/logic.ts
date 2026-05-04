@@ -52,6 +52,61 @@ export type Decision =
 
 export const POLL_SECONDS = 3;
 
+// Window (seconds) after the host pressed Start during which a caller who lands
+// on the very first question is still admitted as a full participant.
+export const FIRST_QUESTION_RECOVERY_SECONDS = 15;
+
+export type JoinerKind = "normal" | "recovery" | "late" | "absent";
+
+/**
+ * Classify a phone caller relative to the current game state.
+ *
+ *  - "normal":   joined while the lobby was still open (joined_in_lobby=true)
+ *                AND either the game is still in lobby OR the recovery window
+ *                does not apply (i.e. they joined before start_at).
+ *  - "recovery": joined_in_lobby=true, the game is already mid-question on the
+ *                very first question, and the caller is within the recovery
+ *                window — they were auto-admitted by the first-question grace.
+ *  - "late":     joined_in_lobby=false. The game already moved past lobby
+ *                + grace before this caller dialed in. They cannot answer.
+ *  - "absent":   no phoneRow (caller not registered yet).
+ *
+ * Pure function — safe to call from both the IVR edge function and the host UI.
+ */
+export function classifyJoiner(
+  state: { status: GameStatus; current_question_index: number; start_at?: string | null },
+  phoneRow: { joined_in_lobby?: boolean; created_at?: string } | null | undefined,
+  now: number = Date.now(),
+): JoinerKind {
+  if (!phoneRow) return "absent";
+  if (phoneRow.joined_in_lobby !== true) return "late";
+
+  // joined_in_lobby is true. Distinguish recovery vs normal.
+  const createdMs = phoneRow.created_at
+    ? new Date(phoneRow.created_at).getTime()
+    : 0;
+  const startMs = state.start_at ? new Date(state.start_at).getTime() : 0;
+  const inRecoveryStatus =
+    state.status === "question" || state.status === "playing";
+
+  // Recovery is identifiable when the caller registered AFTER start_at
+  // (so they got in via the grace window) and we're still on Q1.
+  if (
+    inRecoveryStatus &&
+    state.current_question_index === 0 &&
+    createdMs > 0 &&
+    startMs > 0 &&
+    createdMs >= startMs
+  ) {
+    const ageSec = (now - createdMs) / 1000;
+    if (ageSec <= FIRST_QUESTION_RECOVERY_SECONDS + 60) {
+      // grace + a small buffer so the badge stays visible to the host
+      return "recovery";
+    }
+  }
+  return "normal";
+}
+
 // Format an ISO timestamp as Israeli local "HH:MM" (Asia/Jerusalem).
 // Used to announce the exact game start time to phone callers.
 export function formatStartTimeIL(iso: string): string {
