@@ -58,6 +58,15 @@ Deno.serve(async (req) => {
 
     const state = joinData[0] as GameState;
 
+    // Fetch start_at (not returned by the RPC) so we can announce the exact
+    // game start time to callers.
+    const { data: gameRow } = await admin
+      .from("games")
+      .select("start_at")
+      .eq("id", state.game_id)
+      .maybeSingle();
+    state.start_at = (gameRow as { start_at: string | null } | null)?.start_at ?? null;
+
     const { data: phoneRows } = await admin
       .from("phone_players")
       .select("created_at,last_question_index,joined_in_lobby")
