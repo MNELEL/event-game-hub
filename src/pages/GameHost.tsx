@@ -132,6 +132,8 @@ const GameHost = () => {
             <GameLobby
               gameCode={gameState.gameCode}
               players={gameState.players}
+              phonePlayers={phonePlayers}
+              gameStatus={gameState.status}
               onAddPlayer={game.addPlayer}
               onStart={() => {
                 game.startGame();
