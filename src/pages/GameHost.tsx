@@ -23,6 +23,7 @@ const GameHost = () => {
   const game = useRealtimeGame(questions, settings);
   const { gameState } = game;
   const [gameReady, setGameReady] = useState(false);
+  const [graceCountdown, setGraceCountdown] = useState<number | null>(null);
   const { branding } = useBranding();
   const phonePlayers = usePhonePlayers(game.gameDbId);
 
@@ -136,6 +137,29 @@ const GameHost = () => {
               gameStatus={gameState.status}
               onAddPlayer={game.addPlayer}
               onStart={() => {
+                const grace = Math.max(0, gameState.settings.lobbyGraceSeconds || 0);
+                if (grace === 0) {
+                  game.startGame();
+                  setTimeout(() => game.showQuestion(), 100);
+                  return;
+                }
+                setGraceCountdown(grace);
+                let remaining = grace;
+                const iv = setInterval(() => {
+                  remaining -= 1;
+                  if (remaining <= 0) {
+                    clearInterval(iv);
+                    setGraceCountdown(null);
+                    game.startGame();
+                    setTimeout(() => game.showQuestion(), 100);
+                  } else {
+                    setGraceCountdown(remaining);
+                  }
+                }, 1000);
+              }}
+              graceCountdown={graceCountdown}
+              onCancelGrace={() => {
+                setGraceCountdown(null);
                 game.startGame();
                 setTimeout(() => game.showQuestion(), 100);
               }}

@@ -52,6 +52,7 @@ export function useSupabaseQuestions() {
     selectedCategories: [],
     showLeaderboardAfterEach: true,
     shuffleQuestions: true,
+    lobbyGraceSeconds: 0,
   };
   const [settings, setSettings] = useState<GameSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
@@ -124,6 +125,7 @@ export function useSupabaseQuestions() {
         selectedCategories: data.selected_categories || [],
         showLeaderboardAfterEach: data.show_leaderboard_after_each,
         shuffleQuestions: data.shuffle_questions,
+        lobbyGraceSeconds: (data as any).lobby_grace_seconds ?? 0,
       };
       setSettings(loaded);
       syncCache(undefined, loaded);
@@ -203,6 +205,7 @@ export function useSupabaseQuestions() {
       selected_categories: newSettings.selectedCategories,
       show_leaderboard_after_each: newSettings.showLeaderboardAfterEach,
       shuffle_questions: newSettings.shuffleQuestions,
+      lobby_grace_seconds: newSettings.lobbyGraceSeconds ?? 0,
     };
     
     if (existing) {
