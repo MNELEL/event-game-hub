@@ -414,6 +414,33 @@ export type Database = {
         }
         Relationships: []
       }
+      system_alerts: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          kind: string
+          message: string
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind: string
+          message: string
+          severity: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind?: string
+          message?: string
+          severity?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       players_public: {
@@ -453,6 +480,20 @@ export type Database = {
       }
     }
     Functions: {
+      check_clock_skew: {
+        Args: {
+          p_client_now: string
+          p_critical_seconds?: number
+          p_warn_seconds?: number
+        }
+        Returns: {
+          client_now: string
+          drift_seconds: number
+          message: string
+          server_now: string
+          severity: string
+        }[]
+      }
       claim_branding: {
         Args: { p_branding_id: string }
         Returns: {
