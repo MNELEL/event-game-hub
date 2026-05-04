@@ -31,6 +31,7 @@ export function usePlayerGame() {
     questionIds: [],
     connected: false,
     answerSubmitted: false,
+    startAt: null,
   });
 
   // Join a game by code
