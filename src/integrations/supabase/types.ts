@@ -112,6 +112,7 @@ export type Database = {
           created_at: string
           default_time_limit: number
           id: string
+          lobby_grace_seconds: number
           owner_id: string | null
           questions_per_game: number
           selected_categories: string[]
@@ -124,6 +125,7 @@ export type Database = {
           created_at?: string
           default_time_limit?: number
           id?: string
+          lobby_grace_seconds?: number
           owner_id?: string | null
           questions_per_game?: number
           selected_categories?: string[]
@@ -136,6 +138,7 @@ export type Database = {
           created_at?: string
           default_time_limit?: number
           id?: string
+          lobby_grace_seconds?: number
           owner_id?: string | null
           questions_per_game?: number
           selected_categories?: string[]
