@@ -119,15 +119,22 @@ const PlayerJoin = () => {
           <p className="text-game-dark-gold/60 text-center mb-6">הכניסו קוד וצטרפו לחגיגה של חיוש ✨</p>
           
           <div className="space-y-3 mb-4">
+            {codeLocked ? (
+              <div className="bg-game-cream/60 border-2 border-double border-game-border-gold rounded-md text-center py-2 font-mono tracking-widest text-xl text-game-dark-gold">
+                {gameCode}
+              </div>
+            ) : (
+              <Input
+                value={gameCode}
+                onChange={e => setGameCode(e.target.value.toUpperCase())}
+                placeholder="קוד משחק"
+                className="bg-white/60 border-game-border-gold/40 text-game-dark-gold text-center text-lg h-12 font-mono tracking-widest"
+                maxLength={6}
+                onKeyDown={e => e.key === "Enter" && handleJoin()}
+              />
+            )}
             <Input
-              value={gameCode}
-              onChange={e => setGameCode(e.target.value.toUpperCase())}
-              placeholder="קוד משחק"
-              className="bg-white/60 border-game-border-gold/40 text-game-dark-gold text-center text-lg h-12 font-mono tracking-widest"
-              maxLength={6}
-              onKeyDown={e => e.key === "Enter" && handleJoin()}
-            />
-            <Input
+              autoFocus={codeLocked}
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="השם שלך"
