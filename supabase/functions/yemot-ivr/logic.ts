@@ -144,8 +144,12 @@ export function renderDecision(d: Decision): string {
     case "joinGate":
       // Caller must press 1 to join. Re-prompt up to 3 times if no input.
       return `read=${tts(d.text)}=${d.valName},no,1,1,15,No,yes,no,,1,1,Ok,None`;
-    case "answer":
-      return `read=${tts(d.text)}=${d.valName},no,1,1,${d.seconds},No,yes,no,,${d.digits || "1.2.3.4"},1,Ok,None`;
+    case "answer": {
+      const prefix = d.text.startsWith("__file:")
+        ? `f-${d.text.slice("__file:".length)}`
+        : tts(d.text);
+      return `read=${prefix}=${d.valName},no,1,1,${d.seconds},No,yes,no,,${d.digits || "1.2.3.4"},1,Ok,None`;
+    }
     case "silent":
       // Loop a sound file as the "silence" filler so callers hear ambient
       // music / hourglass instead of dead air. valName captures any digits
