@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
     // Best-effort cleanup
     if (upOk) {
       try {
-        await call(token, "FileAction", { what: probePath, whatToDo: "delete" });
+        await call(token, "FileAction", { what: probePath, action: "delete" });
       } catch { /* ignore */ }
     }
 
