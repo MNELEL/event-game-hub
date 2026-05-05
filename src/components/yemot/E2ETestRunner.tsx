@@ -26,11 +26,12 @@ type Result = {
   total_ms: number;
 };
 
-export function E2ETestRunner({ extension }: { extension?: string }) {
+export function E2ETestRunner({ extension, autoRunTrigger }: { extension?: string; autoRunTrigger?: number }) {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [topError, setTopError] = useState<string | null>(null);
+  const lastTrigger = useRef<number | undefined>(undefined);
 
   const ext = (extension || (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) || "1")
     .toString()
