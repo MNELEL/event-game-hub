@@ -31,7 +31,16 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const params = url.searchParams;
-    const secret = params.get("secret") || "";
+    // Yemot quirk: when api_link already has `?`, additional params are
+    // appended with another `?` instead of `&`, so the `secret` value can
+    // arrive as `<realSecret>?ApiCallId=...`. Strip anything past `?`/`&`.
+    const rawSecret = params.get("secret") || "";
+    const secret = rawSecret.split(/[?&]/)[0];
+    // Recover ApiCallId if it got glued onto the secret
+    if (rawSecret.includes("?ApiCallId=") && !params.get("ApiCallId")) {
+      const m = rawSecret.match(/[?&]ApiCallId=([^&?]+)/);
+      if (m) params.set("ApiCallId", m[1]);
+    }
     let secretOk = !!SECRET_ENV && secret === SECRET_ENV;
     if (!secretOk && secret) {
       const { data: credRow } = await admin
