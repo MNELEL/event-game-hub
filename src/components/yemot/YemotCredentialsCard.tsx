@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ShieldCheck, AlertCircle, KeyRound, RefreshCcw, Save, Eye, EyeOff } from "lucide-react";
+import { Loader2, ShieldCheck, AlertCircle, KeyRound, RefreshCcw, Save, Eye, EyeOff, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,9 +13,9 @@ type CredsState = {
   last_verified_at: string | null;
 };
 
-export function YemotCredentialsCard({ onChanged }: { onChanged?: () => void }) {
+export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () => void; extension?: string }) {
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | null>(null);
+  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | "rotate_apply" | null>(null);
   const [state, setState] = useState<CredsState | null>(null);
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
@@ -92,6 +92,30 @@ export function YemotCredentialsCard({ onChanged }: { onChanged?: () => void }) 
       onChanged?.();
     } catch (e: any) {
       toast.error(e?.message || "סיבוב הסוד נכשל");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const rotateAndApply = async () => {
+    const ext = ((extension ?? (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) ?? "1") || "1").replace(/[^0-9]/g, "") || "1";
+    setBusy("rotate_apply");
+    try {
+      // 1. rotate webhook secret
+      const r1 = await supabase.functions.invoke("yemot-credentials", { body: { action: "rotate_secret" } });
+      if (r1.error) throw new Error(`יצירת secret חדש נכשלה: ${r1.error.message}`);
+      if ((r1.data as any)?.error) throw new Error(`יצירת secret חדש נכשלה: ${(r1.data as any).error}`);
+
+      // 2. apply to Yemot ext.ini
+      const r2 = await supabase.functions.invoke("setup-yemot-extension", { body: { extension: ext } });
+      if (r2.error) throw new Error(`עדכון ext.ini בימות נכשל: ${r2.error.message}`);
+      if ((r2.data as any)?.error) throw new Error(`עדכון ext.ini בימות נכשל: ${(r2.data as any).error}`);
+
+      toast.success(`Secret חדש נוצר ושלוחה ${ext} עודכנה אוטומטית בימות`);
+      await load();
+      onChanged?.();
+    } catch (e: any) {
+      toast.error(e?.message || "התהליך האוטומטי נכשל");
     } finally {
       setBusy(null);
     }
@@ -182,13 +206,21 @@ export function YemotCredentialsCard({ onChanged }: { onChanged?: () => void }) 
               {busy === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               שמור ואמת מול ימות
             </Button>
+            <Button
+              onClick={rotateAndApply}
+              disabled={!state?.configured || busy === "rotate_apply"}
+              className="gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground"
+            >
+              {busy === "rotate_apply" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+              סובב Secret והטמע אוטומטית
+            </Button>
             <Button variant="outline" onClick={verify} disabled={!state?.configured || busy === "verify"} className="gap-2">
               {busy === "verify" ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
               בדוק חיבור
             </Button>
             <Button variant="outline" onClick={rotate} disabled={!state?.configured || busy === "rotate"} className="gap-2">
               {busy === "rotate" ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
-              צור webhook secret חדש
+              צור secret בלבד (ללא הטמעה)
             </Button>
           </div>
         </>
