@@ -218,14 +218,38 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
 
             <label className="text-sm pt-2">אסימון API</label>
             <div className="space-y-1">
-              <input
-                type={showSecret ? "text" : "password"}
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                placeholder={state?.configured ? "(השאר ריק כדי לשמור את הקיים)" : "הדבק כאן את האסימון מפאנל ימות"}
-                className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm font-mono"
-                dir="ltr"
-              />
+              <div className="relative">
+                <input
+                  type={showSecret ? "text" : "password"}
+                  value={token}
+                  onChange={(e) => onTokenChange(e.target.value)}
+                  onBlur={(e) => {
+                    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+                    runLiveCheck(e.target.value);
+                  }}
+                  placeholder={state?.configured ? "(השאר ריק כדי לשמור את הקיים)" : "הדבק כאן את האסימון מפאנל ימות"}
+                  className={`w-full px-3 py-2 pe-9 rounded-md border bg-background text-sm font-mono ${
+                    liveStatus === "valid" ? "border-emerald-500/60" :
+                    liveStatus === "invalid" ? "border-destructive/60" :
+                    "border-border"
+                  }`}
+                  dir="ltr"
+                />
+                <div className="absolute inset-y-0 end-2 flex items-center pointer-events-none">
+                  {liveStatus === "checking" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                  {liveStatus === "valid" && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                  {liveStatus === "invalid" && <XCircle className="w-4 h-4 text-destructive" />}
+                </div>
+              </div>
+              {liveMessage && (
+                <p className={`text-xs ${
+                  liveStatus === "valid" ? "text-emerald-600 dark:text-emerald-400" :
+                  liveStatus === "invalid" ? "text-destructive" :
+                  "text-muted-foreground"
+                }`}>
+                  {liveMessage}
+                </p>
+              )}
               <div className="flex items-center justify-between text-xs">
                 <button
                   type="button"
