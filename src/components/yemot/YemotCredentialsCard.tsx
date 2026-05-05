@@ -321,6 +321,30 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
             )}
           </div>
 
+          {state?.last_setup_at && (
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-foreground space-y-1">
+              <div className="flex items-center gap-2 font-semibold">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                api_link הותקן בימות בהצלחה (אומת בקריאה חוזרת)
+              </div>
+              <div className="text-muted-foreground">
+                שלוחה: <span className="font-mono">{state.extension || "—"}</span> ·
+                {" "}נתיב: <span className="font-mono" dir="ltr">{state.last_setup_path}</span> ·
+                {" "}עודכן: {new Date(state.last_setup_at).toLocaleString("he-IL")}
+              </div>
+              {extension && state.extension && extension !== state.extension && (
+                <div className="text-amber-600 dark:text-amber-400">
+                  ⚠️ הזנת שלוחה {extension} אבל הוגדרה לאחרונה שלוחה {state.extension}. אם המתקשרים שומעים "אין לינק" — לחץ "עדכן api_link בימות אוטומטית" עם הערך הנכון.
+                </div>
+              )}
+            </div>
+          )}
+          {state?.configured && state.last_verified_at && !state?.last_setup_at && (
+            <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 text-xs text-foreground">
+              ⚠️ האסימון נשמר אבל <strong>טרם בוצעה הגדרת ext.ini בימות</strong> — מתקשרים יקבלו "אין לינק" עד שתלחץ "עדכן api_link בימות אוטומטית".
+            </div>
+          )}
+
           <div className="rounded-md border-2 border-primary/40 bg-background/60 p-3 space-y-2">
             <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <LinkIcon className="w-4 h-4 text-primary" />
