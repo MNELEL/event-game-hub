@@ -45,6 +45,9 @@ export function QuestionEditor({ onAdd }: Props) {
     onAdd({
       id: Date.now().toString(),
       type, category, text,
+      options: [...options],
+      correctAnswer, timeLimit, points,
+      mediaUrl: mediaUrl && /^https?:\/\//.test(mediaUrl) ? mediaUrl : undefined,
       options: [...activeOptions],
       correctAnswer: mode === "poll" ? -1 : correctAnswer,
       timeLimit, points,

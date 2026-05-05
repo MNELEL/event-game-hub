@@ -1,18 +1,22 @@
 import { useState, useCallback } from "react";
 import { GameState, GameSettings, Question, Player } from "@/types/game";
 import { defaultQuestions } from "@/data/defaultQuestions";
+import { branding } from "@/config/branding";
 
 const generateGameCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
 const defaultSettings: GameSettings = {
+  title: branding.name,
   title: "החגיגה של חיוש",
   questionsPerGame: 10,
   defaultTimeLimit: 15,
   selectedCategories: [],
   showLeaderboardAfterEach: true,
   shuffleQuestions: true,
+  lobbyGraceSeconds: 0,
 };
 
+const STORAGE_KEY = branding.storage.storageKey;
 const STORAGE_KEY = "hayoush_data";
 
 function loadFromStorage(): { questions: Question[]; settings: GameSettings } {
