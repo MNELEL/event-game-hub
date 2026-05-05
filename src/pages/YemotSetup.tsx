@@ -9,6 +9,7 @@ import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
 import { CallTestWizard } from "@/components/yemot/CallTestWizard";
 import { ApiPermissionsChecklist } from "@/components/yemot/ApiPermissionsChecklist";
 import { YemotCredentialsCard } from "@/components/yemot/YemotCredentialsCard";
+import { E2ETestRunner } from "@/components/yemot/E2ETestRunner";
 
 const SUPABASE_PROJECT_ID = "wzmspoufqdldcuagsvir";
 const WEBHOOK_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/yemot-ivr`;
@@ -251,6 +252,9 @@ say_error_message=no`;
 
         {/* API permissions verification — explains exactly what to enable in Yemot */}
         <ApiPermissionsChecklist />
+
+        {/* End-to-end test runner with detailed log */}
+        <E2ETestRunner extension={extension} />
 
         {/* Step-by-step call test wizard */}
         <CallTestWizard />
