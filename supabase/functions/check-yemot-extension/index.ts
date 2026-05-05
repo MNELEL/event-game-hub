@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     const expectedPath = `/functions/v1/yemot-ivr`;
 
     const form = new FormData();
-    form.append("token", YEMOT_API_TOKEN);
+    form.append("token", apiToken);
     form.append("path", path);
 
     const ymRes = await fetch("https://www.call2all.co.il/ym/api/DownloadFile", {
