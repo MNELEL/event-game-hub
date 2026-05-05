@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff, Info } from "lucide-react";
+import { Gamepad2, Settings, BookOpen, Users, Zap, Download, WifiOff, Info, Phone } from "lucide-react";
 import { branding as defaultBranding } from "@/config/branding";
 import { useBranding } from "@/hooks/useBranding";
 
