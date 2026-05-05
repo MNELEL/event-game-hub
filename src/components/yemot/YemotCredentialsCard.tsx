@@ -238,6 +238,36 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
             )}
           </div>
 
+          {inlineSuccess && (
+            <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="flex-1 text-foreground">{inlineSuccess}</div>
+              <button type="button" onClick={() => setInlineSuccess(null)} className="text-xs text-muted-foreground hover:text-foreground">סגור</button>
+            </div>
+          )}
+
+          {inlineError && (
+            <div className="rounded-md border-2 border-destructive/50 bg-destructive/10 p-3 text-sm space-y-2">
+              <div className="flex items-start gap-2">
+                <XCircle className="w-4 h-4 mt-0.5 text-destructive shrink-0" />
+                <div className="flex-1">
+                  <div className="font-bold text-destructive">נכשל: {inlineError.source}</div>
+                  <div className="text-foreground mt-0.5 break-words">{inlineError.message}</div>
+                </div>
+                <button type="button" onClick={() => setInlineError(null)} className="text-xs text-muted-foreground hover:text-foreground">סגור</button>
+              </div>
+              {inlineError.details && (
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">פרטים טכניים מימות</summary>
+                  <pre className="mt-2 p-2 bg-background/60 rounded border border-border overflow-auto max-h-48 text-[11px] font-mono whitespace-pre-wrap" dir="ltr">{inlineError.details}</pre>
+                </details>
+              )}
+              <div className="text-xs text-muted-foreground border-t border-destructive/20 pt-2">
+                טיפים: ודא שהאסימון הועתק במלואו מפאנל ימות (ניהול מערכת ← API), שלא פג תוקפו, ושמספר המערכת תואם לאסימון.
+              </div>
+            </div>
+          )}
+
           <div className="grid sm:grid-cols-[140px_1fr] gap-2 items-start">
             <label className="text-sm pt-2">מספר מערכת</label>
             <input
