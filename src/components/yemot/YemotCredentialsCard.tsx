@@ -249,6 +249,38 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
     }
   };
 
+  const checkUploadPermission = async () => {
+    const ext = ((extension ?? (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) ?? "1") || "1").replace(/[^0-9]/g, "") || "1";
+    setBusy("check_perm");
+    clearInline();
+    try {
+      const r = await supabase.functions.invoke("yemot-credentials", {
+        body: { action: "check_upload_permission", extension: ext },
+      });
+      if (r.error) throw { source: "בדיקת הרשאת UploadTextFile", message: r.error.message };
+      const d = r.data as any;
+      if (d?.ok) {
+        setPermStatus({ ok: true, message: d.message });
+        setOk(d.message);
+        toast.success("הרשאת כתיבה תקינה");
+      } else {
+        setPermStatus({ ok: false, message: d?.message || "אין הרשאה" });
+        setErr(
+          "בדיקת הרשאת UploadTextFile",
+          { message: d?.message, details: d?.details, raw: d },
+          "אין הרשאת UploadTextFile"
+        );
+        toast.error(d?.message || "אין הרשאת כתיבה");
+      }
+    } catch (e: any) {
+      setPermStatus({ ok: false, message: e?.message || "בדיקת ההרשאה נכשלה" });
+      setErr("בדיקת הרשאת UploadTextFile", e, "בדיקת ההרשאה נכשלה");
+      toast.error(e?.message || "בדיקת ההרשאה נכשלה");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <Card className="p-5 border-2 border-primary/30 bg-primary/5 space-y-4">
       <div className="flex items-center gap-2">
