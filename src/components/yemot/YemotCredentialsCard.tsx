@@ -206,13 +206,21 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
               {busy === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               שמור ואמת מול ימות
             </Button>
+            <Button
+              onClick={rotateAndApply}
+              disabled={!state?.configured || busy === "rotate_apply"}
+              className="gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground"
+            >
+              {busy === "rotate_apply" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+              סובב Secret והטמע אוטומטית
+            </Button>
             <Button variant="outline" onClick={verify} disabled={!state?.configured || busy === "verify"} className="gap-2">
               {busy === "verify" ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
               בדוק חיבור
             </Button>
             <Button variant="outline" onClick={rotate} disabled={!state?.configured || busy === "rotate"} className="gap-2">
               {busy === "rotate" ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
-              צור webhook secret חדש
+              צור secret בלבד (ללא הטמעה)
             </Button>
           </div>
         </>
