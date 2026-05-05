@@ -30,7 +30,8 @@ function ymResp(decisions: Decision[]): Response {
 Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
-    const secret = url.searchParams.get("secret") || "";
+    const params = url.searchParams;
+    const secret = params.get("secret") || "";
     let secretOk = !!SECRET_ENV && secret === SECRET_ENV;
     if (!secretOk && secret) {
       const { data: credRow } = await admin
@@ -41,6 +42,12 @@ Deno.serve(async (req) => {
       secretOk = !!credRow;
     }
     if (!secretOk) {
+      console.warn("[yemot-ivr] secret rejected", {
+        receivedLen: secret.length,
+        receivedPreview: secret ? secret.slice(0, 4) + "…" + secret.slice(-4) : "(empty)",
+        envLen: SECRET_ENV.length,
+        allParams: Object.fromEntries(params.entries()),
+      });
       return ymResp([{ kind: "hangup", text: "שגיאת אבטחה. אנא פנה למנהל המערכת." }]);
     }
 
