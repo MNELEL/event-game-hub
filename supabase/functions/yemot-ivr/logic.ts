@@ -40,11 +40,10 @@ export type DecideInput = {
 export type Decision =
   | { kind: "hangup"; text: string }
   | { kind: "wait"; text: string; valName: string; seconds: number }
-  | { kind: "answer"; text: string; valName: string; seconds: number }
-  | { kind: "silent"; valName: string; seconds: number }
+  | { kind: "answer"; text: string; valName: string; seconds: number; digits?: string }
+  | { kind: "silent"; valName: string; seconds: number; loopFile?: string }
+  | { kind: "joinGate"; text: string; valName: string; seconds: number }
   | {
-      // Indicates the handler should call submit_phone_answer with this digit,
-      // then call decideIvrResponse again with answerSubmission populated.
       kind: "submitAnswer";
       digit: number;
       questionIndex: number;
