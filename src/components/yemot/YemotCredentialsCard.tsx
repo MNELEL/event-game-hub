@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ShieldCheck, AlertCircle, KeyRound, RefreshCcw, Save, Eye, EyeOff, Wand2, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, ShieldCheck, AlertCircle, KeyRound, RefreshCcw, Save, Eye, EyeOff, Wand2, CheckCircle2, XCircle, Copy, Link as LinkIcon, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
