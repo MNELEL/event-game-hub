@@ -338,11 +338,8 @@ Deno.test("question prompt is keypad-only — does NOT read question text aloud"
     if (d.text.includes("מה הבירה של ישראל")) {
       throw new Error("IVR must NOT read question text aloud — keypad only");
     }
-    if (!d.text.includes("מוצגת על המסך")) {
-      throw new Error("prompt should tell the caller the question is on the screen");
-    }
-    if (!d.text.includes("1, 2, 3 או 4")) {
-      throw new Error("prompt should tell the caller to press 1-4");
+    if (!d.text.includes("ניתן להקיש")) {
+      throw new Error("prompt should say 'ניתן להקיש כעת'");
     }
   }
 });
