@@ -107,19 +107,23 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   useEffect(() => { load(); }, []);
 
   const save = async () => {
-    if (!token.trim()) { toast.error("הזן אסימון API מימות"); return; }
+    if (!token.trim()) { setErr("שמירה", { message: "הזן אסימון API מימות לפני שמירה" }, "חסר אסימון"); return; }
     setBusy("save");
+    clearInline();
     try {
       const { data, error } = await supabase.functions.invoke("yemot-credentials", {
         body: { action: "save", yemot_username: username.trim(), yemot_api_token: token.trim() },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
+      const d = data as any;
+      if (d?.error) throw { message: d.error, details: d.details, raw: d.raw };
+      setOk("האסימון אומת מול ימות ונשמר בהצלחה");
       toast.success("האסימון אומת ונשמר בהצלחה");
       setToken("");
       await load();
       onChanged?.();
     } catch (e: any) {
+      setErr("שמירה ואימות", e, "שמירת האסימון נכשלה");
       toast.error(e?.message || "שמירת האסימון נכשלה");
     } finally {
       setBusy(null);
@@ -128,16 +132,19 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
 
   const verify = async () => {
     setBusy("verify");
+    clearInline();
     try {
       const { data, error } = await supabase.functions.invoke("yemot-credentials", {
         body: { action: "verify" },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      if ((data as any).ok) toast.success("האסימון תקין מול ימות");
-      else toast.error((data as any).message || "האסימון לא תקין");
+      const d = data as any;
+      if (d?.error) throw { message: d.error, details: d.details, raw: d.raw };
+      if (d.ok) { setOk("האסימון תקין מול ימות (אומת זה עתה)"); toast.success("האסימון תקין מול ימות"); }
+      else { setErr("בדיקת חיבור", { message: d.message || "האסימון לא תקין", raw: d }, "האסימון לא תקין"); toast.error(d.message || "האסימון לא תקין"); }
       await load();
     } catch (e: any) {
+      setErr("בדיקת חיבור", e, "אימות נכשל");
       toast.error(e?.message || "אימות נכשל");
     } finally {
       setBusy(null);
