@@ -65,7 +65,7 @@ const EXT_INI_FIELDS = [
   { k: "hangup_insert_file", v: "no", desc: "מונע ניתוק אוטומטי" },
 ];
 
-export function ApiPermissionsChecklist() {
+export function ApiPermissionsChecklist({ onAllChecksPassed }: { onAllChecksPassed?: () => void } = {}) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<VerifyResult>(null);
 
@@ -75,7 +75,12 @@ export function ApiPermissionsChecklist() {
     try {
       const { data, error } = await supabase.functions.invoke("verify-yemot-token", {});
       if (error) throw error;
-      setResult(data as VerifyResult);
+      const r = data as VerifyResult;
+      setResult(r);
+      if (r?.ok && onAllChecksPassed) {
+        toast.success("כל ההרשאות עברו — מריץ בדיקת קצה־לקצה אוטומטית");
+        setTimeout(() => onAllChecksPassed(), 600);
+      }
     } catch (e: any) {
       toast.error(e?.message || "בדיקה נכשלה");
     } finally {
