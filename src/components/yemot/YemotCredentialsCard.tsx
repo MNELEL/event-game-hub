@@ -11,6 +11,9 @@ type CredsState = {
   api_token_masked: string;
   webhook_secret: string | null;
   last_verified_at: string | null;
+  extension: string | null;
+  last_setup_at: string | null;
+  last_setup_path: string | null;
 };
 
 export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () => void; extension?: string }) {
