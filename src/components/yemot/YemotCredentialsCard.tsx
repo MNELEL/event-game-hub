@@ -13,9 +13,9 @@ type CredsState = {
   last_verified_at: string | null;
 };
 
-export function YemotCredentialsCard({ onChanged }: { onChanged?: () => void }) {
+export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () => void; extension?: string }) {
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | null>(null);
+  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | "rotate_apply" | null>(null);
   const [state, setState] = useState<CredsState | null>(null);
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
