@@ -253,6 +253,9 @@ say_error_message=no`;
         {/* API permissions verification — explains exactly what to enable in Yemot */}
         <ApiPermissionsChecklist />
 
+        {/* End-to-end test runner with detailed log */}
+        <E2ETestRunner extension={extension} />
+
         {/* Step-by-step call test wizard */}
         <CallTestWizard />
 
