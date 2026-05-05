@@ -31,8 +31,17 @@ Deno.serve(async (req) => {
     const { data: userData, error: authErr } = await supa.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
 
-    if (!YEMOT_API_TOKEN) return json({ error: "חסר YEMOT_API_TOKEN בהגדרות" }, 400);
-    if (!YEMOT_WEBHOOK_SECRET) return json({ error: "חסר YEMOT_WEBHOOK_SECRET בהגדרות" }, 400);
+    // Prefer per-user credentials from DB; fall back to env for back-compat.
+    const { data: credRow } = await supa
+      .from("yemot_credentials")
+      .select("yemot_api_token, webhook_secret")
+      .eq("owner_id", userData.user.id)
+      .maybeSingle();
+    const apiToken = credRow?.yemot_api_token || YEMOT_API_TOKEN;
+    const webhookSecret = credRow?.webhook_secret || YEMOT_WEBHOOK_SECRET;
+
+    if (!apiToken) return json({ error: "חסר אסימון ימות. הזן אותו בעמוד הגדרות ימות." }, 400);
+    if (!webhookSecret) return json({ error: "חסר webhook secret. צור אותו בעמוד הגדרות ימות." }, 400);
 
     let body: { extension?: string } = {};
     try { body = await req.json(); } catch {}
