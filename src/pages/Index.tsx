@@ -131,7 +131,20 @@ const Index = () => {
             <Info className="w-5 h-5" />
             אודות
           </Button>
+          <Button variant="outline" size="lg" onClick={() => navigate("/yemot-setup")} className="gap-2">
+            <Phone className="w-5 h-5" />
+            הגדר ימות
+          </Button>
         </motion.div>
+
+        <motion.p
+          className="mt-3 text-game-dark-gold/60 text-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.85 }}
+        >
+          הגדרת חיבור הטלפון (ימות המשיח) — לחיוג של המתקשרים למשחק
+        </motion.p>
 
         <motion.div
           className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6"
