@@ -44,7 +44,7 @@ Deno.test("lobby joiner — first call shows welcome intro", () => {
   assertEquals(d.kind, "wait");
   if (d.kind === "wait") {
     assertEquals(d.valName, "joined_intro");
-    assertEquals(d.text.includes("4567"), true);
+    assertEquals(d.text.includes("ברוכים הבאים"), true);
   }
 });
 
