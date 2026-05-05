@@ -37,19 +37,6 @@ function CopyBox({ value, label }: { value: string; label?: string }) {
   );
 }
 
-function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
-  return (
-    <div className="flex gap-4">
-      <div className="shrink-0 w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-md">
-        {n}
-      </div>
-      <div className="flex-1 space-y-2">
-        <h3 className="text-lg font-bold text-foreground">{title}</h3>
-        <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">{children}</div>
-      </div>
-    </div>
-  );
-}
 
 const STORAGE_KEY = "yemot_webhook_secret";
 
