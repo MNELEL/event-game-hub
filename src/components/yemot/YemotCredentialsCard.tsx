@@ -285,6 +285,57 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
             )}
           </div>
 
+          <div className="rounded-md border-2 border-primary/40 bg-background/60 p-3 space-y-2">
+            <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <LinkIcon className="w-4 h-4 text-primary" />
+              כתובת Webhook עבור api_link בימות
+            </div>
+            {!ivrUrl ? (
+              <div className="text-xs text-muted-foreground">
+                שמור אסימון API קודם — לאחר מכן ייווצר webhook secret וה-URL יוצג כאן.
+              </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  readOnly
+                  dir="ltr"
+                  value={showUrlSecret ? ivrUrl : (ivrUrlMasked ?? "")}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="w-full px-3 py-2 rounded-md border border-border bg-background text-xs font-mono"
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" onClick={copyUrl} className="gap-2">
+                    {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {copied ? "הועתק!" : "העתק URL"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={applyOnly}
+                    disabled={!state?.configured || !state?.last_verified_at || busy === "apply_only"}
+                    title={!state?.last_verified_at ? "שמור ואמת אסימון API קודם" : "מעלה ext.ini אוטומטית לשלוחה הנוכחית"}
+                    className="gap-2"
+                  >
+                    {busy === "apply_only" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    עדכן api_link בימות אוטומטית
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlSecret((v) => !v)}
+                    className="ms-auto text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                  >
+                    {showUrlSecret ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                    {showUrlSecret ? "הסתר secret" : "הצג secret"}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  הכפתור האוטומטי דורש אסימון API מאומת עם הרשאת UploadTextFile. אחרת — העתק והדבק ידנית בפאנל ימות.
+                </p>
+              </>
+            )}
+          </div>
+
           {inlineSuccess && (
             <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
