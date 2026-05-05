@@ -218,57 +218,25 @@ say_error_message=no`;
           </p>
         </div>
 
-        {/* Per-user Yemot credentials */}
+        {/* 1. Per-user Yemot credentials */}
         <YemotCredentialsCard extension={extension} />
 
-        {/* Trivia module replacement notice */}
-        <Card className="p-5 border-2 border-amber-500/50 bg-amber-500/5 space-y-3">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            <h2 className="font-bold text-foreground">חשוב — אם הוגדר אצלך "מודול טריוויה" בימות</h2>
-          </div>
-          <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
-            <p>
-              מודול הטריוויה המובנה של ימות הוא מערכת <strong>עצמאית לחלוטין</strong>: הוא מנהל בעצמו שאלות, ניקוד ומשתתפים, ו<strong>לא מתחבר</strong> לאפליקציה הזו.
-            </p>
-            <p>
-              כדי שמתקשרים יצטרפו למשחק שאת מנהלת מהמסך — צריך להחליף את הגדרת השלוחה מ"מודול טריוויה" לשלוחה מסוג <code dir="ltr" className="bg-muted px-1 rounded">API</code> שמדברת עם השרת שלנו.
-            </p>
-            <div className="bg-background/60 border border-border rounded-md p-3 space-y-1.5">
-              <div className="font-semibold text-foreground text-sm">איך עושים את זה:</div>
-              <ol className="list-decimal pr-5 space-y-1 text-xs">
-                <li>היכנסי לפאנל ימות → <strong>ניהול מערכת</strong> → <strong>שלוחות</strong>.</li>
-                <li>אתרי את השלוחה (למשל <code dir="ltr">1</code>) שכרגע מוגדרת כ"טריוויה".</li>
-                <li>שני אותה ל-<strong>"שלוחת API"</strong> — או פשוט מחקי את התוכן הקיים שלה.</li>
-                <li>חזרי לכאן ולחצי <strong>"הגדר את השלוחה אצלי בימות"</strong> — זה יכתוב את <code dir="ltr">ext.ini</code> הנכון אוטומטית.</li>
-                <li>חייגי שוב — עכשיו תשמעי את ההודעות של האפליקציה במקום הטריוויה של ימות.</li>
-              </ol>
-            </div>
-            <p className="text-xs">
-              <strong>דרך מהירה יותר:</strong> ההגדרה האוטומטית למטה דורסת את קובץ <code dir="ltr">ext.ini</code> בשלוחה הנבחרת. אם הטריוויה הוגדרה רק על ידי קובץ <code dir="ltr">ext.ini</code> בשלוחה זו — לחיצה אחת תספיק. אם היא הוגדרה כמודול ייעודי בפאנל — צריך קודם להסיר את הגדרת המודול בפאנל.
-            </p>
-          </div>
-        </Card>
-
-        {/* API permissions verification — explains exactly what to enable in Yemot */}
+        {/* 2. API permissions verification */}
         <ApiPermissionsChecklist />
 
-        {/* End-to-end test runner with detailed log */}
+        {/* 3. End-to-end test runner */}
         <E2ETestRunner extension={extension} />
 
-        {/* Step-by-step call test wizard */}
-        <CallTestWizard />
-
-        {/* Auto setup */}
+        {/* 4. Auto setup */}
         <Card className="p-5 border-2 border-emerald-500/40 bg-emerald-500/5 space-y-3">
           <div className="flex items-center gap-2">
             <Wand2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h2 className="font-bold text-foreground">הגדרה אוטומטית (מומלץ)</h2>
+            <h2 className="font-bold text-foreground">הגדרה אוטומטית של השלוחה</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            לחיצה אחת תיצור/תעדכן עבורך את קובץ <code dir="ltr">ext.ini</code> בשלוחה הנבחרת ישירות בימות המשיח, באמצעות מפתח ה-API שכבר שמרת.
+            לחיצה אחת תיצור/תעדכן את <code dir="ltr">ext.ini</code> בשלוחה הנבחרת ישירות בימות, ותכתוב גם בשורש המערכת לגיבוי.
           </p>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
             <label className="text-sm text-foreground shrink-0">שלוחה:</label>
             <input
               type="text"
@@ -286,7 +254,7 @@ say_error_message=no`;
               className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {autoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-              הגדר את השלוחה אצלי בימות
+              הגדר את השלוחה
             </Button>
             <Button
               type="button"
@@ -304,11 +272,11 @@ say_error_message=no`;
             <div className={`rounded-md border p-3 space-y-2 ${checkResult.ok ? "border-emerald-500/40 bg-emerald-500/5" : "border-destructive/40 bg-destructive/5"}`}>
               <div className="flex items-center gap-2 text-sm font-semibold">
                 {checkResult.ok ? (
-                  <><ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> השלוחה מחוברת בצורה תקינה לימות</>
+                  <><ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> השלוחה מחוברת בצורה תקינה</>
                 ) : checkResult.exists ? (
                   <><AlertCircle className="w-4 h-4 text-destructive" /> נמצאו בעיות בקובץ ext.ini</>
                 ) : (
-                  <><XCircle className="w-4 h-4 text-destructive" /> הקובץ לא נמצא בימות — הרץ "הגדר את השלוחה" קודם</>
+                  <><XCircle className="w-4 h-4 text-destructive" /> הקובץ לא נמצא — הרץ "הגדר את השלוחה" קודם</>
                 )}
               </div>
               {checkResult.checks?.length > 0 && (
@@ -329,52 +297,8 @@ say_error_message=no`;
               {checkResult.message && (
                 <div className="text-xs text-muted-foreground">{checkResult.message}</div>
               )}
-              {!checkResult.ok && (
-                <div className="pt-2 border-t border-border/40 space-y-1.5">
-                  <p className="text-xs text-foreground">
-                    {checkResult.exists
-                      ? "נראה ש-ext.ini בימות לא תקין. לחץ כאן כדי לדרוס אותו עם ההגדרות הנכונות:"
-                      : "השלוחה עוד לא הוגדרה בימות. לחץ כאן כדי להגדיר אותה עכשיו:"}
-                  </p>
-                  <Button
-                    type="button"
-                    onClick={runAutoSetup}
-                    disabled={autoLoading}
-                    size="sm"
-                    className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-                  >
-                    {autoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                    הגדר את שלוחה {extension || "1"} עכשיו
-                  </Button>
-                  <p className="text-[11px] text-muted-foreground">
-                    אם בטלפון נשמע "חסר לינק" — זה בדיוק התיקון שצריך.
-                  </p>
-                </div>
-              )}
             </div>
           )}
-          <p className="text-[11px] text-muted-foreground">
-            זה יעדכן את הנתיב <code dir="ltr">ivr2:/{extension || "1"}/ext.ini</code> במערכת שלך.
-          </p>
-
-          <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">תצוגה מקדימה של תוכן ext.ini שייכתב:</div>
-            <pre className="rounded-md border border-border bg-muted/60 p-3 font-mono text-[11px] sm:text-xs whitespace-pre-wrap break-all text-foreground" dir="ltr">
-{`type=api
-api_link=${WEBHOOK_URL}?secret=${secret ? "•".repeat(Math.min(secret.length, 12)) + "  (הסוד יוזרק בצד השרת)" : "<YEMOT_WEBHOOK_SECRET מהשרת>"}
-api_add_0=ApiPhone
-api_add_1=ApiDID
-api_add_2=ApiExtension
-api_000=none
-api_extension_send=yes
-api_call_id_send=yes
-hangup_insert_file=no
-say_error_message=no`}
-            </pre>
-            <p className="text-[11px] text-muted-foreground">
-              הסוד עצמו לא נחשף כאן — הוא נשלף מצד השרת בעת ההעלאה לימות.
-            </p>
-          </div>
 
           {(autoLoading || logs.length > 0) && (
             <div className="space-y-1.5">
@@ -408,185 +332,58 @@ say_error_message=no`}
           )}
         </Card>
 
-        {/* Troubleshooting: "Security Error" when calling */}
-        <Card className="p-5 border-2 border-destructive/40 bg-destructive/5 space-y-3">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-destructive" />
-            <h2 className="font-bold text-foreground">קיבלתי "שגיאת אבטחה" כשחייגתי לשלוחה</h2>
+        {/* 5. Optional: step-by-step call wizard (collapsible) */}
+        <details className="rounded-lg border-2 border-border bg-card group">
+          <summary className="cursor-pointer p-4 flex items-center justify-between font-bold text-foreground select-none">
+            <span>אשף בדיקת חיוג צעד־אחר־צעד</span>
+            <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="p-4 pt-0">
+            <CallTestWizard />
           </div>
-          <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+        </details>
+
+        {/* 6. Trivia module replacement notice (collapsible) */}
+        <details className="rounded-lg border border-amber-500/40 bg-amber-500/5 group">
+          <summary className="cursor-pointer p-4 flex items-center justify-between font-semibold text-foreground select-none">
+            <span className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              אם הוגדר אצלך "מודול טריוויה" בימות
+            </span>
+            <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="p-4 pt-0 text-sm text-muted-foreground space-y-2 leading-relaxed">
             <p>
-              ההודעה <em>"השלוחה אינה ניתנת להפעלה עקב חוסר בהגדרות"</em> מגיעה מימות עצמה — לא מהאפליקציה.
-              בדקנו בלוגים שלנו: <strong>הבקשה לא הגיעה לשרת בכלל</strong>, ימות חוסמת אותה לפני יציאה.
-              סיבות אפשריות (לפי הסדר):
+              מודול הטריוויה המובנה של ימות הוא מערכת <strong>עצמאית לחלוטין</strong> ו<strong>לא מתחבר</strong> לאפליקציה.
+              צריך להחליף את הגדרת השלוחה ל־<code dir="ltr" className="bg-muted px-1 rounded">type=api</code>.
             </p>
-            <ol className="list-decimal pr-5 space-y-2 text-foreground">
-              <li>
-                <strong>נסי שלוחה אחרת.</strong> לפעמים שלוחה 1 שמורה כשלוחת ברירת מחדל מיוחדת. שני את המספר ל-<code dir="ltr">2</code> למעלה, לחצי "הגדר את השלוחה אצלי בימות", וחייגי לשלוחה 2.
-              </li>
-              <li>
-                <strong>הרשאת "API יוצא" לא מופעלת בחשבון.</strong> זו הרשאה ברמת חשבון שצריך לבקש מתמיכת ימות (לא ניתן להפעיל מהפאנל).
-              </li>
+            <ol className="list-decimal pr-5 space-y-1 text-xs">
+              <li>פאנל ימות → <strong>ניהול מערכת</strong> → <strong>שלוחות</strong>.</li>
+              <li>אתרי את השלוחה (למשל <code dir="ltr">1</code>) שמוגדרת כ"טריוויה" ושני אותה ל־"שלוחת API" (או מחקי את התוכן).</li>
+              <li>חזרי לכאן ולחצי <strong>"הגדר את השלוחה"</strong>.</li>
             </ol>
-            <div className="bg-background/80 border border-border rounded-md p-3 space-y-2">
-              <div className="font-semibold text-foreground text-sm">הודעה מוכנה לשליחה לתמיכת ימות:</div>
-              <div className="text-xs text-muted-foreground">
-                שלחי במייל ל-<code dir="ltr">support@call2all.co.il</code> או חייגי <code dir="ltr">077-2222-100</code>.
-              </div>
-              <CopyBox
-                value={`שלום,
-יש לי שלוחה מסוג type=api (שלוחה ${extension || "1"}) שאמורה לקרוא ל-webhook חיצוני בכתובת:
-${WEBHOOK_URL}
-
-כשמתקשרים לשלוחה אני מקבל הודעת "שגיאת אבטחה - השלוחה אינה ניתנת להפעלה עקב חוסר בהגדרות".
-אנא הפעילו עבור החשבון שלי הרשאת API יוצא (outbound API) לדומיין supabase.co.
-
-מספר מערכת: 0772267604
-תודה!`}
-                label="טקסט מלא להעתקה:"
-              />
-            </div>
           </div>
-        </Card>
+        </details>
 
-        {/* Quick URL */}
-        <Card className="p-5 border-2 border-primary/40 bg-primary/5 space-y-3">
-          <div className="flex items-center gap-2">
-            <FileCode className="w-5 h-5 text-primary" />
-            <h2 className="font-bold text-foreground">כתובת ה-API להדבקה</h2>
+        {/* 7. How it works (collapsible reference) */}
+        <details className="rounded-lg border border-border bg-card group">
+          <summary className="cursor-pointer p-4 flex items-center justify-between font-semibold text-foreground select-none">
+            <span className="flex items-center gap-2">
+              <Server className="w-4 h-4 text-primary" />
+              איך זה עובד מאחורי הקלעים?
+            </span>
+            <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="p-4 pt-0">
+            <ul className="text-sm text-muted-foreground space-y-2 list-disc pr-5 leading-relaxed">
+              <li>בכל פעולה ימות שולחת בקשה ל־Edge Function שלנו (כתובת ה־webhook נכתבת אוטומטית ב־ext.ini).</li>
+              <li>בכניסה ראשונה — נוצר אוטומטית שחקן בשם <strong>"מתקשר ####"</strong> (4 ספרות אחרונות של הטלפון).</li>
+              <li>במצב <strong>שאלה</strong> — המתקשר מתבקש להקיש 1-4. תשובה ננעלת כשהזמן נגמר.</li>
+              <li>בין שאלות — המערכת מקריאה הודעת המתנה וחוזרת לבדוק שוב.</li>
+              <li>בסיום — מושמע "המשחק הסתיים" והשיחה מנותקת.</li>
+            </ul>
           </div>
-          <p className="text-xs text-muted-foreground">
-            הזן את הסוד שהגדרת (YEMOT_WEBHOOK_SECRET). הוא יישמר במכשיר זה ויוטמע אוטומטית בכתובת בכל פעם שתחזור לעמוד הזה.
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={secret}
-              onChange={(e) => setSecret(e.target.value)}
-              placeholder="הסוד שלך…"
-              className="flex-1 px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm font-mono"
-              dir="ltr"
-            />
-            {secret && (
-              <Button type="button" variant="outline" size="sm" onClick={clearSecret} className="shrink-0 gap-1">
-                <Trash2 className="w-4 h-4" />
-                נקה
-              </Button>
-            )}
-          </div>
-          {savedAt && (
-            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-              <Save className="w-3 h-3" />
-              נשמר במכשיר זה — יטען אוטומטית בביקור הבא
-            </div>
-          )}
-          <CopyBox value={fullUrl} label="api_link" />
-        </Card>
-
-        {/* Steps */}
-        <Card className="p-6 space-y-6">
-          <h2 className="text-xl font-bold text-foreground border-b border-border pb-2">
-            שלבי ההגדרה בפאנל ימות
-          </h2>
-
-          <Step n={1} title="התחבר לפאנל ימות המשיח">
-            <p>
-              היכנס לאתר{" "}
-              <a href="https://www.call2all.co.il" target="_blank" rel="noreferrer" className="text-primary underline" dir="ltr">
-                www.call2all.co.il
-              </a>{" "}
-              והתחבר עם מספר המערכת והסיסמה שלך.
-            </p>
-          </Step>
-
-          <Step n={2} title="פתח את ניהול הקבצים">
-            <p>בתפריט הראשי לחץ על <strong>"ניהול מערכת"</strong> ← <strong>"ימות לעורכי תוכן"</strong> ← <strong>"קבצים"</strong>.</p>
-            <p className="text-xs">
-              לחלופין: ניתן לעבוד דרך <strong>FTP</strong> בכתובת <code dir="ltr" className="bg-muted px-1 rounded">ym2.call2all.co.il</code> עם שם משתמש = מספר המערכת וסיסמת ה-FTP שלך.
-            </p>
-          </Step>
-
-          <Step n={3} title="בחר את השלוחה הרצויה">
-            <p>
-              נווט לתיקיית השלוחה שתשמש להצטרפות למשחק. למשל לשלוחה <code className="bg-muted px-1 rounded">1</code> הנתיב יהיה:
-            </p>
-            <CopyBox value="/ivr2:1/" />
-            <p className="text-xs">אם אין תיקייה כזו, צור אותה ישירות מתפריט הקבצים.</p>
-          </Step>
-
-          <Step n={4} title="צור או ערוך את הקובץ ext.ini">
-            <p>
-              בתוך תיקיית השלוחה צור קובץ בשם <code className="bg-muted px-1 rounded">ext.ini</code> (בדיוק כך, אותיות קטנות).
-              העתק לתוכו את התוכן הבא:
-            </p>
-            <div className="rounded-md border border-border bg-muted/60 p-3 font-mono text-xs whitespace-pre-wrap break-all" dir="ltr">
-{iniContent}
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={async () => {
-                await navigator.clipboard.writeText(iniContent);
-                toast.success("תוכן הקובץ הועתק");
-              }}
-              className="gap-1"
-            >
-              <Copy className="w-3 h-3" />
-              העתק את כל התוכן
-            </Button>
-            <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-md p-3 text-amber-700 dark:text-amber-300 text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>
-                החלף את <code dir="ltr">YOUR_SECRET</code> בסוד שהגדרת. אם הזנת אותו למעלה — התוכן כבר כולל אותו.
-              </span>
-            </div>
-          </Step>
-
-          <Step n={5} title="שמור ובדוק">
-            <p>שמור את הקובץ. כעת חייג למערכת והקש את מספר השלוחה (למשל 1).</p>
-            <p>
-              אם הכל תקין — תשמע: <em>"הצטרפת בהצלחה. אתה רשום בשם מתקשר ####. ממתין לתחילת המשחק."</em>
-            </p>
-            <p>במהלך שאלה פעילה תקבל הקראה של מספר השאלה ותתבקש להקיש ספרה בין 1 ל-4.</p>
-          </Step>
-        </Card>
-
-        {/* How it works */}
-        <Card className="p-6 space-y-3">
-          <div className="flex items-center gap-2">
-            <Server className="w-5 h-5 text-primary" />
-            <h2 className="font-bold text-foreground">איך זה עובד?</h2>
-          </div>
-          <ul className="text-sm text-muted-foreground space-y-2 list-disc pr-5 leading-relaxed">
-            <li>בכל פעולה ימות שולחת בקשה ל-Edge Function שלנו (ה-URL למעלה).</li>
-            <li>בכניסה ראשונה — נוצר אוטומטית שחקן בשם <strong>"מתקשר ####"</strong> (4 ספרות אחרונות של הטלפון).</li>
-            <li>כשהמסך הראשי במצב <strong>שאלה</strong> — המתקשר מתבקש להקיש 1-4. תשובה ננעלת כשהזמן נגמר.</li>
-            <li>בין שאלות (לוח תוצאות / לובי) — המערכת מקריאה הודעת המתנה וחוזרת לבדוק שוב.</li>
-            <li>בסיום המשחק — מושמע "המשחק הסתיים" והשיחה מנותקת.</li>
-          </ul>
-        </Card>
-
-        {/* Troubleshooting */}
-        <Card className="p-6 space-y-3">
-          <div className="flex items-center gap-2">
-            <Bug className="w-5 h-5 text-primary" />
-            <h2 className="font-bold text-foreground">פתרון תקלות</h2>
-          </div>
-          <div className="space-y-3 text-sm">
-            <div>
-              <div className="font-semibold text-foreground">"שגיאת אבטחה" בהאזנה</div>
-              <div className="text-muted-foreground text-xs">הסוד ב-URL לא תואם ל-YEMOT_WEBHOOK_SECRET. ערוך את ext.ini עם הסוד הנכון.</div>
-            </div>
-            <div>
-              <div className="font-semibold text-foreground">"אין משחק פעיל כרגע"</div>
-              <div className="text-muted-foreground text-xs">פתח משחק חדש מהדאשבורד והשאר אותו במצב לובי, ואז המתקשר יוכל להצטרף.</div>
-            </div>
-            <div>
-              <div className="font-semibold text-foreground">לא נשמע כלום / שגיאה כללית</div>
-              <div className="text-muted-foreground text-xs">בדוק שהשלוחה מוגדרת כ-<code dir="ltr">type=api</code>, שה-<code dir="ltr">api_link</code> תקין, ושקיימות שורות <code dir="ltr">api_add</code> לשליחת מספר הטלפון.</div>
-            </div>
-          </div>
-        </Card>
+        </details>
       </div>
     </div>
   );
