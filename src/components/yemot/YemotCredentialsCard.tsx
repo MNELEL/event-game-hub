@@ -15,13 +15,14 @@ type CredsState = {
 
 export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () => void; extension?: string }) {
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | "rotate_apply" | "apply_only" | null>(null);
+  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | "rotate_apply" | "apply_only" | "check_perm" | null>(null);
   const [state, setState] = useState<CredsState | null>(null);
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [showSecret, setShowSecret] = useState(false);
   const [showUrlSecret, setShowUrlSecret] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [permStatus, setPermStatus] = useState<{ ok: boolean; message: string } | null>(null);
   type InlineError = { source: string; message: string; details?: string } | null;
   const [inlineError, setInlineError] = useState<InlineError>(null);
   const [inlineSuccess, setInlineSuccess] = useState<string | null>(null);
@@ -248,6 +249,38 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
     }
   };
 
+  const checkUploadPermission = async () => {
+    const ext = ((extension ?? (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) ?? "1") || "1").replace(/[^0-9]/g, "") || "1";
+    setBusy("check_perm");
+    clearInline();
+    try {
+      const r = await supabase.functions.invoke("yemot-credentials", {
+        body: { action: "check_upload_permission", extension: ext },
+      });
+      if (r.error) throw { source: "בדיקת הרשאת UploadTextFile", message: r.error.message };
+      const d = r.data as any;
+      if (d?.ok) {
+        setPermStatus({ ok: true, message: d.message });
+        setOk(d.message);
+        toast.success("הרשאת כתיבה תקינה");
+      } else {
+        setPermStatus({ ok: false, message: d?.message || "אין הרשאה" });
+        setErr(
+          "בדיקת הרשאת UploadTextFile",
+          { message: d?.message, details: d?.details, raw: d },
+          "אין הרשאת UploadTextFile"
+        );
+        toast.error(d?.message || "אין הרשאת כתיבה");
+      }
+    } catch (e: any) {
+      setPermStatus({ ok: false, message: e?.message || "בדיקת ההרשאה נכשלה" });
+      setErr("בדיקת הרשאת UploadTextFile", e, "בדיקת ההרשאה נכשלה");
+      toast.error(e?.message || "בדיקת ההרשאה נכשלה");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <Card className="p-5 border-2 border-primary/30 bg-primary/5 space-y-4">
       <div className="flex items-center gap-2">
@@ -320,6 +353,25 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
                     {busy === "apply_only" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                     עדכן api_link בימות אוטומטית
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={checkUploadPermission}
+                    disabled={!state?.configured || !state?.last_verified_at || busy === "check_perm"}
+                    title="מעלה ומוחק קובץ זמני בשלוחה כדי לוודא הרשאת כתיבה לפני ההטמעה"
+                    className="gap-2"
+                  >
+                    {busy === "check_perm" ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : permStatus?.ok ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    ) : permStatus && !permStatus.ok ? (
+                      <XCircle className="w-4 h-4 text-destructive" />
+                    ) : (
+                      <ShieldCheck className="w-4 h-4" />
+                    )}
+                    בדוק הרשאת UploadTextFile
+                  </Button>
                   <button
                     type="button"
                     onClick={() => setShowUrlSecret((v) => !v)}
@@ -329,6 +381,11 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
                     {showUrlSecret ? "הסתר secret" : "הצג secret"}
                   </button>
                 </div>
+                {permStatus && (
+                  <p className={`text-xs ${permStatus.ok ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
+                    {permStatus.ok ? "✓ " : "✗ "}{permStatus.message}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   הכפתור האוטומטי דורש אסימון API מאומת עם הרשאת UploadTextFile. אחרת — העתק והדבק ידנית בפאנל ימות.
                 </p>
