@@ -62,6 +62,14 @@ export function E2ETestRunner({ extension, autoRunTrigger }: { extension?: strin
     }
   };
 
+  useEffect(() => {
+    if (autoRunTrigger && autoRunTrigger !== lastTrigger.current && !running) {
+      lastTrigger.current = autoRunTrigger;
+      run();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRunTrigger]);
+
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   return (
