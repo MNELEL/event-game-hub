@@ -50,9 +50,20 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192.png", "pwa-512.png"],
+      devOptions: { enabled: false },
       workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/functions\//, /^\/auth\//, /^\/rest\//],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,woff2}"],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: { cacheName: "html-pages", networkTimeoutSeconds: 3 },
+          },
+        ],
       },
       manifest: {
         name: `${branding.name} - משחק טריוויה`,
