@@ -20,6 +20,52 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  type LiveStatus = "idle" | "checking" | "valid" | "invalid";
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>("idle");
+  const [liveMessage, setLiveMessage] = useState<string>("");
+  const debounceRef = useRef<number | null>(null);
+  const lastCheckedTokenRef = useRef<string>("");
+
+  const runLiveCheck = async (candidate: string) => {
+    const t = candidate.trim();
+    if (!t || t.length < 8) {
+      setLiveStatus("idle");
+      setLiveMessage("");
+      return;
+    }
+    if (t === lastCheckedTokenRef.current) return;
+    lastCheckedTokenRef.current = t;
+    setLiveStatus("checking");
+    setLiveMessage("בודק מול ימות...");
+    try {
+      const { data, error } = await supabase.functions.invoke("yemot-credentials", {
+        body: { action: "check_token", yemot_api_token: t },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      if ((data as any)?.ok) {
+        setLiveStatus("valid");
+        setLiveMessage("האסימון תקין — ניתן לשמור");
+      } else {
+        setLiveStatus("invalid");
+        setLiveMessage((data as any)?.message || "האסימון לא תקין מול ימות");
+      }
+    } catch (e: any) {
+      setLiveStatus("invalid");
+      setLiveMessage(e?.message || "שגיאה בבדיקת האסימון");
+    }
+  };
+
+  const onTokenChange = (val: string) => {
+    setToken(val);
+    setLiveStatus("idle");
+    setLiveMessage("");
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    if (!val.trim()) return;
+    debounceRef.current = window.setTimeout(() => runLiveCheck(val), 700);
+  };
+
+  useEffect(() => () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); }, []);
 
   const load = async () => {
     setLoading(true);
