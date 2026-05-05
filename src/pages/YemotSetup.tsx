@@ -61,6 +61,7 @@ export default function YemotSetup() {
   type LogStatus = "pending" | "running" | "success" | "error";
   type LogEntry = { id: string; label: string; status: LogStatus; detail?: string; ts: number };
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [e2eAutoTrigger, setE2eAutoTrigger] = useState(0);
 
   const pushLog = (entry: Omit<LogEntry, "ts">) =>
     setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
