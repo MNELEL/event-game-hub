@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, PlayCircle, CheckCircle2, XCircle, ChevronDown, ChevronUp, AlertTriangle, Clock, ListChecks } from "lucide-react";
