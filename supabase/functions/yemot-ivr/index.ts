@@ -51,7 +51,6 @@ Deno.serve(async (req) => {
       return ymResp([{ kind: "hangup", text: "שגיאת אבטחה. אנא פנה למנהל המערכת." }]);
     }
 
-    const params = url.searchParams;
     console.log("[yemot-ivr] ←", Object.fromEntries(params.entries()));
 
     const phone = cleanPhone(
