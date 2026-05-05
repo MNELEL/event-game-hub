@@ -80,6 +80,9 @@ Deno.serve(async (req) => {
         api_token_masked: mask(existing?.yemot_api_token),
         webhook_secret: existing?.webhook_secret ?? null,
         last_verified_at: existing?.last_verified_at ?? null,
+        extension: existing?.extension ?? null,
+        last_setup_at: existing?.last_setup_at ?? null,
+        last_setup_path: existing?.last_setup_path ?? null,
       });
     }
 
