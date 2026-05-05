@@ -12,7 +12,7 @@ import {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SECRET = Deno.env.get("YEMOT_WEBHOOK_SECRET") || "";
+const SECRET_ENV = Deno.env.get("YEMOT_WEBHOOK_SECRET") || "";
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
   auth: { persistSession: false },
