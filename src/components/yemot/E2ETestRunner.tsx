@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, PlayCircle, CheckCircle2, XCircle, ChevronDown, ChevronUp, AlertTriangle, Clock, ListChecks } from "lucide-react";
@@ -26,11 +26,12 @@ type Result = {
   total_ms: number;
 };
 
-export function E2ETestRunner({ extension }: { extension?: string }) {
+export function E2ETestRunner({ extension, autoRunTrigger }: { extension?: string; autoRunTrigger?: number }) {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [topError, setTopError] = useState<string | null>(null);
+  const lastTrigger = useRef<number | undefined>(undefined);
 
   const ext = (extension || (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) || "1")
     .toString()
@@ -60,6 +61,14 @@ export function E2ETestRunner({ extension }: { extension?: string }) {
       setRunning(false);
     }
   };
+
+  useEffect(() => {
+    if (autoRunTrigger && autoRunTrigger !== lastTrigger.current && !running) {
+      lastTrigger.current = autoRunTrigger;
+      run();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRunTrigger]);
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 

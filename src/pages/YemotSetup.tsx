@@ -61,6 +61,7 @@ export default function YemotSetup() {
   type LogStatus = "pending" | "running" | "success" | "error";
   type LogEntry = { id: string; label: string; status: LogStatus; detail?: string; ts: number };
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [e2eAutoTrigger, setE2eAutoTrigger] = useState(0);
 
   const pushLog = (entry: Omit<LogEntry, "ts">) =>
     setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
@@ -209,10 +210,10 @@ say_error_message=no`;
         <YemotCredentialsCard extension={extension} />
 
         {/* 2. API permissions verification */}
-        <ApiPermissionsChecklist />
+        <ApiPermissionsChecklist onAllChecksPassed={() => setE2eAutoTrigger((n) => n + 1)} />
 
         {/* 3. End-to-end test runner */}
-        <E2ETestRunner extension={extension} />
+        <E2ETestRunner extension={extension} autoRunTrigger={e2eAutoTrigger} />
 
         {/* 4. Auto setup */}
         <Card className="p-5 border-2 border-emerald-500/40 bg-emerald-500/5 space-y-3">
