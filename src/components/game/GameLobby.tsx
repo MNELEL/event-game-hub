@@ -267,9 +267,16 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 text-game-dark-gold/60">
+          <div className="flex items-center gap-2 text-game-dark-gold/60 flex-wrap">
             <Users className="w-4 h-4" />
-            <span className="text-sm">{players.length} שחקנים מחוברים</span>
+            <span className="text-sm">
+              {players.length + phonePlayers.length} שחקנים מחוברים
+              {phonePlayers.length > 0 && (
+                <span className="text-game-dark-gold/50">
+                  {" "}· {players.length} באתר · {phonePlayers.length} בטלפון
+                </span>
+              )}
+            </span>
           </div>
 
           <AnimatePresence>
