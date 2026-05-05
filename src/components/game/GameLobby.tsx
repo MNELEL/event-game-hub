@@ -27,6 +27,7 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
   const { branding } = useBranding();
+  const navigate = useNavigate();
 
   // Start lobby background music on mount
   useEffect(() => {
