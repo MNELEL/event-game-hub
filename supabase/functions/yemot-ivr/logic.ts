@@ -131,15 +131,29 @@ export function tts(text: string): string {
   return "t-" + text.replace(/[.\-"'&|=,]/g, " ").replace(/\s+/g, " ").trim();
 }
 
+// Loop sound files in Yemot. Files must be uploaded to ivr2:/sounds/ once.
+export const LOBBY_LOOP_FILE = "ivr2:sounds/lobby-loop";
+export const HOURGLASS_LOOP_FILE = "ivr2:sounds/hourglass-loop";
+
 export function renderDecision(d: Decision): string {
   switch (d.kind) {
     case "hangup":
       return `id_list_message=${tts(d.text)}.g-hangup`;
     case "wait":
       return `read=${tts(d.text)}=${d.valName},no,1,1,${d.seconds},No,yes,no,,9,1,Ok,None`;
+    case "joinGate":
+      // Caller must press 1 to join. Re-prompt up to 3 times if no input.
+      return `read=${tts(d.text)}=${d.valName},no,1,1,15,No,yes,no,,1,1,Ok,None`;
     case "answer":
-      return `read=${tts(d.text)}=${d.valName},no,1,1,${d.seconds},No,yes,no,,1.2.3.4,1,Ok,None`;
+      return `read=${tts(d.text)}=${d.valName},no,1,1,${d.seconds},No,yes,no,,${d.digits || "1.2.3.4"},1,Ok,None`;
     case "silent":
+      // Loop a sound file as the "silence" filler so callers hear ambient
+      // music / hourglass instead of dead air. valName captures any digits
+      // (e.g. answer key) but we do NOT accept input here unless the caller
+      // is in an answer phase (which uses kind=answer).
+      if (d.loopFile) {
+        return `read=f-${d.loopFile}=${d.valName},no,1,1,${d.seconds},No,yes,no,,9,1,Ok,None`;
+      }
       return `read=t-=${d.valName},no,1,1,${d.seconds},No,yes,no,,9,1,Ok,None`;
     case "submitAnswer":
       return `__submitAnswer:${d.questionIndex}:${d.digit}`;
