@@ -20,6 +20,26 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  type InlineError = { source: string; message: string; details?: string } | null;
+  const [inlineError, setInlineError] = useState<InlineError>(null);
+  const [inlineSuccess, setInlineSuccess] = useState<string | null>(null);
+
+  const setErr = (source: string, e: any, fallback: string) => {
+    let message = fallback;
+    let details: string | undefined;
+    if (typeof e === "string") message = e;
+    else if (e?.message) message = e.message;
+    if (e?.details) {
+      try { details = typeof e.details === "string" ? e.details : JSON.stringify(e.details, null, 2); } catch {}
+    } else if (e?.raw) {
+      try { details = typeof e.raw === "string" ? e.raw : JSON.stringify(e.raw, null, 2); } catch {}
+    }
+    setInlineError({ source, message, details });
+    setInlineSuccess(null);
+  };
+  const setOk = (msg: string) => { setInlineSuccess(msg); setInlineError(null); };
+  const clearInline = () => { setInlineError(null); setInlineSuccess(null); };
+
   type LiveStatus = "idle" | "checking" | "valid" | "invalid";
   const [liveStatus, setLiveStatus] = useState<LiveStatus>("idle");
   const [liveMessage, setLiveMessage] = useState<string>("");
@@ -87,19 +107,23 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   useEffect(() => { load(); }, []);
 
   const save = async () => {
-    if (!token.trim()) { toast.error("הזן אסימון API מימות"); return; }
+    if (!token.trim()) { setErr("שמירה", { message: "הזן אסימון API מימות לפני שמירה" }, "חסר אסימון"); return; }
     setBusy("save");
+    clearInline();
     try {
       const { data, error } = await supabase.functions.invoke("yemot-credentials", {
         body: { action: "save", yemot_username: username.trim(), yemot_api_token: token.trim() },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
+      const d = data as any;
+      if (d?.error) throw { message: d.error, details: d.details, raw: d.raw };
+      setOk("האסימון אומת מול ימות ונשמר בהצלחה");
       toast.success("האסימון אומת ונשמר בהצלחה");
       setToken("");
       await load();
       onChanged?.();
     } catch (e: any) {
+      setErr("שמירה ואימות", e, "שמירת האסימון נכשלה");
       toast.error(e?.message || "שמירת האסימון נכשלה");
     } finally {
       setBusy(null);
@@ -108,16 +132,19 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
 
   const verify = async () => {
     setBusy("verify");
+    clearInline();
     try {
       const { data, error } = await supabase.functions.invoke("yemot-credentials", {
         body: { action: "verify" },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      if ((data as any).ok) toast.success("האסימון תקין מול ימות");
-      else toast.error((data as any).message || "האסימון לא תקין");
+      const d = data as any;
+      if (d?.error) throw { message: d.error, details: d.details, raw: d.raw };
+      if (d.ok) { setOk("האסימון תקין מול ימות (אומת זה עתה)"); toast.success("האסימון תקין מול ימות"); }
+      else { setErr("בדיקת חיבור", { message: d.message || "האסימון לא תקין", raw: d }, "האסימון לא תקין"); toast.error(d.message || "האסימון לא תקין"); }
       await load();
     } catch (e: any) {
+      setErr("בדיקת חיבור", e, "אימות נכשל");
       toast.error(e?.message || "אימות נכשל");
     } finally {
       setBusy(null);
@@ -127,16 +154,20 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const rotate = async () => {
     if (!confirm("ליצור webhook secret חדש? לאחר מכן יש להריץ 'הגדר את השלוחה' כדי לעדכן את ext.ini בימות.")) return;
     setBusy("rotate");
+    clearInline();
     try {
       const { data, error } = await supabase.functions.invoke("yemot-credentials", {
         body: { action: "rotate_secret" },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success("נוצר secret חדש. הרץ עכשיו 'הגדר את השלוחה' כדי שימות ידע עליו.");
+      const d = data as any;
+      if (d?.error) throw { message: d.error, details: d.details, raw: d.raw };
+      setOk("נוצר secret חדש. הרץ עכשיו 'הגדר את השלוחה' כדי שימות ידע עליו.");
+      toast.success("נוצר secret חדש.");
       await load();
       onChanged?.();
     } catch (e: any) {
+      setErr("יצירת secret", e, "סיבוב הסוד נכשל");
       toast.error(e?.message || "סיבוב הסוד נכשל");
     } finally {
       setBusy(null);
@@ -146,21 +177,24 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const rotateAndApply = async () => {
     const ext = ((extension ?? (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) ?? "1") || "1").replace(/[^0-9]/g, "") || "1";
     setBusy("rotate_apply");
+    clearInline();
     try {
-      // 1. rotate webhook secret
       const r1 = await supabase.functions.invoke("yemot-credentials", { body: { action: "rotate_secret" } });
-      if (r1.error) throw new Error(`יצירת secret חדש נכשלה: ${r1.error.message}`);
-      if ((r1.data as any)?.error) throw new Error(`יצירת secret חדש נכשלה: ${(r1.data as any).error}`);
+      if (r1.error) throw { source: "יצירת secret", message: r1.error.message };
+      const d1 = r1.data as any;
+      if (d1?.error) throw { source: "יצירת secret", message: d1.error, details: d1.details, raw: d1.raw };
 
-      // 2. apply to Yemot ext.ini
       const r2 = await supabase.functions.invoke("setup-yemot-extension", { body: { extension: ext } });
-      if (r2.error) throw new Error(`עדכון ext.ini בימות נכשל: ${r2.error.message}`);
-      if ((r2.data as any)?.error) throw new Error(`עדכון ext.ini בימות נכשל: ${(r2.data as any).error}`);
+      if (r2.error) throw { source: `עדכון ext.ini בשלוחה ${ext}`, message: r2.error.message };
+      const d2 = r2.data as any;
+      if (d2?.error) throw { source: `עדכון ext.ini בשלוחה ${ext}`, message: d2.error, details: d2.details, raw: d2.raw };
 
+      setOk(`Secret חדש נוצר ושלוחה ${ext} עודכנה אוטומטית בימות`);
       toast.success(`Secret חדש נוצר ושלוחה ${ext} עודכנה אוטומטית בימות`);
       await load();
       onChanged?.();
     } catch (e: any) {
+      setErr(e?.source || "תהליך אוטומטי", e, "התהליך האוטומטי נכשל");
       toast.error(e?.message || "התהליך האוטומטי נכשל");
     } finally {
       setBusy(null);
@@ -203,6 +237,36 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
               </>
             )}
           </div>
+
+          {inlineSuccess && (
+            <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="flex-1 text-foreground">{inlineSuccess}</div>
+              <button type="button" onClick={() => setInlineSuccess(null)} className="text-xs text-muted-foreground hover:text-foreground">סגור</button>
+            </div>
+          )}
+
+          {inlineError && (
+            <div className="rounded-md border-2 border-destructive/50 bg-destructive/10 p-3 text-sm space-y-2">
+              <div className="flex items-start gap-2">
+                <XCircle className="w-4 h-4 mt-0.5 text-destructive shrink-0" />
+                <div className="flex-1">
+                  <div className="font-bold text-destructive">נכשל: {inlineError.source}</div>
+                  <div className="text-foreground mt-0.5 break-words">{inlineError.message}</div>
+                </div>
+                <button type="button" onClick={() => setInlineError(null)} className="text-xs text-muted-foreground hover:text-foreground">סגור</button>
+              </div>
+              {inlineError.details && (
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">פרטים טכניים מימות</summary>
+                  <pre className="mt-2 p-2 bg-background/60 rounded border border-border overflow-auto max-h-48 text-[11px] font-mono whitespace-pre-wrap" dir="ltr">{inlineError.details}</pre>
+                </details>
+              )}
+              <div className="text-xs text-muted-foreground border-t border-destructive/20 pt-2">
+                טיפים: ודא שהאסימון הועתק במלואו מפאנל ימות (ניהול מערכת ← API), שלא פג תוקפו, ושמספר המערכת תואם לאסימון.
+              </div>
+            </div>
+          )}
 
           <div className="grid sm:grid-cols-[140px_1fr] gap-2 items-start">
             <label className="text-sm pt-2">מספר מערכת</label>
