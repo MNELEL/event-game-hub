@@ -78,7 +78,7 @@ Deno.test("lobby joiner — gets the active question prompt", () => {
   assertEquals(d.kind, "answer");
   if (d.kind === "answer") {
     assertEquals(d.valName, "q1");
-    assertEquals(d.text.includes("שאלה 2 מתוך 3"), true);
+    assertEquals(d.text.includes("ניתן להקיש"), true);
   }
 });
 
