@@ -353,6 +353,25 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
                     {busy === "apply_only" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                     עדכן api_link בימות אוטומטית
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={checkUploadPermission}
+                    disabled={!state?.configured || !state?.last_verified_at || busy === "check_perm"}
+                    title="מעלה ומוחק קובץ זמני בשלוחה כדי לוודא הרשאת כתיבה לפני ההטמעה"
+                    className="gap-2"
+                  >
+                    {busy === "check_perm" ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : permStatus?.ok ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    ) : permStatus && !permStatus.ok ? (
+                      <XCircle className="w-4 h-4 text-destructive" />
+                    ) : (
+                      <ShieldCheck className="w-4 h-4" />
+                    )}
+                    בדוק הרשאת UploadTextFile
+                  </Button>
                   <button
                     type="button"
                     onClick={() => setShowUrlSecret((v) => !v)}
@@ -362,6 +381,11 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
                     {showUrlSecret ? "הסתר secret" : "הצג secret"}
                   </button>
                 </div>
+                {permStatus && (
+                  <p className={`text-xs ${permStatus.ok ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
+                    {permStatus.ok ? "✓ " : "✗ "}{permStatus.message}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   הכפתור האוטומטי דורש אסימון API מאומת עם הרשאת UploadTextFile. אחרת — העתק והדבק ידנית בפאנל ימות.
                 </p>
