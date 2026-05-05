@@ -315,6 +315,28 @@ say_error_message=no`;
               {checkResult.message && (
                 <div className="text-xs text-muted-foreground">{checkResult.message}</div>
               )}
+              {!checkResult.ok && (
+                <div className="pt-2 border-t border-border/40 space-y-1.5">
+                  <p className="text-xs text-foreground">
+                    {checkResult.exists
+                      ? "נראה ש-ext.ini בימות לא תקין. לחץ כאן כדי לדרוס אותו עם ההגדרות הנכונות:"
+                      : "השלוחה עוד לא הוגדרה בימות. לחץ כאן כדי להגדיר אותה עכשיו:"}
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={runAutoSetup}
+                    disabled={autoLoading}
+                    size="sm"
+                    className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    {autoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    הגדר את שלוחה {extension || "1"} עכשיו
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground">
+                    אם בטלפון נשמע "חסר לינק" — זה בדיוק התיקון שצריך.
+                  </p>
+                </div>
+              )}
             </div>
           )}
           <p className="text-[11px] text-muted-foreground">
