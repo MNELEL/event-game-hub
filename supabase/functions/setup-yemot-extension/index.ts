@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
 
     // Yemot API: UploadTextFile expects multipart/form-data with token, what, contents
     const form = new FormData();
-    form.append("token", YEMOT_API_TOKEN);
+    form.append("token", apiToken);
     form.append("what", path);
     form.append("contents", iniContent);
 
