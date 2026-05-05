@@ -444,7 +444,10 @@ export type Database = {
       yemot_credentials: {
         Row: {
           created_at: string
+          extension: string | null
           id: string
+          last_setup_at: string | null
+          last_setup_path: string | null
           last_verified_at: string | null
           owner_id: string
           updated_at: string
@@ -454,7 +457,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          extension?: string | null
           id?: string
+          last_setup_at?: string | null
+          last_setup_path?: string | null
           last_verified_at?: string | null
           owner_id?: string
           updated_at?: string
@@ -464,7 +470,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          extension?: string | null
           id?: string
+          last_setup_at?: string | null
+          last_setup_path?: string | null
           last_verified_at?: string | null
           owner_id?: string
           updated_at?: string
