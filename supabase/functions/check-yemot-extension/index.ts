@@ -107,9 +107,9 @@ Deno.serve(async (req) => {
       detail: apiUrl ? `${apiUrl.host}${apiUrl.pathname}` : "—",
     });
     const secretParam = apiUrl?.searchParams.get("secret") || "";
-    const secretMatches = !!secretParam && !!YEMOT_WEBHOOK_SECRET && secretParam === YEMOT_WEBHOOK_SECRET;
+    const secretMatches = !!secretParam && !!webhookSecret && secretParam === webhookSecret;
     checks.push({
-      key: "secret תואם ל-YEMOT_WEBHOOK_SECRET",
+      key: "secret תואם ל-webhook secret",
       ok: secretMatches,
       detail: secretParam
         ? secretMatches
