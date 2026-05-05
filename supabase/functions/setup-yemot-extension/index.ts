@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     if (!ext) return json({ error: "מספר שלוחה לא תקין" }, 400);
 
     const projectRef = SUPABASE_URL.replace(/^https?:\/\//, "").split(".")[0];
-    const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/yemot-ivr?secret=${encodeURIComponent(YEMOT_WEBHOOK_SECRET)}`;
+    const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/yemot-ivr?secret=${encodeURIComponent(webhookSecret)}`;
     const iniContent = [
       "type=api",
       `api_link=${webhookUrl}`,
