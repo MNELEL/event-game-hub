@@ -20,6 +20,26 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  type InlineError = { source: string; message: string; details?: string } | null;
+  const [inlineError, setInlineError] = useState<InlineError>(null);
+  const [inlineSuccess, setInlineSuccess] = useState<string | null>(null);
+
+  const setErr = (source: string, e: any, fallback: string) => {
+    let message = fallback;
+    let details: string | undefined;
+    if (typeof e === "string") message = e;
+    else if (e?.message) message = e.message;
+    if (e?.details) {
+      try { details = typeof e.details === "string" ? e.details : JSON.stringify(e.details, null, 2); } catch {}
+    } else if (e?.raw) {
+      try { details = typeof e.raw === "string" ? e.raw : JSON.stringify(e.raw, null, 2); } catch {}
+    }
+    setInlineError({ source, message, details });
+    setInlineSuccess(null);
+  };
+  const setOk = (msg: string) => { setInlineSuccess(msg); setInlineError(null); };
+  const clearInline = () => { setInlineError(null); setInlineSuccess(null); };
+
   type LiveStatus = "idle" | "checking" | "valid" | "invalid";
   const [liveStatus, setLiveStatus] = useState<LiveStatus>("idle");
   const [liveMessage, setLiveMessage] = useState<string>("");
