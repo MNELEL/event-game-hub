@@ -31,7 +31,16 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const secret = url.searchParams.get("secret") || "";
-    if (!SECRET || secret !== SECRET) {
+    let secretOk = !!SECRET_ENV && secret === SECRET_ENV;
+    if (!secretOk && secret) {
+      const { data: credRow } = await admin
+        .from("yemot_credentials")
+        .select("webhook_secret")
+        .eq("webhook_secret", secret)
+        .maybeSingle();
+      secretOk = !!credRow;
+    }
+    if (!secretOk) {
       return ymResp([{ kind: "hangup", text: "שגיאת אבטחה. אנא פנה למנהל המערכת." }]);
     }
 
