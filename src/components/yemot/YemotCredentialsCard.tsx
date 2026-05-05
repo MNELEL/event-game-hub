@@ -22,6 +22,7 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const [showSecret, setShowSecret] = useState(false);
   const [showUrlSecret, setShowUrlSecret] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [permStatus, setPermStatus] = useState<{ ok: boolean; message: string } | null>(null);
   type InlineError = { source: string; message: string; details?: string } | null;
   const [inlineError, setInlineError] = useState<InlineError>(null);
   const [inlineSuccess, setInlineSuccess] = useState<string | null>(null);
