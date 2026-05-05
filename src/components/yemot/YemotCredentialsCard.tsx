@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ShieldCheck, AlertCircle, KeyRound, RefreshCcw, Save, Eye, EyeOff, Wand2, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, ShieldCheck, AlertCircle, KeyRound, RefreshCcw, Save, Eye, EyeOff, Wand2, CheckCircle2, XCircle, Copy, Link as LinkIcon, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,11 +15,13 @@ type CredsState = {
 
 export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () => void; extension?: string }) {
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | "rotate_apply" | null>(null);
+  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | "rotate_apply" | "apply_only" | null>(null);
   const [state, setState] = useState<CredsState | null>(null);
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  const [showUrlSecret, setShowUrlSecret] = useState(false);
+  const [copied, setCopied] = useState(false);
   type InlineError = { source: string; message: string; details?: string } | null;
   const [inlineError, setInlineError] = useState<InlineError>(null);
   const [inlineSuccess, setInlineSuccess] = useState<string | null>(null);
@@ -201,6 +203,51 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
     }
   };
 
+  const ivrUrl = state?.webhook_secret
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/yemot-ivr?secret=${encodeURIComponent(state.webhook_secret)}`
+    : null;
+  const ivrUrlMasked = state?.webhook_secret
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/yemot-ivr?secret=••••${state.webhook_secret.slice(-4)}`
+    : null;
+
+  const copyUrl = async () => {
+    if (!ivrUrl) return;
+    try {
+      await navigator.clipboard.writeText(ivrUrl);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = ivrUrl;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch {}
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setOk("ה-URL הועתק. הדבק אותו ב-api_link בפאנל ימות, או לחץ 'עדכן בימות אוטומטית'.");
+    toast.success("ה-URL הועתק ללוח");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const applyOnly = async () => {
+    const ext = ((extension ?? (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) ?? "1") || "1").replace(/[^0-9]/g, "") || "1";
+    setBusy("apply_only");
+    clearInline();
+    try {
+      const r = await supabase.functions.invoke("setup-yemot-extension", { body: { extension: ext } });
+      if (r.error) throw { source: `עדכון ext.ini בשלוחה ${ext}`, message: r.error.message };
+      const d = r.data as any;
+      if (d?.error) throw { source: `עדכון ext.ini בשלוחה ${ext}`, message: d.error, details: d.details, raw: d.raw };
+      setOk(`api_link עודכן אוטומטית בשלוחה ${ext} בימות`);
+      toast.success(`שלוחה ${ext} עודכנה בימות`);
+      onChanged?.();
+    } catch (e: any) {
+      setErr(e?.source || "עדכון ext.ini", e, "עדכון השלוחה נכשל. ייתכן שלאסימון אין הרשאת UploadTextFile.");
+      toast.error(e?.message || "עדכון השלוחה נכשל");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <Card className="p-5 border-2 border-primary/30 bg-primary/5 space-y-4">
       <div className="flex items-center gap-2">
@@ -234,6 +281,57 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
               <>
                 <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <span className="text-foreground">עוד לא הוזן אסימון ימות. הזן עכשיו כדי לאפשר הגדרה אוטומטית.</span>
+              </>
+            )}
+          </div>
+
+          <div className="rounded-md border-2 border-primary/40 bg-background/60 p-3 space-y-2">
+            <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <LinkIcon className="w-4 h-4 text-primary" />
+              כתובת Webhook עבור api_link בימות
+            </div>
+            {!ivrUrl ? (
+              <div className="text-xs text-muted-foreground">
+                שמור אסימון API קודם — לאחר מכן ייווצר webhook secret וה-URL יוצג כאן.
+              </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  readOnly
+                  dir="ltr"
+                  value={showUrlSecret ? ivrUrl : (ivrUrlMasked ?? "")}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="w-full px-3 py-2 rounded-md border border-border bg-background text-xs font-mono"
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" onClick={copyUrl} className="gap-2">
+                    {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {copied ? "הועתק!" : "העתק URL"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={applyOnly}
+                    disabled={!state?.configured || !state?.last_verified_at || busy === "apply_only"}
+                    title={!state?.last_verified_at ? "שמור ואמת אסימון API קודם" : "מעלה ext.ini אוטומטית לשלוחה הנוכחית"}
+                    className="gap-2"
+                  >
+                    {busy === "apply_only" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    עדכן api_link בימות אוטומטית
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlSecret((v) => !v)}
+                    className="ms-auto text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                  >
+                    {showUrlSecret ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                    {showUrlSecret ? "הסתר secret" : "הצג secret"}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  הכפתור האוטומטי דורש אסימון API מאומת עם הרשאת UploadTextFile. אחרת — העתק והדבק ידנית בפאנל ימות.
+                </p>
               </>
             )}
           </div>
