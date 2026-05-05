@@ -15,11 +15,13 @@ type CredsState = {
 
 export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () => void; extension?: string }) {
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | "rotate_apply" | null>(null);
+  const [busy, setBusy] = useState<"save" | "verify" | "rotate" | "rotate_apply" | "apply_only" | null>(null);
   const [state, setState] = useState<CredsState | null>(null);
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  const [showUrlSecret, setShowUrlSecret] = useState(false);
+  const [copied, setCopied] = useState(false);
   type InlineError = { source: string; message: string; details?: string } | null;
   const [inlineError, setInlineError] = useState<InlineError>(null);
   const [inlineSuccess, setInlineSuccess] = useState<string | null>(null);
