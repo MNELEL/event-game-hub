@@ -97,6 +97,30 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
     }
   };
 
+  const rotateAndApply = async () => {
+    const ext = ((extension ?? (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) ?? "1") || "1").replace(/[^0-9]/g, "") || "1";
+    setBusy("rotate_apply");
+    try {
+      // 1. rotate webhook secret
+      const r1 = await supabase.functions.invoke("yemot-credentials", { body: { action: "rotate_secret" } });
+      if (r1.error) throw new Error(`יצירת secret חדש נכשלה: ${r1.error.message}`);
+      if ((r1.data as any)?.error) throw new Error(`יצירת secret חדש נכשלה: ${(r1.data as any).error}`);
+
+      // 2. apply to Yemot ext.ini
+      const r2 = await supabase.functions.invoke("setup-yemot-extension", { body: { extension: ext } });
+      if (r2.error) throw new Error(`עדכון ext.ini בימות נכשל: ${r2.error.message}`);
+      if ((r2.data as any)?.error) throw new Error(`עדכון ext.ini בימות נכשל: ${(r2.data as any).error}`);
+
+      toast.success(`Secret חדש נוצר ושלוחה ${ext} עודכנה אוטומטית בימות`);
+      await load();
+      onChanged?.();
+    } catch (e: any) {
+      toast.error(e?.message || "התהליך האוטומטי נכשל");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <Card className="p-5 border-2 border-primary/30 bg-primary/5 space-y-4">
       <div className="flex items-center gap-2">
