@@ -21,16 +21,18 @@ const answerLabels = ["1", "2", "3", "4"];
 const PlayerJoin = () => {
   const [searchParams] = useSearchParams();
   const { branding } = useBranding();
-  const [name, setName] = useState("");
+  const [name, setName] = useState(() => localStorage.getItem("player_name") || "");
   const [gameCode, setGameCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [localTimer, setLocalTimer] = useState<number | null>(null);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoJoin = searchParams.get("auto") === "1";
+  const codeFromUrl = (searchParams.get("code") || "").toUpperCase();
+  const codeLocked = autoJoin && !!codeFromUrl;
 
   useEffect(() => {
-    const code = searchParams.get("code");
-    if (code) setGameCode(code.toUpperCase());
-  }, [searchParams]);
+    if (codeFromUrl) setGameCode(codeFromUrl);
+  }, [codeFromUrl]);
   const { state, joinGame, submitAnswer } = usePlayerGame();
   const { toast } = useToast();
 
