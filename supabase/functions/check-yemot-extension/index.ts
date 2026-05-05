@@ -31,7 +31,15 @@ Deno.serve(async (req) => {
     );
     if (authErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
 
-    if (!YEMOT_API_TOKEN) return json({ error: "חסר YEMOT_API_TOKEN בהגדרות" }, 400);
+    const { data: credRow } = await supa
+      .from("yemot_credentials")
+      .select("yemot_api_token, webhook_secret")
+      .eq("owner_id", userData.user.id)
+      .maybeSingle();
+    const apiToken = credRow?.yemot_api_token || YEMOT_API_TOKEN;
+    const webhookSecret = credRow?.webhook_secret || YEMOT_WEBHOOK_SECRET;
+
+    if (!apiToken) return json({ error: "חסר אסימון ימות. הזן אותו בעמוד הגדרות ימות." }, 400);
 
     let body: { extension?: string } = {};
     try { body = await req.json(); } catch {}
@@ -44,7 +52,7 @@ Deno.serve(async (req) => {
     const expectedPath = `/functions/v1/yemot-ivr`;
 
     const form = new FormData();
-    form.append("token", YEMOT_API_TOKEN);
+    form.append("token", apiToken);
     form.append("path", path);
 
     const ymRes = await fetch("https://www.call2all.co.il/ym/api/DownloadFile", {
@@ -99,9 +107,9 @@ Deno.serve(async (req) => {
       detail: apiUrl ? `${apiUrl.host}${apiUrl.pathname}` : "—",
     });
     const secretParam = apiUrl?.searchParams.get("secret") || "";
-    const secretMatches = !!secretParam && !!YEMOT_WEBHOOK_SECRET && secretParam === YEMOT_WEBHOOK_SECRET;
+    const secretMatches = !!secretParam && !!webhookSecret && secretParam === webhookSecret;
     checks.push({
-      key: "secret תואם ל-YEMOT_WEBHOOK_SECRET",
+      key: "secret תואם ל-webhook secret",
       ok: secretMatches,
       detail: secretParam
         ? secretMatches

@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
 import { CallTestWizard } from "@/components/yemot/CallTestWizard";
 import { ApiPermissionsChecklist } from "@/components/yemot/ApiPermissionsChecklist";
+import { YemotCredentialsCard } from "@/components/yemot/YemotCredentialsCard";
 
 const SUPABASE_PROJECT_ID = "wzmspoufqdldcuagsvir";
 const WEBHOOK_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/yemot-ivr`;
@@ -209,6 +210,9 @@ say_error_message=no`;
             חבר את השלוחה שלך כדי שמתקשרים יוכלו להצטרף למשחק ולענות בהקשת מקשים
           </p>
         </div>
+
+        {/* Per-user Yemot credentials */}
+        <YemotCredentialsCard />
 
         {/* Trivia module replacement notice */}
         <Card className="p-5 border-2 border-amber-500/50 bg-amber-500/5 space-y-3">

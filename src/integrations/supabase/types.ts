@@ -441,6 +441,39 @@ export type Database = {
         }
         Relationships: []
       }
+      yemot_credentials: {
+        Row: {
+          created_at: string
+          id: string
+          last_verified_at: string | null
+          owner_id: string
+          updated_at: string
+          webhook_secret: string
+          yemot_api_token: string
+          yemot_username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_verified_at?: string | null
+          owner_id?: string
+          updated_at?: string
+          webhook_secret?: string
+          yemot_api_token: string
+          yemot_username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_verified_at?: string | null
+          owner_id?: string
+          updated_at?: string
+          webhook_secret?: string
+          yemot_api_token?: string
+          yemot_username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       players_public: {
