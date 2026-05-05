@@ -203,6 +203,51 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
     }
   };
 
+  const ivrUrl = state?.webhook_secret
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/yemot-ivr?secret=${encodeURIComponent(state.webhook_secret)}`
+    : null;
+  const ivrUrlMasked = state?.webhook_secret
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/yemot-ivr?secret=••••${state.webhook_secret.slice(-4)}`
+    : null;
+
+  const copyUrl = async () => {
+    if (!ivrUrl) return;
+    try {
+      await navigator.clipboard.writeText(ivrUrl);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = ivrUrl;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch {}
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setOk("ה-URL הועתק. הדבק אותו ב-api_link בפאנל ימות, או לחץ 'עדכן בימות אוטומטית'.");
+    toast.success("ה-URL הועתק ללוח");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const applyOnly = async () => {
+    const ext = ((extension ?? (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) ?? "1") || "1").replace(/[^0-9]/g, "") || "1";
+    setBusy("apply_only");
+    clearInline();
+    try {
+      const r = await supabase.functions.invoke("setup-yemot-extension", { body: { extension: ext } });
+      if (r.error) throw { source: `עדכון ext.ini בשלוחה ${ext}`, message: r.error.message };
+      const d = r.data as any;
+      if (d?.error) throw { source: `עדכון ext.ini בשלוחה ${ext}`, message: d.error, details: d.details, raw: d.raw };
+      setOk(`api_link עודכן אוטומטית בשלוחה ${ext} בימות`);
+      toast.success(`שלוחה ${ext} עודכנה בימות`);
+      onChanged?.();
+    } catch (e: any) {
+      setErr(e?.source || "עדכון ext.ini", e, "עדכון השלוחה נכשל. ייתכן שלאסימון אין הרשאת UploadTextFile.");
+      toast.error(e?.message || "עדכון השלוחה נכשל");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <Card className="p-5 border-2 border-primary/30 bg-primary/5 space-y-4">
       <div className="flex items-center gap-2">
