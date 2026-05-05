@@ -77,12 +77,30 @@ const PlayerJoin = () => {
   const handleJoin = async () => {
     if (!name.trim() || !gameCode.trim()) return;
     setJoining(true);
+    localStorage.setItem("player_name", name.trim());
     const result = await joinGame(gameCode, name.trim());
     setJoining(false);
     if (result.error) {
       toast({ title: "שגיאה", description: result.error, variant: "destructive" });
     }
   };
+
+  // Auto-join if QR provided code + auto=1 and we already have a saved name.
+  const autoTriedRef = useRef(false);
+  useEffect(() => {
+    if (
+      autoJoin &&
+      gameCode &&
+      name.trim() &&
+      !state.connected &&
+      !joining &&
+      !autoTriedRef.current
+    ) {
+      autoTriedRef.current = true;
+      handleJoin();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoJoin, gameCode, name, state.connected, joining]);
 
   // Not connected yet - show join form
   if (!state.connected) {
