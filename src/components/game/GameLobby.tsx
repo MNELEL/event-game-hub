@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Player } from "@/types/game";
-import { Play, UserPlus, Users, Monitor, Phone, QrCode } from "lucide-react";
+import { Play, UserPlus, Users, Monitor, Phone, QrCode, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { useBranding } from "@/hooks/useBranding";
@@ -26,6 +27,7 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
   const { branding } = useBranding();
+  const navigate = useNavigate();
 
   // Start lobby background music on mount
   useEffect(() => {
@@ -356,6 +358,20 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
         )}
 
         <p className="text-game-dark-gold/50 text-sm mt-3">{questionsCount} שאלות מוכנות</p>
+
+        {!graceCountdown && (
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/yemot-setup")}
+              className="gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              📞 הגדר ימות
+            </Button>
+          </div>
+        )}
       </motion.div>
     </div>
   );
