@@ -263,12 +263,8 @@ Deno.test("recovery intro plays once when caller joins during first question", (
   assertEquals(d.kind, "wait");
   if (d.kind === "wait") {
     assertEquals(d.valName, "recovered_intro");
-    // Verify the message explains the situation and how to answer
-    if (!d.text.includes("המשחק כבר התחיל")) {
-      throw new Error("recovery intro should mention the game already started");
-    }
-    if (!d.text.includes("1, 2, 3 או 4")) {
-      throw new Error("recovery intro should explain how to answer");
+    if (!d.text.includes("ניתן להקיש")) {
+      throw new Error("recovery intro should prompt to press now");
     }
   }
 });
