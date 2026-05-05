@@ -218,7 +218,7 @@ say_error_message=no`;
         </div>
 
         {/* Per-user Yemot credentials */}
-        <YemotCredentialsCard />
+        <YemotCredentialsCard extension={extension} />
 
         {/* Trivia module replacement notice */}
         <Card className="p-5 border-2 border-amber-500/50 bg-amber-500/5 space-y-3">
