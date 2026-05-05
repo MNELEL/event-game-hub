@@ -40,11 +40,10 @@ export type DecideInput = {
 export type Decision =
   | { kind: "hangup"; text: string }
   | { kind: "wait"; text: string; valName: string; seconds: number }
-  | { kind: "answer"; text: string; valName: string; seconds: number }
-  | { kind: "silent"; valName: string; seconds: number }
+  | { kind: "answer"; text: string; valName: string; seconds: number; digits?: string }
+  | { kind: "silent"; valName: string; seconds: number; loopFile?: string }
+  | { kind: "joinGate"; text: string; valName: string; seconds: number }
   | {
-      // Indicates the handler should call submit_phone_answer with this digit,
-      // then call decideIvrResponse again with answerSubmission populated.
       kind: "submitAnswer";
       digit: number;
       questionIndex: number;
@@ -132,15 +131,33 @@ export function tts(text: string): string {
   return "t-" + text.replace(/[.\-"'&|=,]/g, " ").replace(/\s+/g, " ").trim();
 }
 
+// Loop sound files in Yemot. Files must be uploaded to ivr2:/sounds/ once.
+export const LOBBY_LOOP_FILE = "ivr2:sounds/lobby-loop";
+export const HOURGLASS_LOOP_FILE = "ivr2:sounds/hourglass-loop";
+
 export function renderDecision(d: Decision): string {
   switch (d.kind) {
     case "hangup":
       return `id_list_message=${tts(d.text)}.g-hangup`;
     case "wait":
       return `read=${tts(d.text)}=${d.valName},no,1,1,${d.seconds},No,yes,no,,9,1,Ok,None`;
-    case "answer":
-      return `read=${tts(d.text)}=${d.valName},no,1,1,${d.seconds},No,yes,no,,1.2.3.4,1,Ok,None`;
+    case "joinGate":
+      // Caller must press 1 to join. Re-prompt up to 3 times if no input.
+      return `read=${tts(d.text)}=${d.valName},no,1,1,15,No,yes,no,,1,1,Ok,None`;
+    case "answer": {
+      const prefix = d.text.startsWith("__file:")
+        ? `f-${d.text.slice("__file:".length)}`
+        : tts(d.text);
+      return `read=${prefix}=${d.valName},no,1,1,${d.seconds},No,yes,no,,${d.digits || "1.2.3.4"},1,Ok,None`;
+    }
     case "silent":
+      // Loop a sound file as the "silence" filler so callers hear ambient
+      // music / hourglass instead of dead air. valName captures any digits
+      // (e.g. answer key) but we do NOT accept input here unless the caller
+      // is in an answer phase (which uses kind=answer).
+      if (d.loopFile) {
+        return `read=f-${d.loopFile}=${d.valName},no,1,1,${d.seconds},No,yes,no,,9,1,Ok,None`;
+      }
       return `read=t-=${d.valName},no,1,1,${d.seconds},No,yes,no,,9,1,Ok,None`;
     case "submitAnswer":
       return `__submitAnswer:${d.questionIndex}:${d.digit}`;
@@ -265,100 +282,78 @@ export function decideIvrResponse(input: DecideInput): Decision {
   }
 
   // Recovery intro: caller dialed in after host pressed Start, but the first
-  // question is still active so they were auto-admitted. Play this once before
-  // the question is read so the experience is clear.
+  // question is still active so they were auto-admitted.
   if (isFirstQuestionRecovery && !params.has("recovered_intro")) {
-    const title = (state.game_title || "").trim();
-    const welcome = title
-      ? `שלום, ברוכים הבאים למשחק ${title}.`
-      : `שלום, ברוכים הבאים למשחק.`;
     return {
       kind: "wait",
-      text: `${welcome} נרשמת בשם מתקשר ${phone.slice(-4)}. המשחק כבר התחיל אבל הספקת להצטרף בזמן לשאלה הראשונה. השאלות מוצגות על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4 לבחירת התשובה.`,
+      text: `ברוכים הבאים לחידון הטריוויה. הצטרפת בזמן לשאלה הראשונה. ניתן להקיש כעת.`,
       valName: "recovered_intro",
-      seconds: 8,
+      seconds: 5,
     };
   }
 
   if (justJoined && !params.has("joined_intro") && !params.has("recovered_intro")) {
-    const lobbyStart =
-      state.status === "lobby" && state.start_at &&
-      new Date(state.start_at).getTime() > now
-        ? formatStartTimeIL(state.start_at)
-        : "";
-    const title = (state.game_title || "").trim();
-    const welcome = title
-      ? `ברוכים הבאים למשחק ${title}.`
-      : `ברוכים הבאים למשחק.`;
-    const registered = `הרשמתך התקבלה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
-    const tail = lobbyStart
-      ? `המשחק יתחיל בשעה ${lobbyStart}. אנא המתן להפעלת המשחק. השאלות יוצגו על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4.`
-      : `אנא המתן להפעלת המשחק. השאלות יוצגו על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4.`;
     return {
       kind: "wait",
-      text: `${welcome} ${registered} ${tail}`,
+      text: `ברוכים הבאים לחידון הטריוויה. הצטרפת בהצלחה. אנא המתן להתחלת המשחק.`,
       valName: "joined_intro",
-      seconds: lobbyStart ? 8 : 6,
+      seconds: 4,
     };
-  }
-
-  // Periodically remind in-lobby callers of the exact start time while they wait.
-  if (state.status === "lobby" && state.start_at) {
-    const startMs = new Date(state.start_at).getTime();
-    if (startMs > now) {
-      const lobbyStart = formatStartTimeIL(state.start_at);
-      const cycle = Math.floor(joinedSecondsAgo / 30);
-      const reminderVar = `lobby_time_${cycle}`;
-      if (cycle > 0 && !params.has(reminderVar)) {
-        return {
-          kind: "wait",
-          text: `המשחק יתחיל בשעה ${lobbyStart}. אנא הישאר על הקו.`,
-          valName: reminderVar,
-          seconds: 5,
-        };
-      }
-    }
   }
 
   switch (state.status) {
     case "lobby":
-      return { kind: "silent", valName: "lobby_wait", seconds: POLL_SECONDS };
+      return {
+        kind: "silent",
+        valName: "lobby_wait",
+        seconds: POLL_SECONDS,
+        loopFile: LOBBY_LOOP_FILE,
+      };
     case "playing":
-      return { kind: "silent", valName: "playing_wait", seconds: POLL_SECONDS };
+      return {
+        kind: "silent",
+        valName: "playing_wait",
+        seconds: POLL_SECONDS,
+        loopFile: LOBBY_LOOP_FILE,
+      };
     case "question": {
       if (alreadyAnsweredCurrent) {
-        return { kind: "silent", valName: `done${state.current_question_index}`, seconds: POLL_SECONDS };
+        return {
+          kind: "silent",
+          valName: `done${state.current_question_index}`,
+          seconds: POLL_SECONDS,
+          loopFile: HOURGLASS_LOOP_FILE,
+        };
       }
-      const qNum = state.current_question_index + 1;
-      const total = state.question_ids?.length || 0;
       const remaining = Math.max(1, state.time_remaining || POLL_SECONDS);
       const timeout = Math.min(remaining, POLL_SECONDS);
       const introVar = `qintro${state.current_question_index}`;
       const seenThisQ =
         (phoneRow?.last_seen_question_index ?? -1) >= state.current_question_index;
-      // The phone is a "keypad only" device — the question + answer options are
-      // shown on the host screen. We DO NOT read the question text aloud.
-      // First poll of a new question: short prompt that the question is on
-      // the screen and the caller can press 1-4. Subsequent polls: silent
-      // re-poll while still accepting digits.
       if (!params.has(introVar) && !seenThisQ) {
         return {
           kind: "answer",
-          text: `שאלה ${qNum} מתוך ${total}. השאלה מוצגת על המסך. כשהטיימר רץ, הקש 1, 2, 3 או 4 לבחירת התשובה.`,
+          text: `ניתן להקיש כעת.`,
           valName: answerVar,
           seconds: Math.max(timeout, 5),
         };
       }
+      // Subsequent poll: play hourglass while still accepting 1-4.
       return {
         kind: "answer",
-        text: `נותרו ${remaining} שניות. הקש 1, 2, 3 או 4.`,
+        text: `__file:${HOURGLASS_LOOP_FILE}`,
         valName: answerVar,
         seconds: timeout,
       };
     }
     case "results":
     case "leaderboard":
-      return { kind: "silent", valName: "between_wait", seconds: POLL_SECONDS };
+      return {
+        kind: "silent",
+        valName: "between_wait",
+        seconds: POLL_SECONDS,
+        loopFile: HOURGLASS_LOOP_FILE,
+      };
     case "finished":
     default:
       return { kind: "hangup", text: "המשחק הסתיים. תודה על ההשתתפות." };

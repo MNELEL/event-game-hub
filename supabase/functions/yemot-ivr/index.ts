@@ -69,6 +69,28 @@ Deno.serve(async (req) => {
       return ymResp([{ kind: "hangup", text: "לא זוהה מספר מתקשר." }]);
     }
 
+    // Join gate: caller must press 1 to join. Skip for returning callers.
+    const joinPress = (params.get("join_press") || "").trim();
+    const alreadyAsked = params.has("join_press");
+    const { data: existingPhone } = await admin
+      .from("phone_players")
+      .select("game_id")
+      .eq("phone", phone)
+      .limit(1);
+    const isReturning = !!existingPhone && existingPhone.length > 0;
+
+    if (!isReturning && !alreadyAsked) {
+      return ymResp([{
+        kind: "joinGate",
+        text: "ברוכים הבאים לחידון הטריוויה. להצטרפות למשחק הקש 1.",
+        valName: "join_press",
+        seconds: 15,
+      }]);
+    }
+    if (!isReturning && alreadyAsked && joinPress !== "1") {
+      return ymResp([{ kind: "hangup", text: "לא התקבלה הקשה. להתראות." }]);
+    }
+
     const { data: joinData, error: joinErr } = await admin.rpc("join_phone_player", {
       p_phone: phone,
     });

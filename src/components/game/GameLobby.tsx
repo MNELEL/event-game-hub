@@ -239,7 +239,7 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
                 <QRCodeSVG
-                  value={`${window.location.origin}/play?code=${gameCode}`}
+                  value={`${window.location.origin}/play?code=${gameCode}&auto=1`}
                   size={120}
                   bgColor="transparent"
                   fgColor="hsl(35, 60%, 25%)"

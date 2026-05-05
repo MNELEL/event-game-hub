@@ -44,7 +44,7 @@ Deno.test("lobby joiner — first call shows welcome intro", () => {
   assertEquals(d.kind, "wait");
   if (d.kind === "wait") {
     assertEquals(d.valName, "joined_intro");
-    assertEquals(d.text.includes("4567"), true);
+    assertEquals(d.text.includes("ברוכים הבאים"), true);
   }
 });
 
@@ -78,7 +78,7 @@ Deno.test("lobby joiner — gets the active question prompt", () => {
   assertEquals(d.kind, "answer");
   if (d.kind === "answer") {
     assertEquals(d.valName, "q1");
-    assertEquals(d.text.includes("שאלה 2 מתוך 3"), true);
+    assertEquals(d.text.includes("ניתן להקיש"), true);
   }
 });
 
@@ -263,12 +263,8 @@ Deno.test("recovery intro plays once when caller joins during first question", (
   assertEquals(d.kind, "wait");
   if (d.kind === "wait") {
     assertEquals(d.valName, "recovered_intro");
-    // Verify the message explains the situation and how to answer
-    if (!d.text.includes("המשחק כבר התחיל")) {
-      throw new Error("recovery intro should mention the game already started");
-    }
-    if (!d.text.includes("1, 2, 3 או 4")) {
-      throw new Error("recovery intro should explain how to answer");
+    if (!d.text.includes("ניתן להקיש")) {
+      throw new Error("recovery intro should prompt to press now");
     }
   }
 });
@@ -342,11 +338,8 @@ Deno.test("question prompt is keypad-only — does NOT read question text aloud"
     if (d.text.includes("מה הבירה של ישראל")) {
       throw new Error("IVR must NOT read question text aloud — keypad only");
     }
-    if (!d.text.includes("מוצגת על המסך")) {
-      throw new Error("prompt should tell the caller the question is on the screen");
-    }
-    if (!d.text.includes("1, 2, 3 או 4")) {
-      throw new Error("prompt should tell the caller to press 1-4");
+    if (!d.text.includes("ניתן להקיש")) {
+      throw new Error("prompt should say 'ניתן להקיש כעת'");
     }
   }
 });

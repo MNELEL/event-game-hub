@@ -1,25 +1,77 @@
 
-## מטרה
-סעיף 5 ("בדיקה חיה של ההרשאות") מחזיר 404/HTML מ־nginx כי `verify-yemot-token` קורא ל־`https://www.call2all.co.il/ws/{token}/...` שלא קיים. בנוסף הוא משתמש ב־`YEMOT_API_TOKEN` הגלובלי במקום בטוקן של המשתמש.
+## מה משתנה
 
-## שינויים
+### 1. תסריט קולי חדש ב-IVR
+קובץ: `supabase/functions/yemot-ivr/logic.ts`
 
-### `supabase/functions/verify-yemot-token/index.ts` — שכתוב
+- **כניסה ראשונה** (במקום "ברוכים הבאים למשחק מגה מוח, נרשמת בשם..."):
+  > "ברוכים הבאים לחידון הטריוויה. להצטרפות למשחק הקש 1."
+  
+  המתקשר חייב להקיש 1 כדי להירשם בפועל. רק אחרי הקשת 1 הוא נכנס ל-DB כשחקן (`join_phone_player` יקרא רק אז, לא בכניסה הראשונית).
 
-1. **מקור הטוקן:** קודם לטעון מ־`yemot_credentials` לפי `owner_id = auth.uid()`, ורק כ־fallback להשתמש ב־`YEMOT_API_TOKEN` מה־env.
-2. **שיטת קריאה:** להחליף את `call()` ל־POST על `https://www.call2all.co.il/ym/api/{action}` עם `FormData` שכולל `token` (זהה ל־`setup-yemot-extension`).
-3. **ארבע בדיקות:**
-   - `GetSession` — תקפות הטוקן. אם נכשל, להפסיק כאן ולהחזיר הודעה ברורה ("האסימון לא תקף").
-   - `GetIVR2Dir` עם `path: "ivr2:/"` — הרשאת קריאה.
-   - `UpdateExtension` עם `path: "ivr2:/9999"` ו־`whatToDo: "GetSettings"` — non-destructive; "שלוחה לא קיימת" עדיין מוכיח שההרשאה עובדת.
-   - `UploadTextFile` על קובץ probe זמני (`ivr2:/_lovable_probe_{ts}.txt`) — בדיוק ה־endpoint שבו משתמשים בפועל לכתיבת `ext.ini`. ניקוי best-effort דרך `FileAction whatToDo=delete`.
-4. **זיהוי שגיאות הרשאה:** פונקציית עזר `isPermissionError()` שמחפשת `not allowed | forbidden | אבטח | הרשא | whitelist` ב־`json.message` או בטקסט. הודעות שגיאה ידידותיות (חיתוך HTML, חיתוך ל־200 תווים).
+- **בלובי לאחר הצטרפות** (עד שהמארח מתחיל):
+  מנגינת רקע בלולאה במקום שתיקה. ימות תומך ב-`playfile_loop`/`f-` בשילוב עם `read`. נשתמש בקובץ שמע שיועלה לימות (`ivr2:/sounds/lobby-loop.wav`).
 
-### בלי שינויים ב־DB, ב־frontend או בקבצים אחרים.
+- **בתחילת שאלה** (במקום "שאלה X מתוך Y, השאלה מוצגת על המסך..."):
+  > "ניתן להקיש כעת"
+  
+  ואז מקבל 1/2/3/4.
 
-## טכני קצר
-- `supabase/functions/verify-yemot-token/index.ts` — מוחלף במלואו (~150 שורות).
-- redeploy אוטומטי של `verify-yemot-token`.
+- **בזמן המתנה תוך שאלה** (polling ביניים):
+  במקום `read` שקט, מנגן אפקט "שעון חול" בלולאה (`ivr2:/sounds/hourglass-loop.wav`) שמתחלף כשהמארח עובר לשאלה הבאה.
 
-## תוצאה צפויה
-סעיף 5 בעמוד `YemotSetup` יציג ✓ ירוק לכל ארבעת השלבים (כפי שכבר קורה בסעיף E2E). אם הטוקן לא תקף או שחסרה הרשאה ספציפית — תוצג הודעה מדויקת עם הפעולה המתקנת.
+- **בין שאלות** (results/leaderboard):
+  שתיקה רגילה ממשיכה.
+
+### 2. שלב הצטרפות מפורש
+קובץ: `supabase/functions/yemot-ivr/index.ts`
+
+הזרימה החדשה:
+```text
+[שיחה נכנסת]
+   ↓
+ברוכים הבאים לחידון הטריוויה. להצטרפות הקש 1.   (read=join_press)
+   ↓ (הקיש 1)
+join_phone_player(phone)  →  רושם ל-DB
+   ↓
+מנגינת רקע בלובי עד שהמשחק מתחיל
+```
+
+לוגיקה: בודקים אם `params.has("join_press")` ו-`params.get("join_press")==="1"` לפני שקוראים ל-RPC. אם המתקשר עדיין לא הקיש 1 — לא רושמים אותו.
+
+### 3. קבצי שמע
+שני קבצי WAV קצרים שיועלו לימות תחת `ivr2:/sounds/`:
+- `lobby-loop.wav` — מנגינת רקע רגועה (10–15 שניות, לולאה).
+- `hourglass-loop.wav` — צליל שעון חול דק (3–5 שניות, לולאה).
+
+נוסיף ל-`setup-yemot-extension` שלב שמעלה את שני הקבצים האלה אם הם חסרים (`UploadFile` של ימות עם תוכן base64). אם לא נוכל לייצר אותם בקוד, נכלול קישור הורדה בהוראות ונאפשר העלאה ידנית; ב-`logic.ts` נטפל גם במצב שהקבצים חסרים (fallback ל-`silent`).
+
+### 4. תיקון QR שלא חיבר
+קבצים: `src/App.tsx`, `src/pages/PlayerJoin.tsx`
+
+הזרימה הקיימת:
+- `/join?code=ABC` → ניתוב ל-`/play?code=ABC`
+- `PlayerJoin` ממלא את שדה הקוד, אבל המשתמש עדיין צריך להזין שם וללחוץ "הצטרף".
+
+הבעיה: כשהמתקשר סורק QR מצופה שיתחבר אוטומטית, אבל בפועל הוא רואה טופס ריק עם השם.
+
+תיקון:
+- לצרף ל-QR גם פרמטר `auto=1`.
+- ב-`PlayerJoin` כשגם `code` וגם `auto=1` קיימים — להציג קופסת שם בלבד עם autofocus, ולהראות את הקוד כצ'יפ קבוע (לא עריכה).
+- אחרי "הצטרף" השם נשמר ל-`localStorage` כך שביציאה/חזרה לא צריך להזין שוב.
+- אם כבר יש שם ב-`localStorage` והגיע מ-QR — להצטרף אוטומטית בלי לחיצה נוספת.
+
+### 5. עדכון ה-`game_title` שעובר ל-IVR
+קובץ: `supabase/functions/yemot-ivr/index.ts`
+
+ה-title ייעלם מהודעת הפתיחה (כי עכשיו אומרים "חידון הטריוויה" קבוע), אבל יישאר ברלוונטי לכותרת recovery ולהודעת late-joiner.
+
+## פרטים טכניים
+- `read=` של ימות תומך ב-`f-<path>` כפרפיקס לקובץ שמע במקום `t-<text>` ב-TTS. לדוגמה: `read=f-ivr2:/sounds/hourglass-loop=q3,no,1,1,3,No,yes,no,,1.2.3.4,1,Ok,None`.
+- בדיקת ה-`join_press` תתבסס על שם משתנה ייחודי (`join_press`) שנשלח ב-`read=...=join_press,...` ונבדק בקריאה הבאה דרך `params.get("join_press")`.
+- שינוי לוגיקה הפיוור ב-`logic.ts` יעודכן יחד בקובץ הבדיקות `logic_test.ts`.
+
+## מה לא משתנה
+- ה-RPC `join_phone_player` עצמו, ה-DB schema, וה-RLS.
+- מסכי המארח/שחקן בדפדפן (פרט ל-PlayerJoin).
+- מנגנון ה-secret והאימות שתוקן בסבב הקודם.

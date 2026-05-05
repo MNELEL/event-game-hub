@@ -21,16 +21,18 @@ const answerLabels = ["1", "2", "3", "4"];
 const PlayerJoin = () => {
   const [searchParams] = useSearchParams();
   const { branding } = useBranding();
-  const [name, setName] = useState("");
+  const [name, setName] = useState(() => localStorage.getItem("player_name") || "");
   const [gameCode, setGameCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [localTimer, setLocalTimer] = useState<number | null>(null);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoJoin = searchParams.get("auto") === "1";
+  const codeFromUrl = (searchParams.get("code") || "").toUpperCase();
+  const codeLocked = autoJoin && !!codeFromUrl;
 
   useEffect(() => {
-    const code = searchParams.get("code");
-    if (code) setGameCode(code.toUpperCase());
-  }, [searchParams]);
+    if (codeFromUrl) setGameCode(codeFromUrl);
+  }, [codeFromUrl]);
   const { state, joinGame, submitAnswer } = usePlayerGame();
   const { toast } = useToast();
 
@@ -75,12 +77,30 @@ const PlayerJoin = () => {
   const handleJoin = async () => {
     if (!name.trim() || !gameCode.trim()) return;
     setJoining(true);
+    localStorage.setItem("player_name", name.trim());
     const result = await joinGame(gameCode, name.trim());
     setJoining(false);
     if (result.error) {
       toast({ title: "שגיאה", description: result.error, variant: "destructive" });
     }
   };
+
+  // Auto-join if QR provided code + auto=1 and we already have a saved name.
+  const autoTriedRef = useRef(false);
+  useEffect(() => {
+    if (
+      autoJoin &&
+      gameCode &&
+      name.trim() &&
+      !state.connected &&
+      !joining &&
+      !autoTriedRef.current
+    ) {
+      autoTriedRef.current = true;
+      handleJoin();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoJoin, gameCode, name, state.connected, joining]);
 
   // Not connected yet - show join form
   if (!state.connected) {
@@ -99,15 +119,22 @@ const PlayerJoin = () => {
           <p className="text-game-dark-gold/60 text-center mb-6">הכניסו קוד וצטרפו לחגיגה של חיוש ✨</p>
           
           <div className="space-y-3 mb-4">
+            {codeLocked ? (
+              <div className="bg-game-cream/60 border-2 border-double border-game-border-gold rounded-md text-center py-2 font-mono tracking-widest text-xl text-game-dark-gold">
+                {gameCode}
+              </div>
+            ) : (
+              <Input
+                value={gameCode}
+                onChange={e => setGameCode(e.target.value.toUpperCase())}
+                placeholder="קוד משחק"
+                className="bg-white/60 border-game-border-gold/40 text-game-dark-gold text-center text-lg h-12 font-mono tracking-widest"
+                maxLength={6}
+                onKeyDown={e => e.key === "Enter" && handleJoin()}
+              />
+            )}
             <Input
-              value={gameCode}
-              onChange={e => setGameCode(e.target.value.toUpperCase())}
-              placeholder="קוד משחק"
-              className="bg-white/60 border-game-border-gold/40 text-game-dark-gold text-center text-lg h-12 font-mono tracking-widest"
-              maxLength={6}
-              onKeyDown={e => e.key === "Enter" && handleJoin()}
-            />
-            <Input
+              autoFocus={codeLocked}
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="השם שלך"
