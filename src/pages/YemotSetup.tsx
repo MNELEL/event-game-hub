@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
 import { CallTestWizard } from "@/components/yemot/CallTestWizard";
 import { ApiPermissionsChecklist } from "@/components/yemot/ApiPermissionsChecklist";
+import { YemotCredentialsCard } from "@/components/yemot/YemotCredentialsCard";
 
 const SUPABASE_PROJECT_ID = "wzmspoufqdldcuagsvir";
 const WEBHOOK_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/yemot-ivr`;
