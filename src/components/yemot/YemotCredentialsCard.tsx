@@ -154,16 +154,20 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const rotate = async () => {
     if (!confirm("ליצור webhook secret חדש? לאחר מכן יש להריץ 'הגדר את השלוחה' כדי לעדכן את ext.ini בימות.")) return;
     setBusy("rotate");
+    clearInline();
     try {
       const { data, error } = await supabase.functions.invoke("yemot-credentials", {
         body: { action: "rotate_secret" },
       });
       if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success("נוצר secret חדש. הרץ עכשיו 'הגדר את השלוחה' כדי שימות ידע עליו.");
+      const d = data as any;
+      if (d?.error) throw { message: d.error, details: d.details, raw: d.raw };
+      setOk("נוצר secret חדש. הרץ עכשיו 'הגדר את השלוחה' כדי שימות ידע עליו.");
+      toast.success("נוצר secret חדש.");
       await load();
       onChanged?.();
     } catch (e: any) {
+      setErr("יצירת secret", e, "סיבוב הסוד נכשל");
       toast.error(e?.message || "סיבוב הסוד נכשל");
     } finally {
       setBusy(null);
@@ -173,21 +177,24 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const rotateAndApply = async () => {
     const ext = ((extension ?? (typeof window !== "undefined" ? localStorage.getItem("yemot_extension") : null) ?? "1") || "1").replace(/[^0-9]/g, "") || "1";
     setBusy("rotate_apply");
+    clearInline();
     try {
-      // 1. rotate webhook secret
       const r1 = await supabase.functions.invoke("yemot-credentials", { body: { action: "rotate_secret" } });
-      if (r1.error) throw new Error(`יצירת secret חדש נכשלה: ${r1.error.message}`);
-      if ((r1.data as any)?.error) throw new Error(`יצירת secret חדש נכשלה: ${(r1.data as any).error}`);
+      if (r1.error) throw { source: "יצירת secret", message: r1.error.message };
+      const d1 = r1.data as any;
+      if (d1?.error) throw { source: "יצירת secret", message: d1.error, details: d1.details, raw: d1.raw };
 
-      // 2. apply to Yemot ext.ini
       const r2 = await supabase.functions.invoke("setup-yemot-extension", { body: { extension: ext } });
-      if (r2.error) throw new Error(`עדכון ext.ini בימות נכשל: ${r2.error.message}`);
-      if ((r2.data as any)?.error) throw new Error(`עדכון ext.ini בימות נכשל: ${(r2.data as any).error}`);
+      if (r2.error) throw { source: `עדכון ext.ini בשלוחה ${ext}`, message: r2.error.message };
+      const d2 = r2.data as any;
+      if (d2?.error) throw { source: `עדכון ext.ini בשלוחה ${ext}`, message: d2.error, details: d2.details, raw: d2.raw };
 
+      setOk(`Secret חדש נוצר ושלוחה ${ext} עודכנה אוטומטית בימות`);
       toast.success(`Secret חדש נוצר ושלוחה ${ext} עודכנה אוטומטית בימות`);
       await load();
       onChanged?.();
     } catch (e: any) {
+      setErr(e?.source || "תהליך אוטומטי", e, "התהליך האוטומטי נכשל");
       toast.error(e?.message || "התהליך האוטומטי נכשל");
     } finally {
       setBusy(null);
