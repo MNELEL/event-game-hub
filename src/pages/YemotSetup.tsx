@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Copy, Check, Phone, FileCode, Server, Bug, AlertCircle, Trash2, Save, Wand2, Loader2, CheckCircle2, XCircle, Circle, BookOpen, ShieldCheck, Search, Home } from "lucide-react";
+import { ArrowRight, Copy, Check, Phone, Server, AlertCircle, Wand2, Loader2, CheckCircle2, XCircle, Circle, BookOpen, ShieldCheck, Search, Home, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
