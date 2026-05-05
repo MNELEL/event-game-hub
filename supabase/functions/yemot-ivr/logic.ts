@@ -278,100 +278,78 @@ export function decideIvrResponse(input: DecideInput): Decision {
   }
 
   // Recovery intro: caller dialed in after host pressed Start, but the first
-  // question is still active so they were auto-admitted. Play this once before
-  // the question is read so the experience is clear.
+  // question is still active so they were auto-admitted.
   if (isFirstQuestionRecovery && !params.has("recovered_intro")) {
-    const title = (state.game_title || "").trim();
-    const welcome = title
-      ? `שלום, ברוכים הבאים למשחק ${title}.`
-      : `שלום, ברוכים הבאים למשחק.`;
     return {
       kind: "wait",
-      text: `${welcome} נרשמת בשם מתקשר ${phone.slice(-4)}. המשחק כבר התחיל אבל הספקת להצטרף בזמן לשאלה הראשונה. השאלות מוצגות על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4 לבחירת התשובה.`,
+      text: `ברוכים הבאים לחידון הטריוויה. הצטרפת בזמן לשאלה הראשונה. ניתן להקיש כעת.`,
       valName: "recovered_intro",
-      seconds: 8,
+      seconds: 5,
     };
   }
 
   if (justJoined && !params.has("joined_intro") && !params.has("recovered_intro")) {
-    const lobbyStart =
-      state.status === "lobby" && state.start_at &&
-      new Date(state.start_at).getTime() > now
-        ? formatStartTimeIL(state.start_at)
-        : "";
-    const title = (state.game_title || "").trim();
-    const welcome = title
-      ? `ברוכים הבאים למשחק ${title}.`
-      : `ברוכים הבאים למשחק.`;
-    const registered = `הרשמתך התקבלה. אתה רשום בשם מתקשר ${phone.slice(-4)}.`;
-    const tail = lobbyStart
-      ? `המשחק יתחיל בשעה ${lobbyStart}. אנא המתן להפעלת המשחק. השאלות יוצגו על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4.`
-      : `אנא המתן להפעלת המשחק. השאלות יוצגו על המסך — כשהטיימר רץ הקש 1, 2, 3 או 4.`;
     return {
       kind: "wait",
-      text: `${welcome} ${registered} ${tail}`,
+      text: `ברוכים הבאים לחידון הטריוויה. הצטרפת בהצלחה. אנא המתן להתחלת המשחק.`,
       valName: "joined_intro",
-      seconds: lobbyStart ? 8 : 6,
+      seconds: 4,
     };
-  }
-
-  // Periodically remind in-lobby callers of the exact start time while they wait.
-  if (state.status === "lobby" && state.start_at) {
-    const startMs = new Date(state.start_at).getTime();
-    if (startMs > now) {
-      const lobbyStart = formatStartTimeIL(state.start_at);
-      const cycle = Math.floor(joinedSecondsAgo / 30);
-      const reminderVar = `lobby_time_${cycle}`;
-      if (cycle > 0 && !params.has(reminderVar)) {
-        return {
-          kind: "wait",
-          text: `המשחק יתחיל בשעה ${lobbyStart}. אנא הישאר על הקו.`,
-          valName: reminderVar,
-          seconds: 5,
-        };
-      }
-    }
   }
 
   switch (state.status) {
     case "lobby":
-      return { kind: "silent", valName: "lobby_wait", seconds: POLL_SECONDS };
+      return {
+        kind: "silent",
+        valName: "lobby_wait",
+        seconds: POLL_SECONDS,
+        loopFile: LOBBY_LOOP_FILE,
+      };
     case "playing":
-      return { kind: "silent", valName: "playing_wait", seconds: POLL_SECONDS };
+      return {
+        kind: "silent",
+        valName: "playing_wait",
+        seconds: POLL_SECONDS,
+        loopFile: LOBBY_LOOP_FILE,
+      };
     case "question": {
       if (alreadyAnsweredCurrent) {
-        return { kind: "silent", valName: `done${state.current_question_index}`, seconds: POLL_SECONDS };
+        return {
+          kind: "silent",
+          valName: `done${state.current_question_index}`,
+          seconds: POLL_SECONDS,
+          loopFile: HOURGLASS_LOOP_FILE,
+        };
       }
-      const qNum = state.current_question_index + 1;
-      const total = state.question_ids?.length || 0;
       const remaining = Math.max(1, state.time_remaining || POLL_SECONDS);
       const timeout = Math.min(remaining, POLL_SECONDS);
       const introVar = `qintro${state.current_question_index}`;
       const seenThisQ =
         (phoneRow?.last_seen_question_index ?? -1) >= state.current_question_index;
-      // The phone is a "keypad only" device — the question + answer options are
-      // shown on the host screen. We DO NOT read the question text aloud.
-      // First poll of a new question: short prompt that the question is on
-      // the screen and the caller can press 1-4. Subsequent polls: silent
-      // re-poll while still accepting digits.
       if (!params.has(introVar) && !seenThisQ) {
         return {
           kind: "answer",
-          text: `שאלה ${qNum} מתוך ${total}. השאלה מוצגת על המסך. כשהטיימר רץ, הקש 1, 2, 3 או 4 לבחירת התשובה.`,
+          text: `ניתן להקיש כעת.`,
           valName: answerVar,
           seconds: Math.max(timeout, 5),
         };
       }
+      // Subsequent poll: play hourglass while still accepting 1-4.
       return {
         kind: "answer",
-        text: `נותרו ${remaining} שניות. הקש 1, 2, 3 או 4.`,
+        text: `__file:${HOURGLASS_LOOP_FILE}`,
         valName: answerVar,
         seconds: timeout,
       };
     }
     case "results":
     case "leaderboard":
-      return { kind: "silent", valName: "between_wait", seconds: POLL_SECONDS };
+      return {
+        kind: "silent",
+        valName: "between_wait",
+        seconds: POLL_SECONDS,
+        loopFile: HOURGLASS_LOOP_FILE,
+      };
     case "finished":
     default:
       return { kind: "hangup", text: "המשחק הסתיים. תודה על ההשתתפות." };
