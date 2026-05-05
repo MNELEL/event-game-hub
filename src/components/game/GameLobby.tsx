@@ -358,6 +358,20 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
         )}
 
         <p className="text-game-dark-gold/50 text-sm mt-3">{questionsCount} שאלות מוכנות</p>
+
+        {!graceCountdown && (
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/yemot-setup")}
+              className="gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              📞 הגדר ימות
+            </Button>
+          </div>
+        )}
       </motion.div>
     </div>
   );
