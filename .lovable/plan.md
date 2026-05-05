@@ -1,81 +1,25 @@
-## מטרות
-1. למנוע מצבי "מסך תקוע" אחרי deploy (PWA Service Worker).
-2. לפשט ולתקן את `build-apk.yml` כדי למנוע קונפליקטים מול GitHub.
-3. לפתור את שגיאת ימות "אין לינק" בעת התקשרות.
-4. הוספת הוראות לפתרון conflict פתוח ב־GitHub.
 
----
+## מטרה
+סעיף 5 ("בדיקה חיה של ההרשאות") מחזיר 404/HTML מ־nginx כי `verify-yemot-token` קורא ל־`https://www.call2all.co.il/ws/{token}/...` שלא קיים. בנוסף הוא משתמש ב־`YEMOT_API_TOKEN` הגלובלי במקום בטוקן של המשתמש.
 
-## 1. הקשחת PWA כדי למנוע מסך תקוע
+## שינויים
 
-**הבעיה:** `vite-plugin-pwa` עם `registerType: "autoUpdate"` מגיש לעיתים גרסה ישנה מה־cache עד שהמשתמש עושה refresh כפול.
+### `supabase/functions/verify-yemot-token/index.ts` — שכתוב
 
-**פעולות ב־`vite.config.ts`:**
-- שינוי `registerType` ל־`"prompt"` עם `skipWaiting: true` ו־`clientsClaim: true` ב־workbox — כך שגרסה חדשה תופעל מיד.
-- הוספת `cleanupOutdatedCaches: true`.
-- הוספת `navigateFallbackDenylist` עבור `/auth`, `/~oauth`, `/functions` כדי שלא יתפוס fallback של HTML על קריאות ל־Supabase.
+1. **מקור הטוקן:** קודם לטעון מ־`yemot_credentials` לפי `owner_id = auth.uid()`, ורק כ־fallback להשתמש ב־`YEMOT_API_TOKEN` מה־env.
+2. **שיטת קריאה:** להחליף את `call()` ל־POST על `https://www.call2all.co.il/ym/api/{action}` עם `FormData` שכולל `token` (זהה ל־`setup-yemot-extension`).
+3. **ארבע בדיקות:**
+   - `GetSession` — תקפות הטוקן. אם נכשל, להפסיק כאן ולהחזיר הודעה ברורה ("האסימון לא תקף").
+   - `GetIVR2Dir` עם `path: "ivr2:/"` — הרשאת קריאה.
+   - `UpdateExtension` עם `path: "ivr2:/9999"` ו־`whatToDo: "GetSettings"` — non-destructive; "שלוחה לא קיימת" עדיין מוכיח שההרשאה עובדת.
+   - `UploadTextFile` על קובץ probe זמני (`ivr2:/_lovable_probe_{ts}.txt`) — בדיוק ה־endpoint שבו משתמשים בפועל לכתיבת `ext.ini`. ניקוי best-effort דרך `FileAction whatToDo=delete`.
+4. **זיהוי שגיאות הרשאה:** פונקציית עזר `isPermissionError()` שמחפשת `not allowed | forbidden | אבטח | הרשא | whitelist` ב־`json.message` או בטקסט. הודעות שגיאה ידידותיות (חיתוך HTML, חיתוך ל־200 תווים).
 
-**ב־`src/main.tsx` או רכיב חדש:** האזנה לאירוע update של ה־SW והצגת toast עם כפתור "טען מחדש".
+### בלי שינויים ב־DB, ב־frontend או בקבצים אחרים.
 
----
+## טכני קצר
+- `supabase/functions/verify-yemot-token/index.ts` — מוחלף במלואו (~150 שורות).
+- redeploy אוטומטי של `verify-yemot-token`.
 
-## 2. תיקון `.github/workflows/build-apk.yml`
-
-**בעיות שנמצאו:**
-- שלב **"Capacitor add & sync"** מופיע **פעמיים** (שורות 37-40 ו־77-80) — השני מנסה `cap add android` כשהתיקייה כבר קיימת ⇒ כשלון.
-- שלב **"Downgrade Capacitor to v6"** משנה `package.json`/`package-lock.json` בכל ריצה. אם הקובץ נשמר, יוצר קונפליקט מול Lovable.
-
-**פעולות:**
-- מחיקת השלבים הכפולים בסוף הקובץ (שורות 71 והלאה — להשאיר רק upload artifact אחד).
-- העברת גרסת Capacitor 6 ל־`package.json` עצמו (עדכון `@capacitor/core` ו־`@capacitor/android` ל־`^6.0.0`) ומחיקת השלב "Downgrade Capacitor to v6".
-- ודא שה־workflow לא עושה `git commit` בחזרה ל־repo — נכון לעכשיו הוא רק מעלה artifact, אז זה תקין.
-
----
-
-## 3. תיקון "אין לינק" בימות (השגיאה החשובה)
-
-**שורש הבעיה:** טבלת `yemot_credentials` לא כוללת עמודת `extension`, ולכן:
-- אין רשומה איפה ה־`ext.ini` הוגדר בפועל.
-- אין דרך לוודא שהמשתמש מתקשר לאותה שלוחה שהוגדרה.
-- אין הצגת השלוחה בממשק.
-
-**פעולות:**
-
-**א. מיגרציה במסד נתונים:**
-- הוספת עמודה `extension TEXT` ל־`yemot_credentials`.
-- הוספת עמודה `last_setup_at TIMESTAMPTZ` ו־`last_setup_path TEXT` כדי לעקוב.
-
-**ב. עדכון `setup-yemot-extension/index.ts`:**
-- אחרי `UploadTextFile` מוצלח — לעדכן את הרשומה עם השלוחה ו־`last_setup_at`.
-- הוספת **שלב verification**: לקרוא את `ext.ini` בחזרה דרך `DownloadTextFile` של ימות ולוודא שהתוכן זהה ושמכיל `api_link=`. אם לא — להחזיר שגיאה ברורה.
-- כתיבה גם ל־root (`ivr2:/ext.ini`) **בנוסף** לשלוחה — מטפל במקרה שהשיחה נכנסת לרמה הראשית.
-
-**ג. עדכון `YemotCredentialsCard.tsx` ו־`E2ETestRunner.tsx`:**
-- הצגת השלוחה האחרונה שהוגדרה + תאריך.
-- כפתור "אמת שה־`api_link` קיים בימות עכשיו" שמריץ `DownloadTextFile` ומציג את התוכן בפועל.
-
-**ד. הודעת שגיאה ידידותית בעמוד ההגדרה:**
-- אם אין `extension` בטבלה: "טרם הוגדרה שלוחה — לחץ 'עדכן api_link אוטומטית'".
-- אם הוגדרה לפני יותר מ־24 שעות: warning "כדאי לאמת מחדש".
-
----
-
-## 4. הוראות לפתרון conflict פתוח ב־GitHub
-
-לא קוד — חלק מהתשובה בצ'אט: לוודא חיבור GitHub פעיל ב־**Connectors → GitHub → Reconnect**, ולא לערוך את אותם קבצים בו־זמנית בשני המקומות.
-
----
-
-## פרטים טכניים (קצר)
-
-קבצים שייערכו:
-- `vite.config.ts` — שינוי תצורת PWA
-- `src/main.tsx` — רישום listener ל־SW update + toast
-- `.github/workflows/build-apk.yml` — מחיקת כפילות, הסרת downgrade
-- `package.json` — קיבוע Capacitor v6
-- מיגרציה SQL חדשה — `extension`, `last_setup_at`, `last_setup_path`
-- `supabase/functions/setup-yemot-extension/index.ts` — verification + שמירת extension + כתיבה כפולה
-- `src/components/yemot/YemotCredentialsCard.tsx` — תצוגת שלוחה + כפתור אימות
-- `src/components/yemot/E2ETestRunner.tsx` — שלב verification נוסף
-
-ללא שינוי בסכמת auth, ללא הסרת fields קיימים.
+## תוצאה צפויה
+סעיף 5 בעמוד `YemotSetup` יציג ✓ ירוק לכל ארבעת השלבים (כפי שכבר קורה בסעיף E2E). אם הטוקן לא תקף או שחסרה הרשאה ספציפית — תוצג הודעה מדויקת עם הפעולה המתקנת.
