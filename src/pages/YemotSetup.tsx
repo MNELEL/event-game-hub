@@ -188,10 +188,16 @@ say_error_message=no`;
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="gap-1">
-            <ArrowRight className="w-4 h-4" />
-            חזרה לניהול
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1">
+              <Home className="w-4 h-4" />
+              חזרה לדף הראשי
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="gap-1">
+              <ArrowRight className="w-4 h-4" />
+              חזרה לניהול
+            </Button>
+          </div>
           <div className="flex items-center gap-2">
             <IvrTestCallButton />
             <Button variant="outline" size="sm" onClick={() => navigate("/ivr-guide")} className="gap-1">
