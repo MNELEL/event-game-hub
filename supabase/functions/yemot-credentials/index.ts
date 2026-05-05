@@ -122,6 +122,15 @@ Deno.serve(async (req) => {
       return json({ success: true, verified: true });
     }
 
+    if (action === "check_token") {
+      const candidate = (body.yemot_api_token || "").toString().trim();
+      if (!candidate || candidate.length < 8 || candidate.length > 512) {
+        return json({ ok: false, message: "אסימון קצר/ארוך מדי" });
+      }
+      const v = await verifyTokenWithYemot(candidate);
+      return json({ ok: v.ok, message: v.ok ? "תקין" : (v.message ?? "לא תקין") });
+    }
+
     if (action === "verify") {
       if (!existing?.yemot_api_token) return json({ error: "אין אסימון שמור" }, 400);
       const v = await verifyTokenWithYemot(existing.yemot_api_token);

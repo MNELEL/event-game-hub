@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ShieldCheck, AlertCircle, KeyRound, RefreshCcw, Save, Eye, EyeOff, Wand2 } from "lucide-react";
+import { Loader2, ShieldCheck, AlertCircle, KeyRound, RefreshCcw, Save, Eye, EyeOff, Wand2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -20,6 +20,52 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  type LiveStatus = "idle" | "checking" | "valid" | "invalid";
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>("idle");
+  const [liveMessage, setLiveMessage] = useState<string>("");
+  const debounceRef = useRef<number | null>(null);
+  const lastCheckedTokenRef = useRef<string>("");
+
+  const runLiveCheck = async (candidate: string) => {
+    const t = candidate.trim();
+    if (!t || t.length < 8) {
+      setLiveStatus("idle");
+      setLiveMessage("");
+      return;
+    }
+    if (t === lastCheckedTokenRef.current) return;
+    lastCheckedTokenRef.current = t;
+    setLiveStatus("checking");
+    setLiveMessage("בודק מול ימות...");
+    try {
+      const { data, error } = await supabase.functions.invoke("yemot-credentials", {
+        body: { action: "check_token", yemot_api_token: t },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      if ((data as any)?.ok) {
+        setLiveStatus("valid");
+        setLiveMessage("האסימון תקין — ניתן לשמור");
+      } else {
+        setLiveStatus("invalid");
+        setLiveMessage((data as any)?.message || "האסימון לא תקין מול ימות");
+      }
+    } catch (e: any) {
+      setLiveStatus("invalid");
+      setLiveMessage(e?.message || "שגיאה בבדיקת האסימון");
+    }
+  };
+
+  const onTokenChange = (val: string) => {
+    setToken(val);
+    setLiveStatus("idle");
+    setLiveMessage("");
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    if (!val.trim()) return;
+    debounceRef.current = window.setTimeout(() => runLiveCheck(val), 700);
+  };
+
+  useEffect(() => () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); }, []);
 
   const load = async () => {
     setLoading(true);
@@ -172,14 +218,38 @@ export function YemotCredentialsCard({ onChanged, extension }: { onChanged?: () 
 
             <label className="text-sm pt-2">אסימון API</label>
             <div className="space-y-1">
-              <input
-                type={showSecret ? "text" : "password"}
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                placeholder={state?.configured ? "(השאר ריק כדי לשמור את הקיים)" : "הדבק כאן את האסימון מפאנל ימות"}
-                className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm font-mono"
-                dir="ltr"
-              />
+              <div className="relative">
+                <input
+                  type={showSecret ? "text" : "password"}
+                  value={token}
+                  onChange={(e) => onTokenChange(e.target.value)}
+                  onBlur={(e) => {
+                    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+                    runLiveCheck(e.target.value);
+                  }}
+                  placeholder={state?.configured ? "(השאר ריק כדי לשמור את הקיים)" : "הדבק כאן את האסימון מפאנל ימות"}
+                  className={`w-full px-3 py-2 pe-9 rounded-md border bg-background text-sm font-mono ${
+                    liveStatus === "valid" ? "border-emerald-500/60" :
+                    liveStatus === "invalid" ? "border-destructive/60" :
+                    "border-border"
+                  }`}
+                  dir="ltr"
+                />
+                <div className="absolute inset-y-0 end-2 flex items-center pointer-events-none">
+                  {liveStatus === "checking" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                  {liveStatus === "valid" && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                  {liveStatus === "invalid" && <XCircle className="w-4 h-4 text-destructive" />}
+                </div>
+              </div>
+              {liveMessage && (
+                <p className={`text-xs ${
+                  liveStatus === "valid" ? "text-emerald-600 dark:text-emerald-400" :
+                  liveStatus === "invalid" ? "text-destructive" :
+                  "text-muted-foreground"
+                }`}>
+                  {liveMessage}
+                </p>
+              )}
               <div className="flex items-center justify-between text-xs">
                 <button
                   type="button"
