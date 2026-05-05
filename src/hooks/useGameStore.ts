@@ -7,6 +7,7 @@ const generateGameCode = () => Math.random().toString(36).substring(2, 8).toUppe
 
 const defaultSettings: GameSettings = {
   title: branding.name,
+  title: "החגיגה של חיוש",
   questionsPerGame: 10,
   defaultTimeLimit: 15,
   selectedCategories: [],
@@ -16,6 +17,7 @@ const defaultSettings: GameSettings = {
 };
 
 const STORAGE_KEY = branding.storage.storageKey;
+const STORAGE_KEY = "hayoush_data";
 
 function loadFromStorage(): { questions: Question[]; settings: GameSettings } {
   try {

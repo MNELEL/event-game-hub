@@ -61,6 +61,7 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
       printWindow.document.write(`
         <html dir="rtl">
           <head><title>סטטיסטיקות ${branding.name}</title>
+          <head><title>סטטיסטיקות החגיגה של חיוש</title>
             <style>
               body { margin: 0; display: flex; justify-content: center; background: #f5eed6; }
               img { max-width: 100%; height: auto; }

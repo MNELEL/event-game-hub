@@ -329,6 +329,9 @@ const GameHost = () => {
                 setGameReady(false);
                 game.resetGame();
                 navigate("/host", { replace: true });
+              onRestart={async () => {
+                await game.resetGame();
+                setGameCreated(false);
               }}
               onHome={() => navigate("/")}
             />

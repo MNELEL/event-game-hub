@@ -27,6 +27,7 @@ const Login = () => {
     if (error) {
       toast({ title: "שגיאה", description: error.message, variant: "destructive" });
     } else {
+      toast({ title: isSignUp ? "נרשמת בהצלחה! 🎉" : "ברוך הבא!", description: "מועבר לממשק הניהול..." });
       navigate("/admin");
     }
   };
@@ -50,6 +51,9 @@ const Login = () => {
         <h1 className="font-display text-4xl text-game-dark-gold text-center mb-2">{branding.iconPrimary} {branding.name}</h1>
         <p className="text-game-dark-gold/70 text-center mb-8">
           כניסה לממשק ניהול
+        <h1 className="font-display text-4xl text-game-gold text-center mb-2">🧠 החגיגה של חיוש</h1>
+        <p className="text-primary-foreground/60 text-center mb-8">
+          {isSignUp ? "הרשמה לממשק ניהול" : "כניסה לממשק ניהול"}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
