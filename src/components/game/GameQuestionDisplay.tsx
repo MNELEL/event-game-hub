@@ -34,21 +34,24 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 };
 
-export function GameQuestionDisplay({ question, questionNumber, totalQuestions, timeRemaining, onTimeUp }: Props) {
+export function GameQuestionDisplay({ question, questionNumber, totalQuestions, timeRemaining, onTimeUp, onReady }: Props) {
   const category = DEFAULT_CATEGORIES.find(c => c.id === question.category);
   const percentage = (timeRemaining / question.timeLimit) * 100;
-  const hasPlayedReveal = useRef(false);
 
+  // Reveal + start hourglass once per question (re-mounts via key on question change)
   useEffect(() => {
-    if (!hasPlayedReveal.current) {
-      SoundEffects.questionReveal();
-      hasPlayedReveal.current = true;
-      setTimeout(() => SoundEffects.startHourglass(), 450);
-    }
+    SoundEffects.questionReveal();
+    // Wait for question + answer entrance animations (~1s) before timer/audio start
+    const startDelay = setTimeout(() => {
+      SoundEffects.startHourglass(question.timeLimit);
+      onReady?.();
+    }, 1000);
     return () => {
+      clearTimeout(startDelay);
       SoundEffects.stopHourglass();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question.id]);
 
   useEffect(() => {
     if (timeRemaining <= 0) {
