@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Question, DEFAULT_CATEGORIES } from "@/types/game";
 import { SoundEffects } from "@/hooks/useSoundEffects";
@@ -37,21 +37,29 @@ const itemVariants = {
 export function GameQuestionDisplay({ question, questionNumber, totalQuestions, timeRemaining, onTimeUp, onReady }: Props) {
   const category = DEFAULT_CATEGORIES.find(c => c.id === question.category);
   const percentage = (timeRemaining / question.timeLimit) * 100;
+  const [animationsDone, setAnimationsDone] = useState(false);
+  const startedRef = useRef(false);
 
-  // Reveal + start hourglass once per question (re-mounts via key on question change)
+  // Reveal sound on mount; reset readiness state when the question changes.
   useEffect(() => {
     SoundEffects.questionReveal();
-    // Wait for question + answer entrance animations (~1s) before timer/audio start
-    const startDelay = setTimeout(() => {
-      SoundEffects.startHourglass(question.timeLimit);
-      onReady?.();
-    }, 1000);
+    startedRef.current = false;
+    setAnimationsDone(false);
     return () => {
-      clearTimeout(startDelay);
       SoundEffects.stopHourglass();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id]);
+
+  // Start hourglass + timer ONLY after the entrance animation of the last
+  // answer card finishes — guaranteeing the question is fully visible first.
+  useEffect(() => {
+    if (!animationsDone || startedRef.current) return;
+    startedRef.current = true;
+    SoundEffects.startHourglass(question.timeLimit);
+    onReady?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animationsDone]);
 
   useEffect(() => {
     if (timeRemaining <= 0) {
@@ -203,6 +211,10 @@ export function GameQuestionDisplay({ question, questionNumber, totalQuestions, 
               type: "spring",
               stiffness: 250,
               damping: 18,
+            }}
+            onAnimationComplete={() => {
+              // Mark ready only after the LAST answer card's entrance ends.
+              if (i === question.options.length - 1) setAnimationsDone(true);
             }}
             whileHover={{
               scale: 1.05,
