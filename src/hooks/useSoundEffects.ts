@@ -250,8 +250,81 @@ function stopBackgroundMusic() {
   }
 }
 
+// ==================== HOURGLASS LOOP ====================
+let hourglassInterval: ReturnType<typeof setInterval> | null = null;
+let hourglassGain: GainNode | null = null;
+let hourglassNoise: AudioBufferSourceNode | null = null;
+
+function startHourglass() {
+  stopHourglass();
+  if (!sfxEnabled) return;
+  const ctx = audioCtx();
+
+  // Sand-flowing white noise through bandpass
+  const bufferSize = ctx.sampleRate * 2;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+
+  hourglassNoise = ctx.createBufferSource();
+  hourglassNoise.buffer = buffer;
+  hourglassNoise.loop = true;
+
+  const bandpass = ctx.createBiquadFilter();
+  bandpass.type = "bandpass";
+  bandpass.frequency.value = 3200;
+  bandpass.Q.value = 0.8;
+
+  hourglassGain = ctx.createGain();
+  const targetVol = 0.06 * masterVolume * sfxVolume;
+  hourglassGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+  hourglassGain.gain.exponentialRampToValueAtTime(Math.max(targetVol, 0.0002), ctx.currentTime + 0.2);
+
+  hourglassNoise.connect(bandpass);
+  bandpass.connect(hourglassGain);
+  hourglassGain.connect(ctx.destination);
+  hourglassNoise.start();
+
+  // Tick-tock pulse
+  let beat = 0;
+  const tick = () => {
+    if (!hourglassGain) return;
+    if (beat % 2 === 0) {
+      playTone(1300, 0.025, "square", 0.09);
+    } else {
+      playTone(580, 0.04, "triangle", 0.07);
+    }
+    beat++;
+  };
+  tick();
+  hourglassInterval = setInterval(tick, 500);
+}
+
+function stopHourglass() {
+  if (hourglassInterval) {
+    clearInterval(hourglassInterval);
+    hourglassInterval = null;
+  }
+  if (hourglassGain) {
+    try {
+      const ctx = audioCtx();
+      hourglassGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+    } catch {}
+  }
+  const noise = hourglassNoise;
+  const gain = hourglassGain;
+  hourglassNoise = null;
+  hourglassGain = null;
+  setTimeout(() => {
+    try { noise?.stop(); } catch {}
+    try { gain?.disconnect(); } catch {}
+  }, 250);
+}
+
 // ==================== SOUND EFFECTS ====================
 export const SoundEffects = {
+  startHourglass,
+  stopHourglass,
   // Volume controls
   setMasterVolume: (v: number) => { masterVolume = Math.max(0, Math.min(1, v)); applyCustomVolume(); },
   setMusicVolume: (v: number) => { musicVolume = Math.max(0, Math.min(1, v)); applyCustomVolume(); },
