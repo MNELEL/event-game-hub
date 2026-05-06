@@ -34,7 +34,7 @@ const PlayerJoin = () => {
   useEffect(() => {
     if (codeFromUrl) setGameCode(codeFromUrl);
   }, [codeFromUrl]);
-  const { state, joinGame, submitAnswer } = usePlayerGame();
+  const { state, joinGame, submitAnswer, reconnect } = usePlayerGame();
   const { toast } = useToast();
 
   // Sync local timer with server time and run local countdown
