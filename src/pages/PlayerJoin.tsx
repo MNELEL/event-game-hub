@@ -37,18 +37,21 @@ const PlayerJoin = () => {
   const { state, joinGame, submitAnswer, reconnect } = usePlayerGame();
   const { toast } = useToast();
 
-  // Sync local timer with server time and run local countdown
+  // Sync local timer with server time and run local countdown.
+  // While disconnected, do NOT resync from server — keep last frozen value.
   useEffect(() => {
+    if (state.disconnected) return;
     if (state.gameStatus === "question") {
       setLocalTimer(state.timeRemaining);
     } else {
       setLocalTimer(null);
     }
-  }, [state.timeRemaining, state.gameStatus]);
+  }, [state.timeRemaining, state.gameStatus, state.disconnected]);
 
-  // Local countdown every second
+  // Local countdown every second — paused while disconnected so the timer
+  // doesn't keep ticking down while the player is offline.
   useEffect(() => {
-    if (state.gameStatus !== "question" || localTimer === null) {
+    if (state.gameStatus !== "question" || localTimer === null || state.disconnected) {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
@@ -69,7 +72,7 @@ const PlayerJoin = () => {
         timerIntervalRef.current = null;
       }
     };
-  }, [state.gameStatus, state.currentQuestionIndex]);
+  }, [state.gameStatus, state.currentQuestionIndex, state.disconnected]);
 
   const displayTimer = localTimer ?? state.timeRemaining;
   const timerPercent = displayTimer / 15; // approximate; will be close enough

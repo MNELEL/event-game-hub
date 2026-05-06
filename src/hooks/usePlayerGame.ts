@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 type GameStatus = "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished";
@@ -23,6 +23,7 @@ type PlayerGameState = {
 };
 
 const SESSION_KEY = "player_session_v1";
+const SNAPSHOT_KEY = "player_session_v1_snapshot";
 
 type PersistedSession = {
   gameId: string;
@@ -42,8 +43,28 @@ function loadSession(): PersistedSession | null {
   } catch { return null; }
 }
 function clearSession() {
-  try { localStorage.removeItem(SESSION_KEY); } catch {}
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SNAPSHOT_KEY);
+  } catch {}
 }
+
+function saveSnapshot(s: Partial<PlayerGameState>) {
+  try { localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(s)); } catch {}
+}
+function loadSnapshot(): Partial<PlayerGameState> | null {
+  try {
+    const raw = localStorage.getItem(SNAPSHOT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+type PendingAnswer = {
+  questionId: string;
+  questionIndex: number;
+  answer: number;
+  timeTaken: number;
+};
 
 export function usePlayerGame() {
   const [state, setState] = useState<PlayerGameState>({
@@ -63,8 +84,30 @@ export function usePlayerGame() {
     reconnecting: false,
   });
 
+  // Frozen snapshot to display while disconnected. Updated only from confirmed
+  // server payloads (realtime UPDATE or successful refetch).
+  const [snapshot, setSnapshot] = useState<Partial<PlayerGameState> | null>(() => loadSnapshot());
+
   const lastCodeRef = useRef<string>("");
   const reconnectAttemptsRef = useRef(0);
+  const pendingAnswerRef = useRef<PendingAnswer | null>(null);
+
+  // Persist a snapshot of the gameplay-relevant fields. Called only from
+  // confirmed server updates so transient values never leak into the snapshot.
+  const captureSnapshot = useCallback((s: PlayerGameState) => {
+    const snap: Partial<PlayerGameState> = {
+      gameStatus: s.gameStatus,
+      currentQuestionIndex: s.currentQuestionIndex,
+      timeRemaining: s.timeRemaining,
+      questionCount: s.questionCount,
+      questionIds: s.questionIds,
+      answerSubmitted: s.answerSubmitted,
+      startAt: s.startAt,
+      playerName: s.playerName,
+    };
+    setSnapshot(snap);
+    saveSnapshot(snap);
+  }, []);
 
   // Join a game by code
   const joinGame = useCallback(async (code: string, name: string) => {
@@ -101,26 +144,30 @@ export function usePlayerGame() {
     });
     lastCodeRef.current = code.toUpperCase();
 
-    setState(prev => ({
-      ...prev,
-      gameId: row.game_id,
-      playerId: row.player_id,
-      playerName: name,
-      secretToken: row.secret_token,
-      gameStatus: row.status as GameStatus,
-      currentQuestionIndex: row.current_question_index,
-      timeRemaining: row.time_remaining,
-      questionCount: questionIds.length,
-      questionIds,
-      connected: true,
-      answerSubmitted: false,
-      startAt: (gameRow as any)?.start_at ?? null,
-      disconnected: false,
-      reconnecting: false,
-    }));
+    setState(prev => {
+      const next: PlayerGameState = {
+        ...prev,
+        gameId: row.game_id,
+        playerId: row.player_id,
+        playerName: name,
+        secretToken: row.secret_token,
+        gameStatus: row.status as GameStatus,
+        currentQuestionIndex: row.current_question_index,
+        timeRemaining: row.time_remaining,
+        questionCount: questionIds.length,
+        questionIds,
+        connected: true,
+        answerSubmitted: false,
+        startAt: (gameRow as any)?.start_at ?? null,
+        disconnected: false,
+        reconnecting: false,
+      };
+      captureSnapshot(next);
+      return next;
+    });
 
     return { error: null };
-  }, []);
+  }, [captureSnapshot]);
 
   // Refetch latest game state without re-creating a player row.
   const refetchGameState = useCallback(async (gameId: string) => {
@@ -131,20 +178,29 @@ export function usePlayerGame() {
       .maybeSingle();
     if (error || !data) return false;
     const row = data as any;
-    setState(prev => ({
-      ...prev,
-      gameStatus: row.status as GameStatus,
-      currentQuestionIndex: row.current_question_index,
-      timeRemaining: row.time_remaining,
-      questionIds: row.question_ids || prev.questionIds,
-      questionCount: (row.question_ids || prev.questionIds).length,
-      startAt: row.start_at ?? prev.startAt,
-      disconnected: false,
-      reconnecting: false,
-      connected: true,
-    }));
+    setState(prev => {
+      const next: PlayerGameState = {
+        ...prev,
+        gameStatus: row.status as GameStatus,
+        currentQuestionIndex: row.current_question_index,
+        timeRemaining: row.time_remaining,
+        questionIds: row.question_ids || prev.questionIds,
+        questionCount: (row.question_ids || prev.questionIds).length,
+        startAt: row.start_at ?? prev.startAt,
+        // If server moved past the question we had a pending answer for, clear answerSubmitted
+        answerSubmitted:
+          row.current_question_index !== prev.currentQuestionIndex
+            ? false
+            : prev.answerSubmitted,
+        disconnected: false,
+        reconnecting: false,
+        connected: true,
+      };
+      captureSnapshot(next);
+      return next;
+    });
     return true;
-  }, []);
+  }, [captureSnapshot]);
 
   // Try to restore a previous session on first mount.
   useEffect(() => {
@@ -152,22 +208,55 @@ export function usePlayerGame() {
     const saved = loadSession();
     if (!saved) return;
     lastCodeRef.current = saved.code;
+    // Hydrate from snapshot first so the UI doesn't flash the join form.
+    const snap = loadSnapshot();
+    setState(prev => ({
+      ...prev,
+      gameId: saved.gameId,
+      playerId: saved.playerId,
+      playerName: saved.playerName,
+      secretToken: saved.secretToken,
+      connected: true,
+      gameStatus: (snap?.gameStatus as GameStatus) ?? prev.gameStatus,
+      currentQuestionIndex: snap?.currentQuestionIndex ?? prev.currentQuestionIndex,
+      timeRemaining: snap?.timeRemaining ?? prev.timeRemaining,
+      questionIds: (snap?.questionIds as string[]) ?? prev.questionIds,
+      questionCount: snap?.questionCount ?? prev.questionCount,
+      startAt: (snap?.startAt as string | null) ?? prev.startAt,
+      answerSubmitted: snap?.answerSubmitted ?? prev.answerSubmitted,
+    }));
     refetchGameState(saved.gameId).then(ok => {
-      if (ok) {
-        setState(prev => ({
-          ...prev,
-          gameId: saved.gameId,
-          playerId: saved.playerId,
-          playerName: saved.playerName,
-          secretToken: saved.secretToken,
-          connected: true,
-        }));
-      } else {
-        clearSession();
-      }
+      if (!ok) clearSession();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Flush any queued offline answer once we're back online.
+  const flushPendingAnswer = useCallback(async () => {
+    const pending = pendingAnswerRef.current;
+    if (!pending) return;
+    if (!state.gameId || !state.playerId || !state.secretToken) return;
+    // If the server is no longer on the same question, drop it silently.
+    if (pending.questionIndex !== state.currentQuestionIndex) {
+      pendingAnswerRef.current = null;
+      return;
+    }
+    try {
+      await supabase.functions.invoke("submit-answer", {
+        body: {
+          player_id: state.playerId,
+          game_id: state.gameId,
+          question_id: pending.questionId,
+          answer: pending.answer,
+          time_taken: pending.timeTaken,
+          secret_token: state.secretToken,
+        },
+      });
+      pendingAnswerRef.current = null;
+    } catch {
+      // leave queued for the next reconnect
+    }
+  }, [state.gameId, state.playerId, state.secretToken, state.currentQuestionIndex]);
 
   // Manual reconnect — refetch + re-subscribe by changing key (handled below).
   const reconnect = useCallback(async () => {
@@ -178,9 +267,12 @@ export function usePlayerGame() {
     const ok = await refetchGameState(saved.gameId);
     if (!ok) {
       setState(prev => ({ ...prev, reconnecting: false, disconnected: true }));
+    } else {
+      reconnectAttemptsRef.current = 0;
+      flushPendingAnswer();
     }
     return ok;
-  }, [refetchGameState]);
+  }, [refetchGameState, flushPendingAnswer]);
 
   // Subscribe to game state changes. Re-subscribes whenever gameId changes.
   useEffect(() => {
@@ -197,7 +289,7 @@ export function usePlayerGame() {
           setState(prev => {
             const newQuestionIndex = game.current_question_index;
             const isNewQuestion = game.status === "question" && newQuestionIndex !== prev.currentQuestionIndex;
-            return {
+            const next: PlayerGameState = {
               ...prev,
               gameStatus: game.status as GameStatus,
               currentQuestionIndex: newQuestionIndex,
@@ -207,6 +299,8 @@ export function usePlayerGame() {
               disconnected: false,
               connected: true,
             };
+            captureSnapshot(next);
+            return next;
           });
         }
       )
@@ -214,6 +308,7 @@ export function usePlayerGame() {
         if (cancelled) return;
         if (status === "SUBSCRIBED") {
           setState(prev => ({ ...prev, disconnected: false, reconnecting: false, connected: true }));
+          flushPendingAnswer();
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
           setState(prev => ({ ...prev, disconnected: true }));
         }
@@ -223,7 +318,7 @@ export function usePlayerGame() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [state.gameId]);
+  }, [state.gameId, captureSnapshot, flushPendingAnswer]);
 
   // Browser online/offline + automatic reconnect with exponential backoff.
   useEffect(() => {
@@ -250,7 +345,7 @@ export function usePlayerGame() {
     return () => clearTimeout(t);
   }, [state.disconnected, state.gameId, reconnect]);
 
-  // Submit answer
+  // Submit answer — works offline by queuing.
   const submitAnswer = useCallback(async (answer: number, timeTaken: number) => {
     if (!state.gameId || !state.playerId || !state.secretToken || state.answerSubmitted) return;
 
@@ -259,22 +354,54 @@ export function usePlayerGame() {
 
     const actualTimeTaken = Math.max(0, timeTaken);
 
-    await supabase.functions.invoke("submit-answer", {
-      body: {
-        player_id: state.playerId,
-        game_id: state.gameId,
-        question_id: questionId,
-        answer,
-        time_taken: actualTimeTaken,
-        secret_token: state.secretToken,
-      },
+    // Optimistically mark as submitted so the player sees the confirmation
+    // screen immediately and doesn't tap again.
+    setState(prev => {
+      const next = { ...prev, answerSubmitted: true };
+      captureSnapshot(next);
+      return next;
     });
 
-    setState(prev => ({ ...prev, answerSubmitted: true }));
-  }, [state.gameId, state.playerId, state.secretToken, state.answerSubmitted, state.questionIds, state.currentQuestionIndex]);
+    const isOffline =
+      state.disconnected ||
+      (typeof navigator !== "undefined" && !navigator.onLine);
+
+    if (isOffline) {
+      pendingAnswerRef.current = {
+        questionId,
+        questionIndex: state.currentQuestionIndex,
+        answer,
+        timeTaken: actualTimeTaken,
+      };
+      return;
+    }
+
+    try {
+      await supabase.functions.invoke("submit-answer", {
+        body: {
+          player_id: state.playerId,
+          game_id: state.gameId,
+          question_id: questionId,
+          answer,
+          time_taken: actualTimeTaken,
+          secret_token: state.secretToken,
+        },
+      });
+    } catch {
+      // Queue for retry on reconnect.
+      pendingAnswerRef.current = {
+        questionId,
+        questionIndex: state.currentQuestionIndex,
+        answer,
+        timeTaken: actualTimeTaken,
+      };
+    }
+  }, [state.gameId, state.playerId, state.secretToken, state.answerSubmitted, state.questionIds, state.currentQuestionIndex, state.disconnected, captureSnapshot]);
 
   const leaveGame = useCallback(() => {
     clearSession();
+    pendingAnswerRef.current = null;
+    setSnapshot(null);
     setState({
       gameId: null, playerId: null, playerName: "", secretToken: null,
       gameStatus: "lobby", currentQuestionIndex: 0, timeRemaining: 15,
@@ -283,5 +410,22 @@ export function usePlayerGame() {
     });
   }, []);
 
-  return { state, joinGame, submitAnswer, reconnect, leaveGame };
+  // While disconnected, surface the frozen snapshot for gameplay-relevant
+  // fields so the UI never flashes between screens. Connection-state and
+  // identity fields stay live.
+  const visibleState = useMemo<PlayerGameState>(() => {
+    if (!state.disconnected || !snapshot) return state;
+    return {
+      ...state,
+      gameStatus: (snapshot.gameStatus as GameStatus) ?? state.gameStatus,
+      currentQuestionIndex: snapshot.currentQuestionIndex ?? state.currentQuestionIndex,
+      timeRemaining: snapshot.timeRemaining ?? state.timeRemaining,
+      questionCount: snapshot.questionCount ?? state.questionCount,
+      questionIds: (snapshot.questionIds as string[]) ?? state.questionIds,
+      answerSubmitted: snapshot.answerSubmitted ?? state.answerSubmitted,
+      startAt: (snapshot.startAt as string | null) ?? state.startAt,
+    };
+  }, [state, snapshot]);
+
+  return { state: visibleState, joinGame, submitAnswer, reconnect, leaveGame };
 }
