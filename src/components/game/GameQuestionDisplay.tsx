@@ -41,11 +41,21 @@ export function GameQuestionDisplay({ question, questionNumber, totalQuestions, 
   const startedRef = useRef(false);
 
   // Reveal sound on mount; reset readiness state when the question changes.
+  // Fallback: even if onAnimationComplete never fires (reduced-motion, tab
+  // hidden during entrance, layout glitch, etc.), force-start after 2.5s so
+  // the timer never gets stuck.
   useEffect(() => {
     SoundEffects.questionReveal();
     startedRef.current = false;
     setAnimationsDone(false);
+    const fallback = setTimeout(() => {
+      if (!startedRef.current) {
+        console.warn("[GameQuestionDisplay] animation-complete fallback fired");
+        setAnimationsDone(true);
+      }
+    }, 2500);
     return () => {
+      clearTimeout(fallback);
       SoundEffects.stopHourglass();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
