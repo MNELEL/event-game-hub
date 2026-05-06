@@ -197,7 +197,17 @@ const GameHost = () => {
           currentQuestionIndex={gameState.currentQuestionIndex}
         />
         <IvrTestCallButton compact />
-      </div>
+        {gameState.status !== "finished" && (
+          <Button
+            variant={locked ? "destructive" : "outline"}
+            size="sm"
+            onClick={toggleLock}
+            className="gap-1"
+            title={locked ? "המשחק נעול — מתקשרים חדשים לא יוכלו להצטרף" : "נעל מתקשרים חדשים"}
+          >
+            {locked ? "🔒 נעול" : "🔓 נעל משחק"}
+          </Button>
+        )}
 
       <HostLiveStatusPanel
         gameStatus={gameState.status as "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished"}
