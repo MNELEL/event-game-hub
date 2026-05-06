@@ -42,16 +42,19 @@ export function GameQuestionDisplay({ question, questionNumber, totalQuestions, 
     if (!hasPlayedReveal.current) {
       SoundEffects.questionReveal();
       hasPlayedReveal.current = true;
+      setTimeout(() => SoundEffects.startHourglass(), 450);
     }
+    return () => {
+      SoundEffects.stopHourglass();
+    };
   }, []);
 
   useEffect(() => {
     if (timeRemaining <= 0) {
+      SoundEffects.stopHourglass();
       SoundEffects.timeUp();
     } else if (timeRemaining <= 3) {
       SoundEffects.timerUrgent();
-    } else if (timeRemaining <= 5) {
-      SoundEffects.timerTick();
     }
   }, [timeRemaining]);
 
