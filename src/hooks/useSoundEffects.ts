@@ -252,13 +252,17 @@ function stopBackgroundMusic() {
 
 // ==================== HOURGLASS LOOP ====================
 let hourglassInterval: ReturnType<typeof setInterval> | null = null;
+let hourglassTimeout: ReturnType<typeof setTimeout> | null = null;
+let hourglassEndTimeout: ReturnType<typeof setTimeout> | null = null;
 let hourglassGain: GainNode | null = null;
 let hourglassNoise: AudioBufferSourceNode | null = null;
+let hourglassToken = 0;
 
-function startHourglass() {
+function startHourglass(durationSeconds?: number) {
   stopHourglass();
   if (!sfxEnabled) return;
   const ctx = audioCtx();
+  const myToken = ++hourglassToken;
 
   // Sand-flowing white noise through bandpass
   const bufferSize = ctx.sampleRate * 2;
@@ -285,30 +289,66 @@ function startHourglass() {
   hourglassGain.connect(ctx.destination);
   hourglassNoise.start();
 
-  // Tick-tock pulse
+  // Tick-tock pulse — accelerates as time runs out so it ends in sync
+  const startMs = Date.now();
+  const totalMs = durationSeconds && durationSeconds > 0 ? durationSeconds * 1000 : null;
   let beat = 0;
-  const tick = () => {
-    if (!hourglassGain) return;
+
+  const scheduleNext = () => {
+    if (myToken !== hourglassToken) return;
     if (beat % 2 === 0) {
       playTone(1300, 0.025, "square", 0.09);
     } else {
       playTone(580, 0.04, "triangle", 0.07);
     }
     beat++;
+
+    let nextDelay = 500;
+    if (totalMs) {
+      const elapsed = Date.now() - startMs;
+      const remaining = totalMs - elapsed;
+      if (remaining <= 60) {
+        stopHourglass();
+        return;
+      }
+      // Accelerate during last 4 seconds
+      if (remaining < 4000) {
+        nextDelay = Math.max(110, 500 * (remaining / 4000));
+      }
+      if (remaining < nextDelay) nextDelay = remaining;
+    }
+    hourglassTimeout = setTimeout(scheduleNext, nextDelay);
   };
-  tick();
-  hourglassInterval = setInterval(tick, 500);
+  scheduleNext();
+
+  // Hard stop guarantee at end of question
+  if (totalMs) {
+    hourglassEndTimeout = setTimeout(() => {
+      if (myToken === hourglassToken) stopHourglass();
+    }, totalMs + 50);
+  }
 }
 
 function stopHourglass() {
+  hourglassToken++;
   if (hourglassInterval) {
     clearInterval(hourglassInterval);
     hourglassInterval = null;
   }
+  if (hourglassTimeout) {
+    clearTimeout(hourglassTimeout);
+    hourglassTimeout = null;
+  }
+  if (hourglassEndTimeout) {
+    clearTimeout(hourglassEndTimeout);
+    hourglassEndTimeout = null;
+  }
   if (hourglassGain) {
     try {
       const ctx = audioCtx();
-      hourglassGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+      hourglassGain.gain.cancelScheduledValues(ctx.currentTime);
+      hourglassGain.gain.setValueAtTime(hourglassGain.gain.value, ctx.currentTime);
+      hourglassGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
     } catch {}
   }
   const noise = hourglassNoise;
@@ -318,7 +358,7 @@ function stopHourglass() {
   setTimeout(() => {
     try { noise?.stop(); } catch {}
     try { gain?.disconnect(); } catch {}
-  }, 250);
+  }, 200);
 }
 
 // ==================== SOUND EFFECTS ====================
