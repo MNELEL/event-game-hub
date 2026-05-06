@@ -32,7 +32,7 @@ export function ConnectionStatusBanner({ disconnected, reconnecting, onReconnect
               <WifiOff className="w-5 h-5 shrink-0" />
             )}
             <div className="flex-1 text-sm font-bold">
-              {reconnecting ? "מנסה להתחבר מחדש..." : "החיבור אבד — נשמרת במשחק"}
+              {reconnecting ? "מנסה להתחבר מחדש..." : "החיבור אבד — המסך יתעדכן כשנחזור לאוויר"}
             </div>
             <Button
               size="sm"

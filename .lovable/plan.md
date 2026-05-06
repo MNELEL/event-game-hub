@@ -1,80 +1,51 @@
-# Plan
+## Goal
 
-## 1. CI: guard against broad storage policies reappearing
+When a player loses connection, keep the player visually on the **same screen with the same data** they last saw — no flashes back to the lobby, no timer resetting, no blank "המשחק מתחיל בקרוב..." fallback. State should only "catch up" once a real, fresh server update arrives after reconnection.
 
-Add a new GitHub Actions workflow `.github/workflows/storage-rls-guard.yml` that runs on every push/PR touching `supabase/migrations/**` and on a daily schedule.
+## Current behavior (problem)
 
-Steps:
-- Check required secrets `SUPABASE_DB_URL` (or `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) are present; fail with a clear error if not.
-- Run a SQL probe via `psql $SUPABASE_DB_URL -c "..."` (install postgresql-client) that selects from `pg_policy` joined with `pg_class`/`pg_namespace` filtered to `storage.objects`, looking for policies whose `polqual`/`polwithcheck` mention `bucket_id = 'background-music'` or `bucket_id = 'branding-assets'` **without** referencing `owner` / `auth.uid()`.
-- Also blacklist by name the six previously-removed policies (`Authenticated can upload background music`, `…update…`, `…delete…`, `Authenticated upload branding-assets`, `…update…`, `…delete…`).
-- If any forbidden row is returned, print it and `exit 1`.
+- `usePlayerGame` keeps state in React, but several flows can cause visible jumps during a disconnection:
+  1. The local 1-second timer in `PlayerJoin.tsx` keeps decrementing to 0 even while offline → player sees timer expire incorrectly.
+  2. If `refetchGameState` runs and momentarily fails or returns partial data, the UI re-renders with mixed values.
+  3. If the server transitioned (e.g. `question` → `results`) while the player was offline, on reconnect they jump straight to the new screen with no transition / awareness.
+  4. Answer taps while offline silently no-op (`submitAnswer` calls `supabase.functions.invoke` which fails).
 
-This makes future regressions of `storage_branding_music_broad_write` fail the build automatically.
+## Plan
 
-## 2. Hide Yemot integration; surface only the public number
+### 1. Snapshot last-known good state — `src/hooks/usePlayerGame.ts`
 
-- Remove the visible "📞 הגדר ימות" button from `src/components/game/GameLobby.tsx` (lines ~362-374).
-- Keep the `/yemot-setup` route mounted (so admins with the URL can still reach it) but unlinked from any UI.
-- In the lobby, replace the button with a small static info line: `התקשרו ל־0772267604 כדי להצטרף בטלפון` (no dial action — matches the existing static-number rule).
-- Update the IVR welcome flow in `supabase/functions/yemot-ivr/logic.ts` so the very first response a caller hears (when `joined_intro` is unset) plays:
-  1. a configurable greeting audio file (uploaded to `ivr2:sounds/welcome` — see open question below), then
-  2. the TTS line `"הנך מחובר למשחק"`.
+- Add a `lastSnapshotRef` that stores the most recent `PlayerGameState` received from a confirmed realtime/refetch update.
+- Persist the snapshot to `localStorage` (under `player_session_v1_snapshot`) on every successful update so a refresh during a disconnect still restores the last visible screen.
+- Expose `state` to the UI as `disconnected ? snapshot ?? state : state` — i.e. while disconnected we serve the frozen snapshot, ignoring any partial / transient writes.
+- Only update the snapshot when the update came from a real `postgres_changes` payload or a successful `refetchGameState`, never from connection-status side effects.
 
-Implementation: extend `Decision` of `kind: "wait"` to optionally accept a `prefixFile` so `read=` can be rendered as `f-ivr2:sounds/welcome.t-...=joined_intro,...`. Adjust `renderDecision` accordingly and add unit tests in `logic_test.ts`.
+### 2. Freeze the local countdown while disconnected — `src/pages/PlayerJoin.tsx`
 
-## 3. Allow joining at any phase until host "locks" the game
+- Pause the `setInterval` decrementing `localTimer` whenever `state.disconnected` is true.
+- Do not reset `localTimer` from `state.timeRemaining` while disconnected.
+- On reconnect (`disconnected` flips back to false), resync `localTimer` to the fresh `state.timeRemaining`.
 
-Today `join_phone_player` only sets `joined_in_lobby = true` while `status='lobby'` (plus a 30s first-question grace). The new behavior: callers can join at any time and play from the next question onward — until the host explicitly locks the game.
+### 3. Queue answer submissions while offline — `src/hooks/usePlayerGame.ts`
 
-Database migration:
-- Add column `games.locked boolean NOT NULL DEFAULT false`.
-- Update `join_phone_player` so `v_in_lobby := NOT v_game.locked AND v_game.status <> 'finished'`. Drop the start_at grace and first-question recovery branches (no longer needed). Keep the audit log entries.
-- Update `submit_phone_answer` unchanged (still gated by `joined_in_lobby` + `current_question_index` match, so a freshly joined caller simply can't answer questions that already passed).
+- Add a `pendingAnswerRef` that holds the latest tap (`{ questionId, answer, timeTaken, takenAt }`) if `submitAnswer` is called while `disconnected` or while `navigator.onLine === false`.
+- Optimistically set `answerSubmitted: true` so the player sees the "תשובה נשלחה" screen immediately and doesn't re-tap.
+- On successful reconnect (channel `SUBSCRIBED` again), flush the pending answer via `supabase.functions.invoke("submit-answer", …)`. If the server has already moved past that question, drop it silently.
 
-Host UI:
-- Add a "נעל משחק" toggle button near the host controls (`src/pages/GameHost.tsx`). When pressed, it calls `supabase.from('games').update({ locked: true }).eq('id', gameDbId)`. A second press unlocks.
-- Show lock state in `HostLiveStatusPanel`.
+### 4. Smooth transition on reconnect
 
-IVR:
-- Drop the `classifyJoiner` "recovery"/"late" distinction in favor of a simpler `locked`/`unlocked` model. Late joiners admitted mid-game now hear: `"הצטרפת בהצלחה. השאלה הנוכחית כבר החלה — תוכל לענות מהשאלה הבאה."` once, then poll silently with the hourglass loop.
+- When reconnecting and the server's `gameStatus` / `currentQuestionIndex` differ from the snapshot, wait one tick and apply the new state inside an `AnimatePresence` fade rather than a hard swap. This is achieved by keying the top-level `motion.div` in each branch of `PlayerJoin.tsx` on `gameStatus + currentQuestionIndex`, so framer-motion runs its existing fade-in instead of a flash.
 
-## 4. Sync: question must render before timer starts
+### 5. Connection banner copy tweak — `src/components/game/ConnectionStatusBanner.tsx`
 
-Current `GameQuestionDisplay` already calls `startHourglass` after a 1s delay and exposes `onReady?.()`. Wire `onReady` end-to-end:
+- Update banner text to make the "frozen" behavior explicit, e.g. "החיבור אבד — המסך יתעדכן כשנחזור לאוויר" so the player understands why the screen isn't moving.
 
-- `GameQuestionDisplay` calls `onReady?.()` only **after** the entrance animation completes (use `onAnimationComplete` on the question card instead of a fixed 1s `setTimeout`).
-- `GameHost.tsx` passes `onReady={() => game.startTimer()}`. Add a `startTimer()` action to `useGameStore` that flips a `timerRunning` flag the existing 1Hz tick checks before decrementing `time_remaining`.
-- The Supabase `games.time_remaining` countdown only begins after `startTimer()` (host calls `supabase.from('games').update({ time_remaining: question.timeLimit }).eq(...)` inside `startTimer`, then ticks).
-- IVR `logic.ts`: while `status='question'` but `time_remaining === question.timeLimit` AND no caller has been served `qintro` yet, return the intro `read=` (instruction "הקש 1, 2, 3 או 4") only — no hourglass — so the audio doesn't start before the host's screen is ready. The hourglass loop kicks in on the next poll.
+## Files to change
 
-Result: visual question reveal + audio cue + countdown all start in the same frame across host screen and phone callers.
+- `src/hooks/usePlayerGame.ts` — snapshot logic, queued answer, freeze-on-disconnect selector
+- `src/pages/PlayerJoin.tsx` — pause local timer, key motion divs for smooth transitions
+- `src/components/game/ConnectionStatusBanner.tsx` — copy update
 
-## 5. Tests
+## Out of scope
 
-- Extend `supabase/functions/yemot-ivr/logic_test.ts`:
-  - new welcome-prefix file rendering
-  - locked-game rejection
-  - mid-game join → "answer from next question" intro
-  - `qintro` no-hourglass branch when `time_remaining == timeLimit`
-- Update existing tests that asserted the 30s recovery/late text.
-
-## Open question
-
-The user mentioned attaching a welcome audio file ("קובץ שאצרף") but no file was attached. Two options:
-- (a) I scaffold the IVR to play `ivr2:sounds/welcome` and you upload the file to Yemot under that name later, OR
-- (b) you attach the audio now and I include upload instructions / store it in the `background-music` bucket and stream the URL.
-
-I'll proceed with (a) unless you say otherwise.
-
-## Files touched
-
-- `.github/workflows/storage-rls-guard.yml` (new)
-- `src/components/game/GameLobby.tsx`
-- `src/pages/GameHost.tsx`
-- `src/hooks/useGameStore.ts`
-- `src/components/game/GameQuestionDisplay.tsx`
-- `src/components/game/HostLiveStatusPanel.tsx`
-- `supabase/functions/yemot-ivr/logic.ts`
-- `supabase/functions/yemot-ivr/logic_test.ts`
-- new DB migration: add `games.locked`, rewrite `join_phone_player`
+- No DB / RLS / edge-function changes.
+- No new dependencies.
