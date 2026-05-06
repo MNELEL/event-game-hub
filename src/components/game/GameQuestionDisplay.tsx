@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Question, DEFAULT_CATEGORIES } from "@/types/game";
 import { SoundEffects } from "@/hooks/useSoundEffects";
