@@ -290,6 +290,7 @@ const GameHost = () => {
               totalQuestions={gameState.questions.length}
               timeRemaining={gameState.timeRemaining}
               onTimeUp={game.showResults}
+              onReady={() => setQuestionReady(true)}
             />
           </motion.div>
         )}
