@@ -1,0 +1,102 @@
+name: storage-rls-guard
+
+# Fails the build if broad (non-owner-scoped) write policies reappear on the
+# storage.objects table for the background-music or branding-assets buckets.
+# This is the CI counterpart to the previously-fixed
+# `storage_branding_music_broad_write` security finding.
+
+on:
+  push:
+    paths:
+      - "supabase/migrations/**"
+      - ".github/workflows/storage-rls-guard.yml"
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - ".github/workflows/storage-rls-guard.yml"
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  scan:
+    name: scan storage policies
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required secret
+        run: |
+          if [ -z "${SUPABASE_DB_URL}" ]; then
+            echo "::error::Missing required secret SUPABASE_DB_URL. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Install psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+
+      - name: Probe storage.objects RLS policies
+        run: |
+          set -euo pipefail
+          # Forbidden policy names — these existed in the past and must never come back.
+          FORBIDDEN_NAMES=$(cat <<'SQL'
+            SELECT polname
+            FROM pg_policy p
+            JOIN pg_class c ON p.polrelid = c.oid
+            JOIN pg_namespace n ON c.relnamespace = n.oid
+            WHERE n.nspname = 'storage'
+              AND c.relname = 'objects'
+              AND polname IN (
+                'Authenticated can upload background music',
+                'Authenticated can update background music',
+                'Authenticated can delete background music',
+                'Authenticated upload branding-assets',
+                'Authenticated update branding-assets',
+                'Authenticated delete branding-assets'
+              );
+          SQL
+          )
+          BAD=$(psql "$SUPABASE_DB_URL" -tA -c "$FORBIDDEN_NAMES" || true)
+          if [ -n "$BAD" ]; then
+            echo "::error::Forbidden storage policy reappeared:"
+            echo "$BAD"
+            exit 1
+          fi
+
+          # Heuristic: detect any non-SELECT policy on storage.objects scoped only
+          # to bucket_id IN (background-music, branding-assets) without owner / auth.uid() check.
+          BROAD=$(cat <<'SQL'
+            SELECT polname, polcmd,
+                   pg_get_expr(polqual,    polrelid) AS using_expr,
+                   pg_get_expr(polwithcheck, polrelid) AS check_expr
+            FROM pg_policy p
+            JOIN pg_class c ON p.polrelid = c.oid
+            JOIN pg_namespace n ON c.relnamespace = n.oid
+            WHERE n.nspname = 'storage'
+              AND c.relname = 'objects'
+              AND polcmd <> 'r'    -- ignore SELECT
+              AND (
+                COALESCE(pg_get_expr(polqual, polrelid), '')        ILIKE '%background-music%'
+                OR COALESCE(pg_get_expr(polwithcheck, polrelid), '') ILIKE '%background-music%'
+                OR COALESCE(pg_get_expr(polqual, polrelid), '')        ILIKE '%branding-assets%'
+                OR COALESCE(pg_get_expr(polwithcheck, polrelid), '') ILIKE '%branding-assets%'
+              )
+              AND COALESCE(pg_get_expr(polqual, polrelid), '')        NOT ILIKE '%owner%'
+              AND COALESCE(pg_get_expr(polwithcheck, polrelid), '') NOT ILIKE '%owner%'
+              AND COALESCE(pg_get_expr(polqual, polrelid), '')        NOT ILIKE '%auth.uid%'
+              AND COALESCE(pg_get_expr(polwithcheck, polrelid), '') NOT ILIKE '%auth.uid%';
+          SQL
+          )
+          BAD2=$(psql "$SUPABASE_DB_URL" -tA -c "$BROAD" || true)
+          if [ -n "$BAD2" ]; then
+            echo "::error::Broad (non-owner-scoped) storage write policy detected:"
+            echo "$BAD2"
+            exit 1
+          fi
+
+          echo "OK — no broad storage write policies found."

@@ -295,9 +295,9 @@ export function decideIvrResponse(input: DecideInput): Decision {
   if (justJoined && !params.has("joined_intro") && !params.has("recovered_intro")) {
     return {
       kind: "wait",
-      text: `ברוכים הבאים לחידון הטריוויה. הצטרפת בהצלחה. אנא המתן להתחלת המשחק.`,
+      text: `הנך מחובר למשחק. ניתן לענות על השאלות בעת ההצגה על ידי הקשת 1, 2, 3 או 4.`,
       valName: "joined_intro",
-      seconds: 4,
+      seconds: 5,
     };
   }
 
