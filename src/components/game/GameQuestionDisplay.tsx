@@ -9,6 +9,7 @@ type Props = {
   totalQuestions: number;
   timeRemaining: number;
   onTimeUp: () => void;
+  onReady?: () => void;
 };
 
 const answerClasses = [
