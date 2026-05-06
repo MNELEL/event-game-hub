@@ -38,6 +38,12 @@ const GameHost = () => {
   const [pendingStart, setPendingStart] = useState<(() => void) | null>(null);
   const { branding } = useBranding();
   const phonePlayers = usePhonePlayers(game.gameDbId);
+  const [questionReady, setQuestionReady] = useState(false);
+
+  // Reset readiness on every question change / status switch
+  useEffect(() => {
+    setQuestionReady(false);
+  }, [gameState.currentQuestionIndex, gameState.status]);
 
   // Live-track games.start_at across all phases so the host live panel can
   // tell apart "normal" vs "recovery" phone joiners (created_at vs start_at).
