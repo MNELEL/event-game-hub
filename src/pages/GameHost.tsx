@@ -79,35 +79,40 @@ const GameHost = () => {
     }
   }, [questionsLoading, questions.length, gameReady, resumeGameId]);
 
-  // Timer
+  // Timer — only ticks once the question is fully rendered (audio+UI ready)
   useEffect(() => {
     if (gameState.status !== "question" || gameState.timeRemaining <= 0) return;
+    if (!questionReady) return;
     const interval = setInterval(() => game.tick(), 1000);
     return () => clearInterval(interval);
-  }, [gameState.status, gameState.timeRemaining, game.tick]);
+  }, [gameState.status, gameState.timeRemaining, questionReady, game.tick]);
 
-  // Auto show results when timer ends
+  // Auto show results when timer ends — stop hourglass first to avoid leak
   useEffect(() => {
-    if (gameState.status === "question" && gameState.timeRemaining <= 0) {
+    if (gameState.status === "question" && gameState.timeRemaining <= 0 && questionReady) {
+      SoundEffects.stopHourglass();
       game.showResults();
     }
-  }, [gameState.timeRemaining, gameState.status]);
+  }, [gameState.timeRemaining, gameState.status, questionReady]);
 
   const handleNextFromResults = async () => {
+    SoundEffects.stopHourglass();
     if (gameState.settings.showLeaderboardAfterEach) {
       game.showLeaderboard();
     } else {
       const isFinished = await game.nextQuestion();
       if (!isFinished) {
-        setTimeout(() => game.showQuestion(), 100);
+        // Wait for exit animation before mounting next question
+        setTimeout(() => game.showQuestion(), 450);
       }
     }
   };
 
   const handleNextFromLeaderboard = async () => {
+    SoundEffects.stopHourglass();
     const isFinished = await game.nextQuestion();
     if (!isFinished) {
-      setTimeout(() => game.showQuestion(), 100);
+      setTimeout(() => game.showQuestion(), 450);
     }
   };
 
