@@ -208,6 +208,7 @@ const GameHost = () => {
             {locked ? "🔒 נעול" : "🔓 נעל משחק"}
           </Button>
         )}
+      </div>
 
       <HostLiveStatusPanel
         gameStatus={gameState.status as "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished"}
