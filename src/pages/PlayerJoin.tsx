@@ -166,6 +166,7 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <CheckCircle className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-3xl text-game-dark-gold mb-2">שלום {state.playerName}! 👋</h2>
@@ -197,6 +198,7 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="w-full max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Timer bar */}
           <div className="mb-6">
@@ -267,6 +269,7 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <Trophy className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-2xl text-game-dark-gold mb-2">
@@ -283,6 +286,7 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <motion.div
             animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
