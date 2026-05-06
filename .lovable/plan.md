@@ -1,77 +1,31 @@
+## הוספת אודיו של שעון חול במהלך שאלה
 
-## מה משתנה
+### מה ייווסף
+צליל לולאתי של שעון חול (טיק-טק עם תחושת חול שאוזל) שמתנגן במסך השאלה מתחילתה ועד סוף הזמן או עד שהשחקנים עונים. הצליל יושמע במסך המארח (שמשמיע לכולם בחדר) וייעצר אוטומטית כשהזמן נגמר או כשעוברים ל‑results/leaderboard.
 
-### 1. תסריט קולי חדש ב-IVR
-קובץ: `supabase/functions/yemot-ivr/logic.ts`
+### קבצים לעריכה
 
-- **כניסה ראשונה** (במקום "ברוכים הבאים למשחק מגה מוח, נרשמת בשם..."):
-  > "ברוכים הבאים לחידון הטריוויה. להצטרפות למשחק הקש 1."
-  
-  המתקשר חייב להקיש 1 כדי להירשם בפועל. רק אחרי הקשת 1 הוא נכנס ל-DB כשחקן (`join_phone_player` יקרא רק אז, לא בכניסה הראשונית).
+**1. `src/hooks/useSoundEffects.ts`**
+- להוסיף שתי פונקציות חדשות ל‑`SoundEffects`:
+  - `startHourglass()` — מפעיל לולאה סינתטית באמצעות Web Audio API:
+    - "טיק" קצר (square 1200Hz, 30ms) כל ~1 שניה
+    - "טק" עמוק (triangle 600Hz, 50ms) חצי שניה אחר כך
+    - שכבת רעש לבן עדינה דרך BiquadFilter (bandpass ~3kHz) בעוצמה נמוכה — סימולציית חול שזורם
+    - הלולאה מואצת קלות ככל שעובר הזמן (אפשר עם פרמטר `urgencyAt` עתידי, כרגע קצב קבוע)
+  - `stopHourglass()` — עוצר את ה‑interval ומסיר את ה‑gain nodes בצורה חלקה (fade out 200ms)
+- שמירת state ברמת המודול: `hourglassInterval`, `hourglassGain`, `hourglassNoiseSource`
+- יכבדו את `sfxEnabled` ו‑`sfxVolume`
 
-- **בלובי לאחר הצטרפות** (עד שהמארח מתחיל):
-  מנגינת רקע בלולאה במקום שתיקה. ימות תומך ב-`playfile_loop`/`f-` בשילוב עם `read`. נשתמש בקובץ שמע שיועלה לימות (`ivr2:/sounds/lobby-loop.wav`).
+**2. `src/components/game/GameQuestionDisplay.tsx`**
+- ב‑`useEffect` של mount: לקרוא ל‑`SoundEffects.startHourglass()` מיד אחרי ה‑`questionReveal()` (delay ~400ms כדי שלא יתנגש)
+- ב‑cleanup של ה‑effect: `SoundEffects.stopHourglass()`
+- ב‑`useEffect` של `timeRemaining`: כש‑`timeRemaining <= 0` לקרוא ל‑`stopHourglass()` (בנוסף ל‑`timeUp()` הקיים)
+- להסיר את הקריאות ל‑`timerTick`/`timerUrgent` הבודדים, כי הלולאה מחליפה אותם — או להשאיר את `timerUrgent` רק ל‑3 שניות אחרונות לדגש
 
-- **בתחילת שאלה** (במקום "שאלה X מתוך Y, השאלה מוצגת על המסך..."):
-  > "ניתן להקיש כעת"
-  
-  ואז מקבל 1/2/3/4.
+### למה גישה סינתטית ולא קובץ MP3
+- אין תלות בהעלאת assets או ב‑bucket
+- עובד מיד בכל הסביבות (כולל offline mode הקיים)
+- עקבי עם שאר ה‑sound engine של הפרויקט (memory: "Web Audio API for dynamic sound")
 
-- **בזמן המתנה תוך שאלה** (polling ביניים):
-  במקום `read` שקט, מנגן אפקט "שעון חול" בלולאה (`ivr2:/sounds/hourglass-loop.wav`) שמתחלף כשהמארח עובר לשאלה הבאה.
-
-- **בין שאלות** (results/leaderboard):
-  שתיקה רגילה ממשיכה.
-
-### 2. שלב הצטרפות מפורש
-קובץ: `supabase/functions/yemot-ivr/index.ts`
-
-הזרימה החדשה:
-```text
-[שיחה נכנסת]
-   ↓
-ברוכים הבאים לחידון הטריוויה. להצטרפות הקש 1.   (read=join_press)
-   ↓ (הקיש 1)
-join_phone_player(phone)  →  רושם ל-DB
-   ↓
-מנגינת רקע בלובי עד שהמשחק מתחיל
-```
-
-לוגיקה: בודקים אם `params.has("join_press")` ו-`params.get("join_press")==="1"` לפני שקוראים ל-RPC. אם המתקשר עדיין לא הקיש 1 — לא רושמים אותו.
-
-### 3. קבצי שמע
-שני קבצי WAV קצרים שיועלו לימות תחת `ivr2:/sounds/`:
-- `lobby-loop.wav` — מנגינת רקע רגועה (10–15 שניות, לולאה).
-- `hourglass-loop.wav` — צליל שעון חול דק (3–5 שניות, לולאה).
-
-נוסיף ל-`setup-yemot-extension` שלב שמעלה את שני הקבצים האלה אם הם חסרים (`UploadFile` של ימות עם תוכן base64). אם לא נוכל לייצר אותם בקוד, נכלול קישור הורדה בהוראות ונאפשר העלאה ידנית; ב-`logic.ts` נטפל גם במצב שהקבצים חסרים (fallback ל-`silent`).
-
-### 4. תיקון QR שלא חיבר
-קבצים: `src/App.tsx`, `src/pages/PlayerJoin.tsx`
-
-הזרימה הקיימת:
-- `/join?code=ABC` → ניתוב ל-`/play?code=ABC`
-- `PlayerJoin` ממלא את שדה הקוד, אבל המשתמש עדיין צריך להזין שם וללחוץ "הצטרף".
-
-הבעיה: כשהמתקשר סורק QR מצופה שיתחבר אוטומטית, אבל בפועל הוא רואה טופס ריק עם השם.
-
-תיקון:
-- לצרף ל-QR גם פרמטר `auto=1`.
-- ב-`PlayerJoin` כשגם `code` וגם `auto=1` קיימים — להציג קופסת שם בלבד עם autofocus, ולהראות את הקוד כצ'יפ קבוע (לא עריכה).
-- אחרי "הצטרף" השם נשמר ל-`localStorage` כך שביציאה/חזרה לא צריך להזין שוב.
-- אם כבר יש שם ב-`localStorage` והגיע מ-QR — להצטרף אוטומטית בלי לחיצה נוספת.
-
-### 5. עדכון ה-`game_title` שעובר ל-IVR
-קובץ: `supabase/functions/yemot-ivr/index.ts`
-
-ה-title ייעלם מהודעת הפתיחה (כי עכשיו אומרים "חידון הטריוויה" קבוע), אבל יישאר ברלוונטי לכותרת recovery ולהודעת late-joiner.
-
-## פרטים טכניים
-- `read=` של ימות תומך ב-`f-<path>` כפרפיקס לקובץ שמע במקום `t-<text>` ב-TTS. לדוגמה: `read=f-ivr2:/sounds/hourglass-loop=q3,no,1,1,3,No,yes,no,,1.2.3.4,1,Ok,None`.
-- בדיקת ה-`join_press` תתבסס על שם משתנה ייחודי (`join_press`) שנשלח ב-`read=...=join_press,...` ונבדק בקריאה הבאה דרך `params.get("join_press")`.
-- שינוי לוגיקה הפיוור ב-`logic.ts` יעודכן יחד בקובץ הבדיקות `logic_test.ts`.
-
-## מה לא משתנה
-- ה-RPC `join_phone_player` עצמו, ה-DB schema, וה-RLS.
-- מסכי המארח/שחקן בדפדפן (פרט ל-PlayerJoin).
-- מנגנון ה-secret והאימות שתוקן בסבב הקודם.
+### הערה לגבי IVR
+זה משפיע רק על מסך המארח בדפדפן. ה‑`hourglass-loop` של Yemot כבר הוגדר בקוד ה‑IVR בהודעה קודמת ופועל בנפרד עבור המתקשרים בטלפון.
