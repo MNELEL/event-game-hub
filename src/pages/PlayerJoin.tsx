@@ -107,6 +107,7 @@ const PlayerJoin = () => {
   if (!state.connected) {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4" dir="rtl">
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div
           className="parchment-card parchment-border-double rounded-2xl p-8 max-w-sm w-full relative watercolor-corners overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
