@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { useBranding } from "@/hooks/useBranding";
 import { BrandedBackdrop } from "@/components/game/BrandedBackdrop";
+import { ConnectionStatusBanner } from "@/components/game/ConnectionStatusBanner";
 
 const answerClasses = [
   "game-answer-1",
