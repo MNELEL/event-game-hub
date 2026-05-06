@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StartAtDebugPanel } from "@/components/game/StartAtDebugPanel";
 import { ClockSkewDialog, type ClockSkewSeverity } from "@/components/game/ClockSkewDialog";
 import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
+import { SoundEffects } from "@/hooks/useSoundEffects";
 
 const GameHost = () => {
   const navigate = useNavigate();
@@ -37,6 +38,12 @@ const GameHost = () => {
   const [pendingStart, setPendingStart] = useState<(() => void) | null>(null);
   const { branding } = useBranding();
   const phonePlayers = usePhonePlayers(game.gameDbId);
+  const [questionReady, setQuestionReady] = useState(false);
+
+  // Reset readiness on every question change / status switch
+  useEffect(() => {
+    setQuestionReady(false);
+  }, [gameState.currentQuestionIndex, gameState.status]);
 
   // Live-track games.start_at across all phases so the host live panel can
   // tell apart "normal" vs "recovery" phone joiners (created_at vs start_at).
@@ -72,35 +79,40 @@ const GameHost = () => {
     }
   }, [questionsLoading, questions.length, gameReady, resumeGameId]);
 
-  // Timer
+  // Timer — only ticks once the question is fully rendered (audio+UI ready)
   useEffect(() => {
     if (gameState.status !== "question" || gameState.timeRemaining <= 0) return;
+    if (!questionReady) return;
     const interval = setInterval(() => game.tick(), 1000);
     return () => clearInterval(interval);
-  }, [gameState.status, gameState.timeRemaining, game.tick]);
+  }, [gameState.status, gameState.timeRemaining, questionReady, game.tick]);
 
-  // Auto show results when timer ends
+  // Auto show results when timer ends — stop hourglass first to avoid leak
   useEffect(() => {
-    if (gameState.status === "question" && gameState.timeRemaining <= 0) {
+    if (gameState.status === "question" && gameState.timeRemaining <= 0 && questionReady) {
+      SoundEffects.stopHourglass();
       game.showResults();
     }
-  }, [gameState.timeRemaining, gameState.status]);
+  }, [gameState.timeRemaining, gameState.status, questionReady]);
 
   const handleNextFromResults = async () => {
+    SoundEffects.stopHourglass();
     if (gameState.settings.showLeaderboardAfterEach) {
       game.showLeaderboard();
     } else {
       const isFinished = await game.nextQuestion();
       if (!isFinished) {
-        setTimeout(() => game.showQuestion(), 100);
+        // Wait for exit animation before mounting next question
+        setTimeout(() => game.showQuestion(), 450);
       }
     }
   };
 
   const handleNextFromLeaderboard = async () => {
+    SoundEffects.stopHourglass();
     const isFinished = await game.nextQuestion();
     if (!isFinished) {
-      setTimeout(() => game.showQuestion(), 100);
+      setTimeout(() => game.showQuestion(), 450);
     }
   };
 
@@ -278,6 +290,7 @@ const GameHost = () => {
               totalQuestions={gameState.questions.length}
               timeRemaining={gameState.timeRemaining}
               onTimeUp={game.showResults}
+              onReady={() => setQuestionReady(true)}
             />
           </motion.div>
         )}
