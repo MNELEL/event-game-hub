@@ -212,6 +212,10 @@ export function GameQuestionDisplay({ question, questionNumber, totalQuestions, 
               stiffness: 250,
               damping: 18,
             }}
+            onAnimationComplete={() => {
+              // Mark ready only after the LAST answer card's entrance ends.
+              if (i === question.options.length - 1) setAnimationsDone(true);
+            }}
             whileHover={{
               scale: 1.05,
               y: -6,
