@@ -1,43 +1,80 @@
-## סנכרון מלא של שעון החול והמעברים בין שאלות
+# Plan
 
-### 1. שעון החול — סנכרון מדויק (`src/hooks/useSoundEffects.ts`)
+## 1. CI: guard against broad storage policies reappearing
 
-החלפת ה‑`startHourglass()` הקיים בגרסה עם סנכרון לזמן השאלה:
+Add a new GitHub Actions workflow `.github/workflows/storage-rls-guard.yml` that runs on every push/PR touching `supabase/migrations/**` and on a daily schedule.
 
-- **חתימה חדשה**: `startHourglass(durationSeconds?: number)` — מקבל את משך השאלה.
-- **אסימון ייחודי (`hourglassToken`)**: כל קריאה מגדילה token; טיק ישן שכבר מתוזמן ב‑`setTimeout` יבדוק שה‑token עדיין שלו לפני שינגן — מונע חפיפה כששתי שאלות נכנסות מהר.
-- **תזמון דינמי ב‑`setTimeout`** (במקום `setInterval` קבוע): מחשב את ה‑delay הבא לפי הזמן שנשאר.
-- **האצה ב‑4 שניות אחרונות**: ה‑delay בין טיקים מתקצר באופן ליניארי מ‑500ms עד 120ms — תחושת שעון חול שאוזל.
-- **עצירה מובטחת בסוף**: `setTimeout` נוסף ב‑`totalMs + 50` שעוצר את הלולאה גם אם משהו השתבש.
-- **`stopHourglass()` חזק יותר**: מגדיל את ה‑token (פוסל טיקים ממתינים), `cancelScheduledValues` על ה‑gain, ו‑fade out 150ms חלק. מנקה גם `setInterval` ישן (תאימות) וגם `setTimeout` חדש.
+Steps:
+- Check required secrets `SUPABASE_DB_URL` (or `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) are present; fail with a clear error if not.
+- Run a SQL probe via `psql $SUPABASE_DB_URL -c "..."` (install postgresql-client) that selects from `pg_policy` joined with `pg_class`/`pg_namespace` filtered to `storage.objects`, looking for policies whose `polqual`/`polwithcheck` mention `bucket_id = 'background-music'` or `bucket_id = 'branding-assets'` **without** referencing `owner` / `auth.uid()`.
+- Also blacklist by name the six previously-removed policies (`Authenticated can upload background music`, `…update…`, `…delete…`, `Authenticated upload branding-assets`, `…update…`, `…delete…`).
+- If any forbidden row is returned, print it and `exit 1`.
 
-### 2. סנכרון "שאלה מופיעה לפני שהטיימר מתחיל"
+This makes future regressions of `storage_branding_music_broad_write` fail the build automatically.
 
-**`src/components/game/GameQuestionDisplay.tsx`**:
-- הוספת `prop` חדש `onReady?: () => void` שנקרא אחרי שהשאלה מצוירת במלואה (אחרי 800ms — סיום אנימציית הופעת התשובות `0.6 + 3*0.12 ≈ 1s`).
-- מחיקת ההתחלה האוטומטית של `startHourglass()` ב‑mount של הקומפוננטה.
-- במקום זה: `useEffect` שמחכה `setTimeout(800ms)` ואז קורא ל‑`startHourglass(question.timeLimit)` + `onReady?.()`.
-- cleanup: `stopHourglass()` בכל unmount או החלפת שאלה.
+## 2. Hide Yemot integration; surface only the public number
 
-**`src/pages/GameHost.tsx`** (timer effect, שורות 76-80):
-- הוספת state `questionReady` שמתאפס בכל שינוי `currentQuestionIndex`.
-- ה‑interval של `game.tick()` ירוץ רק כש‑`questionReady === true` **וגם** `status === "question"`.
-- מעבירים `onReady={() => setQuestionReady(true)}` ל‑`GameQuestionDisplay`.
-- כך הטיימר על המסך לא יתחיל לרדת לפני שהשאלה מצויירת והאודיו התחיל.
+- Remove the visible "📞 הגדר ימות" button from `src/components/game/GameLobby.tsx` (lines ~362-374).
+- Keep the `/yemot-setup` route mounted (so admins with the URL can still reach it) but unlinked from any UI.
+- In the lobby, replace the button with a small static info line: `התקשרו ל־0772267604 כדי להצטרף בטלפון` (no dial action — matches the existing static-number rule).
+- Update the IVR welcome flow in `supabase/functions/yemot-ivr/logic.ts` so the very first response a caller hears (when `joined_intro` is unset) plays:
+  1. a configurable greeting audio file (uploaded to `ivr2:sounds/welcome` — see open question below), then
+  2. the TTS line `"הנך מחובר למשחק"`.
 
-### 3. סנכרון מעברים שאלה→תוצאות→שאלה הבאה
+Implementation: extend `Decision` of `kind: "wait"` to optionally accept a `prefixFile` so `read=` can be rendered as `f-ivr2:sounds/welcome.t-...=joined_intro,...`. Adjust `renderDecision` accordingly and add unit tests in `logic_test.ts`.
 
-**`GameHost.tsx`**:
-- ב‑effect של "auto show results" (שורות 83-87): להוסיף `SoundEffects.stopHourglass()` ישירות לפני `game.showResults()` — מבטיח שאין דליפת אודיו אם ה‑unmount מתעכב.
-- ב‑`handleNextFromResults` (שורה 95): להגדיל את ה‑delay מ‑100ms ל‑400ms כדי שאנימציית ה‑exit של המסך הקודם תספיק להסתיים לפני שהשאלה הבאה נטענת.
-- אותו טיפול ב‑callback של "next" אחרי leaderboard.
+## 3. Allow joining at any phase until host "locks" the game
 
-### 4. הערות טכניות
-- האצת הטיק תואמת את ה‑`timerUrgent` של 3 שניות אחרונות — אבל עכשיו הוא יושמע פחות פעמים כי הלולאה כבר מהירה. אפשר להסיר את `timerUrgent` או להשאיר לדגש דרמטי. **בוחר להשאיר** כי הוא בתדר שונה ויוצר שכבה.
-- כל ה‑state של שעון החול ברמת המודול (singleton) — ה‑token מבטיח שאין שני instances מקבילים.
-- `timeLimit` לכל שאלה מועבר כפרמטר, כך שאם יש שאלות עם זמנים שונים — הסיום מסונכרן לכל אחת.
+Today `join_phone_player` only sets `joined_in_lobby = true` while `status='lobby'` (plus a 30s first-question grace). The new behavior: callers can join at any time and play from the next question onward — until the host explicitly locks the game.
 
-### קבצים שיתעדכנו
-- `src/hooks/useSoundEffects.ts` — שכתוב `startHourglass`/`stopHourglass`
-- `src/components/game/GameQuestionDisplay.tsx` — `onReady` + תזמון תחילת השעון
-- `src/pages/GameHost.tsx` — gate על הטיימר עד `questionReady`, stopHourglass לפני results, delay ארוך יותר במעבר לשאלה הבאה
+Database migration:
+- Add column `games.locked boolean NOT NULL DEFAULT false`.
+- Update `join_phone_player` so `v_in_lobby := NOT v_game.locked AND v_game.status <> 'finished'`. Drop the start_at grace and first-question recovery branches (no longer needed). Keep the audit log entries.
+- Update `submit_phone_answer` unchanged (still gated by `joined_in_lobby` + `current_question_index` match, so a freshly joined caller simply can't answer questions that already passed).
+
+Host UI:
+- Add a "נעל משחק" toggle button near the host controls (`src/pages/GameHost.tsx`). When pressed, it calls `supabase.from('games').update({ locked: true }).eq('id', gameDbId)`. A second press unlocks.
+- Show lock state in `HostLiveStatusPanel`.
+
+IVR:
+- Drop the `classifyJoiner` "recovery"/"late" distinction in favor of a simpler `locked`/`unlocked` model. Late joiners admitted mid-game now hear: `"הצטרפת בהצלחה. השאלה הנוכחית כבר החלה — תוכל לענות מהשאלה הבאה."` once, then poll silently with the hourglass loop.
+
+## 4. Sync: question must render before timer starts
+
+Current `GameQuestionDisplay` already calls `startHourglass` after a 1s delay and exposes `onReady?.()`. Wire `onReady` end-to-end:
+
+- `GameQuestionDisplay` calls `onReady?.()` only **after** the entrance animation completes (use `onAnimationComplete` on the question card instead of a fixed 1s `setTimeout`).
+- `GameHost.tsx` passes `onReady={() => game.startTimer()}`. Add a `startTimer()` action to `useGameStore` that flips a `timerRunning` flag the existing 1Hz tick checks before decrementing `time_remaining`.
+- The Supabase `games.time_remaining` countdown only begins after `startTimer()` (host calls `supabase.from('games').update({ time_remaining: question.timeLimit }).eq(...)` inside `startTimer`, then ticks).
+- IVR `logic.ts`: while `status='question'` but `time_remaining === question.timeLimit` AND no caller has been served `qintro` yet, return the intro `read=` (instruction "הקש 1, 2, 3 או 4") only — no hourglass — so the audio doesn't start before the host's screen is ready. The hourglass loop kicks in on the next poll.
+
+Result: visual question reveal + audio cue + countdown all start in the same frame across host screen and phone callers.
+
+## 5. Tests
+
+- Extend `supabase/functions/yemot-ivr/logic_test.ts`:
+  - new welcome-prefix file rendering
+  - locked-game rejection
+  - mid-game join → "answer from next question" intro
+  - `qintro` no-hourglass branch when `time_remaining == timeLimit`
+- Update existing tests that asserted the 30s recovery/late text.
+
+## Open question
+
+The user mentioned attaching a welcome audio file ("קובץ שאצרף") but no file was attached. Two options:
+- (a) I scaffold the IVR to play `ivr2:sounds/welcome` and you upload the file to Yemot under that name later, OR
+- (b) you attach the audio now and I include upload instructions / store it in the `background-music` bucket and stream the URL.
+
+I'll proceed with (a) unless you say otherwise.
+
+## Files touched
+
+- `.github/workflows/storage-rls-guard.yml` (new)
+- `src/components/game/GameLobby.tsx`
+- `src/pages/GameHost.tsx`
+- `src/hooks/useGameStore.ts`
+- `src/components/game/GameQuestionDisplay.tsx`
+- `src/components/game/HostLiveStatusPanel.tsx`
+- `supabase/functions/yemot-ivr/logic.ts`
+- `supabase/functions/yemot-ivr/logic_test.ts`
+- new DB migration: add `games.locked`, rewrite `join_phone_player`

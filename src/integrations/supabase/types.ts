@@ -156,6 +156,7 @@ export type Database = {
           created_by: string | null
           current_question_index: number
           id: string
+          locked: boolean
           question_ids: string[]
           settings: Json
           start_at: string | null
@@ -169,6 +170,7 @@ export type Database = {
           created_by?: string | null
           current_question_index?: number
           id?: string
+          locked?: boolean
           question_ids?: string[]
           settings?: Json
           start_at?: string | null
@@ -182,6 +184,7 @@ export type Database = {
           created_by?: string | null
           current_question_index?: number
           id?: string
+          locked?: boolean
           question_ids?: string[]
           settings?: Json
           start_at?: string | null
