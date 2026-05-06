@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StartAtDebugPanel } from "@/components/game/StartAtDebugPanel";
 import { ClockSkewDialog, type ClockSkewSeverity } from "@/components/game/ClockSkewDialog";
 import { IvrTestCallButton } from "@/components/game/IvrTestCallButton";
+import { SoundEffects } from "@/hooks/useSoundEffects";
 
 const GameHost = () => {
   const navigate = useNavigate();
