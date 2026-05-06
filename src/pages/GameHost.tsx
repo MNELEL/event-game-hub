@@ -39,6 +39,31 @@ const GameHost = () => {
   const { branding } = useBranding();
   const phonePlayers = usePhonePlayers(game.gameDbId);
   const [questionReady, setQuestionReady] = useState(false);
+  const [locked, setLocked] = useState(false);
+
+  // Sync locked flag from DB
+  useEffect(() => {
+    if (!game.gameDbId) return;
+    let cancelled = false;
+    const fetchLocked = async () => {
+      const { data } = await supabase
+        .from("games")
+        .select("locked")
+        .eq("id", game.gameDbId)
+        .maybeSingle();
+      if (!cancelled) setLocked(Boolean((data as { locked?: boolean } | null)?.locked));
+    };
+    fetchLocked();
+    const iv = setInterval(fetchLocked, 5000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [game.gameDbId]);
+
+  const toggleLock = async () => {
+    if (!game.gameDbId) return;
+    const next = !locked;
+    setLocked(next);
+    await supabase.from("games").update({ locked: next }).eq("id", game.gameDbId);
+  };
 
   // Reset readiness on every question change / status switch
   useEffect(() => {
