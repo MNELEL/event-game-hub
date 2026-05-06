@@ -9,7 +9,7 @@ import { BrandingProvider } from "@/hooks/useBranding";
 import { useBackgroundMusicLoader } from "@/hooks/useBackgroundMusicLoader";
 import { useThemeLoader } from "@/hooks/useThemeLoader";
 import { OfflineBanner } from "@/components/OfflineBanner";
-import Index from "./pages/Index";
+const Index = lazy(() => import("./pages/Index"));
 const Admin = lazy(() => import("./pages/Admin"));
 const GameHost = lazy(() => import("./pages/GameHost"));
 const PlayerJoin = lazy(() => import("./pages/PlayerJoin"));
