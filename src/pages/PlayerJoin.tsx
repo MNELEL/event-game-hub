@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { useBranding } from "@/hooks/useBranding";
 import { BrandedBackdrop } from "@/components/game/BrandedBackdrop";
+import { ConnectionStatusBanner } from "@/components/game/ConnectionStatusBanner";
 
 const answerClasses = [
   "game-answer-1",
@@ -33,7 +34,7 @@ const PlayerJoin = () => {
   useEffect(() => {
     if (codeFromUrl) setGameCode(codeFromUrl);
   }, [codeFromUrl]);
-  const { state, joinGame, submitAnswer } = usePlayerGame();
+  const { state, joinGame, submitAnswer, reconnect } = usePlayerGame();
   const { toast } = useToast();
 
   // Sync local timer with server time and run local countdown
@@ -106,6 +107,7 @@ const PlayerJoin = () => {
   if (!state.connected) {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4" dir="rtl">
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div
           className="parchment-card parchment-border-double rounded-2xl p-8 max-w-sm w-full relative watercolor-corners overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
@@ -165,6 +167,7 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <CheckCircle className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-3xl text-game-dark-gold mb-2">שלום {state.playerName}! 👋</h2>
@@ -196,6 +199,7 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex flex-col items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="w-full max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Timer bar */}
           <div className="mb-6">
@@ -266,6 +270,7 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <Trophy className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-2xl text-game-dark-gold mb-2">
@@ -282,6 +287,7 @@ const PlayerJoin = () => {
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
         <BrandedBackdrop logo />
+        <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <motion.div
             animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
