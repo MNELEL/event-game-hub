@@ -360,9 +360,15 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
         <p className="text-game-dark-gold/50 text-sm mt-3">{questionsCount} שאלות מוכנות</p>
 
         {!graceCountdown && (
-          <div className="mt-4 text-game-dark-gold/70 text-sm">
-            <Phone className="inline w-4 h-4 ml-1" />
-            להצטרפות בטלפון חייגו <span dir="ltr" className="font-mono font-bold">077-2267604</span>
+          <div className="mt-4 parchment-card parchment-border-double rounded-xl px-5 py-3 inline-block">
+            <p className="text-game-dark-gold font-serif text-base md:text-lg font-bold mb-1">
+              ✨ כל האורחים מוזמנים להוציא טלפונים ולהתחבר ✨
+            </p>
+            <div className="text-game-dark-gold/80 text-sm flex items-center justify-center gap-2">
+              <Phone className="w-4 h-4" />
+              <span>חייגו</span>
+              <span dir="ltr" className="font-mono font-bold text-base">077-2267604</span>
+            </div>
           </div>
         )}
       </motion.div>
