@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePlayerGame } from "@/hooks/usePlayerGame";
-import { Wifi, Loader2, CheckCircle, Clock, Trophy } from "lucide-react";
+import { Wifi, Loader2, CheckCircle, Clock, Trophy, Hash, User, Sparkles, Home, Share2, Copy, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import { useBranding } from "@/hooks/useBranding";
