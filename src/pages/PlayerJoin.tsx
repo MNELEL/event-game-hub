@@ -178,7 +178,7 @@ const PlayerJoin = () => {
     const shareUrl = gameCode
       ? `${window.location.origin}/join?code=${gameCode}&auto=1`
       : "";
-    const [showShare, setShowShare] = [undefined, undefined] as any; // placeholder removed below
+    
     return (
       <div className="min-h-screen game-gradient flex items-center justify-center p-4 py-8" dir="rtl">
         <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
