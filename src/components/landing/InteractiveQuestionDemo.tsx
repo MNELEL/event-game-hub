@@ -116,7 +116,7 @@ function DemoBody({ fullscreen, onOpenFullscreen }: DemoBodyProps) {
     setPhase("idle");
   };
 
-  const switchType = (t: QType) => {
+  const switchType = (t: DemoQType) => {
     reset();
     setType(t);
   };
@@ -130,7 +130,8 @@ function DemoBody({ fullscreen, onOpenFullscreen }: DemoBodyProps) {
       {/* Type tabs */}
       <div className="flex flex-wrap justify-center gap-2 mb-4">
         {ORDER.map((t) => {
-          const Icon = QUESTIONS[t].icon;
+          const Icon = ICONS[t];
+          const qq = questions.find((x) => x.qid === t);
           const active = t === type;
           return (
             <button
@@ -143,7 +144,7 @@ function DemoBody({ fullscreen, onOpenFullscreen }: DemoBodyProps) {
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
-              {QUESTIONS[t].label}
+              {qq?.label || t}
             </button>
           );
         })}
