@@ -6,6 +6,7 @@ import {
   ShieldCheck, WifiOff, BarChart3, PartyPopper, Check,
   Phone, Mail, ArrowLeft, PlayCircle,
 } from "lucide-react";
+import InteractiveQuestionDemo from "@/components/landing/InteractiveQuestionDemo";
 
 const audiences = [
   "חתונות", "בר/בת מצווה", "ימי הולדת", "גיבושי חברה", "כנסים", "מסיבות רווקות/ים",
@@ -57,6 +58,7 @@ const faqs = [
   { q: "האם המשחק עובד בעברית?", a: "כן, ממשק עברית מלא RTL, כולל תמיכה בכל כיווני השפה." },
   { q: "מה קורה אם האינטרנט נופל באולם?", a: "יש מצב אופליין מובנה — המשחק ממשיך לרוץ ומתסנכרן כשהחיבור חוזר." },
   { q: "אפשר לשנות את השאלות?", a: "בוודאי. עורך שאלות מלא, יבוא מקובץ, ושכפול שאלות קיימות." },
+  { q: "אילו סוגי שאלות אפשר להוסיף?", a: "טקסט, תמונה, וידאו, ונכון/לא נכון. נסו את הדמו האינטראקטיבי בדף — כולל צלילים, טיימר ופידבק חי." },
 ];
 
 export default function Landing() {
@@ -91,6 +93,7 @@ export default function Landing() {
         <nav className="hidden md:flex items-center gap-6 text-sm text-game-dark-gold/80">
           <a href="#how" className="hover:text-game-dark-gold">איך זה עובד</a>
           <a href="#features" className="hover:text-game-dark-gold">תכונות</a>
+          <a href="#demo" className="hover:text-game-dark-gold">דמו</a>
           <a href="#pricing" className="hover:text-game-dark-gold">מחירים</a>
           <a href="#faq" className="hover:text-game-dark-gold">שאלות</a>
         </nav>
@@ -187,6 +190,9 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      {/* INTERACTIVE DEMO */}
+      <InteractiveQuestionDemo />
 
       {/* TESTIMONIALS */}
       <section className="relative z-10 max-w-6xl mx-auto px-6 py-16">
