@@ -17,7 +17,8 @@ import { exportStandaloneHTML } from "@/utils/exportStandaloneHTML";
 import { useBranding } from "@/hooks/useBranding";
 import { BrandingEditor } from "@/components/game/BrandingEditor";
 import { BackgroundMusicManager } from "@/components/game/BackgroundMusicManager";
-import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette, Music } from "lucide-react";
+import { DemoQuestionsEditor } from "@/components/admin/DemoQuestionsEditor";
+import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette, Music, Sparkles } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <Tabs defaultValue="questions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 h-12">
+          <TabsList className="grid w-full grid-cols-7 h-12">
             <TabsTrigger value="questions" className="gap-2 font-display">
               <List className="w-4 h-4" />
               שאלות ({store.questions.length})
@@ -91,6 +92,10 @@ const Admin = () => {
             <TabsTrigger value="games" className="gap-2 font-display">
               <Gamepad2 className="w-4 h-4" />
               משחקים
+            </TabsTrigger>
+            <TabsTrigger value="demo" className="gap-2 font-display">
+              <Sparkles className="w-4 h-4" />
+              דמו נחיתה
             </TabsTrigger>
             <TabsTrigger value="branding" className="gap-2 font-display">
               <Palette className="w-4 h-4" />
@@ -131,6 +136,10 @@ const Admin = () => {
 
           <TabsContent value="games">
             <ActiveGamesList />
+          </TabsContent>
+
+          <TabsContent value="demo">
+            <DemoQuestionsEditor />
           </TabsContent>
 
           <TabsContent value="branding">
