@@ -20,6 +20,72 @@ const answerClasses = [
 ];
 const answerLabels = ["1", "2", "3", "4"];
 
+function ShareCard({ code, url }: { code: string; url: string }) {
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "הקישור הועתק", description: "שתפו אותו עם החברים" });
+    } catch {
+      toast({ title: "לא הצלחנו להעתיק", variant: "destructive" });
+    }
+  };
+
+  const share = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "הצטרפו למשחק", text: `קוד המשחק: ${code}`, url });
+      } catch {/* canceled */}
+    } else {
+      copy();
+    }
+  };
+
+  return (
+    <div className="parchment-card parchment-border-double rounded-2xl overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-game-dark-gold font-semibold"
+      >
+        <span className="flex items-center gap-2">
+          <Share2 className="w-4 h-4" /> שתפו עם חברים
+        </span>
+        <motion.span animate={{ rotate: open ? 180 : 0 }}>
+          <ChevronDown className="w-4 h-4" />
+        </motion.span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 pt-0 text-center space-y-3">
+              <div className="bg-white p-3 rounded-xl inline-block border-2 border-double border-game-border-gold">
+                <QRCodeSVG value={url} size={160} level="M" />
+              </div>
+              <div className="font-mono tracking-widest text-2xl text-game-dark-gold">{code}</div>
+              <p className="text-xs text-game-dark-gold/60">סרקו את הקוד או שתפו את הקישור</p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={copy}>
+                  <Copy className="w-4 h-4" /> העתק קישור
+                </Button>
+                <Button variant="gold" size="sm" className="flex-1 gap-1" onClick={share}>
+                  <Share2 className="w-4 h-4" /> שתפו
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 const PlayerJoin = () => {
   const [searchParams] = useSearchParams();
   const { branding } = useBranding();
