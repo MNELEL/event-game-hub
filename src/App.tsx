@@ -10,6 +10,7 @@ import { useBackgroundMusicLoader } from "@/hooks/useBackgroundMusicLoader";
 import { useThemeLoader } from "@/hooks/useThemeLoader";
 import { OfflineBanner } from "@/components/OfflineBanner";
 const Index = lazy(() => import("./pages/Index"));
+const Landing = lazy(() => import("./pages/Landing"));
 const Admin = lazy(() => import("./pages/Admin"));
 const GameHost = lazy(() => import("./pages/GameHost"));
 const PlayerJoin = lazy(() => import("./pages/PlayerJoin"));
@@ -49,7 +50,8 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<RouteFallback />}>
       <Routes>
-        <Route path="/" element={<Index />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/app" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
         <Route path="/host" element={<ProtectedRoute><GameHost /></ProtectedRoute>} />
