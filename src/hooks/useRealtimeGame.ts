@@ -28,11 +28,19 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "players", filter: `game_id=eq.${gameDbId}` },
-        (payload) => {
+        async (payload) => {
+          // Re-fetch from players_public view to avoid receiving secret_token
+          // via realtime payloads (column-level revokes are not enforced by Realtime).
+          const { data } = await supabase
+            .from("players_public")
+            .select("id, name, score")
+            .eq("id", payload.new.id)
+            .maybeSingle();
+          if (!data) return;
           const newPlayer: Player = {
-            id: payload.new.id,
-            name: payload.new.name,
-            score: payload.new.score,
+            id: data.id,
+            name: data.name,
+            score: data.score,
             answers: [],
           };
           setGameState(prev => {
