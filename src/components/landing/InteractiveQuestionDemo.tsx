@@ -8,57 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SoundEffects } from "@/hooks/useSoundEffects";
+import {
+  loadDemoQuestions, DEMO_UPDATED_EVENT,
+  type DemoQType, type DemoQuestion,
+} from "@/data/landingDemo";
 
-type QType = "text" | "image" | "video" | "boolean";
-
-const QUESTIONS: Record<QType, {
-  label: string;
-  icon: any;
-  q: string;
-  media?: { type: "image" | "video"; src: string; alt?: string };
-  options: string[];
-  correct: number;
-}> = {
-  text: {
-    label: "טקסט",
-    icon: Type,
-    q: "מהי בירת ישראל?",
-    options: ["תל אביב", "ירושלים", "חיפה", "באר שבע"],
-    correct: 1,
-  },
-  image: {
-    label: "תמונה",
-    icon: ImageIcon,
-    q: "איזה מבנה מפורסם מופיע בתמונה?",
-    media: {
-      type: "image",
-      src: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&q=70",
-      alt: "מבנה ידוע",
-    },
-    options: ["מגדל אייפל", "פירמידות גיזה", "כיפת הסלע", "טאג' מהאל"],
-    correct: 3,
-  },
-  video: {
-    label: "וידאו",
-    icon: Video,
-    q: "איזו פעילות מופיעה בסרטון?",
-    media: {
-      type: "video",
-      src: "https://cdn.pixabay.com/video/2020/10/24/53029-471960532_tiny.mp4",
-    },
-    options: ["ריקוד", "ספורט", "בישול", "ציור"],
-    correct: 0,
-  },
-  boolean: {
-    label: "נכון/לא נכון",
-    icon: ToggleLeft,
-    q: "החומה הסינית נראית מהחלל בעין רגילה",
-    options: ["נכון", "לא נכון"],
-    correct: 1,
-  },
+const ICONS: Record<DemoQType, any> = {
+  text: Type,
+  image: ImageIcon,
+  video: Video,
+  boolean: ToggleLeft,
 };
 
-const ORDER: QType[] = ["text", "image", "video", "boolean"];
+const ORDER: DemoQType[] = ["text", "image", "video", "boolean"];
 
 interface DemoBodyProps {
   fullscreen?: boolean;
@@ -66,7 +28,8 @@ interface DemoBodyProps {
 }
 
 function DemoBody({ fullscreen, onOpenFullscreen }: DemoBodyProps) {
-  const [type, setType] = useState<QType>("text");
+  const [questions, setQuestions] = useState<DemoQuestion[]>(() => loadDemoQuestions());
+  const [type, setType] = useState<DemoQType>("text");
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [phase, setPhase] = useState<"idle" | "playing" | "ended">("idle");
@@ -75,7 +38,18 @@ function DemoBody({ fullscreen, onOpenFullscreen }: DemoBodyProps) {
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const q = QUESTIONS[type];
+  const q = questions.find((qq) => qq.qid === type) || questions[0];
+
+  // Listen to live edits
+  useEffect(() => {
+    const reload = () => setQuestions(loadDemoQuestions());
+    window.addEventListener(DEMO_UPDATED_EVENT, reload);
+    window.addEventListener("storage", reload);
+    return () => {
+      window.removeEventListener(DEMO_UPDATED_EVENT, reload);
+      window.removeEventListener("storage", reload);
+    };
+  }, []);
 
   // Apply volume to SFX system whenever changed
   useEffect(() => {
