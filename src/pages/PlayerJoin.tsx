@@ -107,58 +107,108 @@ const PlayerJoin = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoJoin, gameCode, name, state.connected, joining]);
 
-  // Not connected yet - show join form
+  // Not connected yet - show join form with onboarding
   if (!state.connected) {
+    const shareUrl = gameCode
+      ? `${window.location.origin}/join?code=${gameCode}&auto=1`
+      : "";
+    const [showShare, setShowShare] = [undefined, undefined] as any; // placeholder removed below
     return (
-      <div className="min-h-screen game-gradient flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen game-gradient flex items-center justify-center p-4 py-8" dir="rtl">
         <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div
-          className="parchment-card parchment-border-double rounded-2xl p-8 max-w-sm w-full relative watercolor-corners overflow-hidden"
+          className="w-full max-w-sm space-y-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="text-center mb-1">
-            <span className="text-4xl">{branding.iconPrimary}</span>
-          </div>
-          <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">{branding.name}</h1>
-          <div className="w-24 mx-auto border-t-2 border-double border-game-border-gold mb-4" />
-          <p className="text-game-dark-gold/60 text-center mb-6">הכניסו קוד וצטרפו לחגיגה של חיוש ✨</p>
-          
-          <div className="space-y-3 mb-4">
-            {codeLocked ? (
-              <div className="bg-game-cream/60 border-2 border-double border-game-border-gold rounded-md text-center py-2 font-mono tracking-widest text-xl text-game-dark-gold">
-                {gameCode}
-              </div>
-            ) : (
+          {/* Back to home */}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1 text-sm text-game-dark-gold/70 hover:text-game-dark-gold transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            לדף הבית
+          </Link>
+
+          {/* Main join card */}
+          <div className="parchment-card parchment-border-double rounded-2xl p-6 relative watercolor-corners overflow-hidden">
+            <div className="text-center mb-1">
+              <span className="text-4xl">{branding.iconPrimary}</span>
+            </div>
+            <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">{branding.name}</h1>
+            <div className="w-24 mx-auto border-t-2 border-double border-game-border-gold mb-4" />
+
+            {/* 3-step explainer */}
+            <ol className="space-y-2 mb-5 text-sm">
+              {[
+                { icon: Hash, title: "הזינו את הקוד", desc: "המנחה יקרין קוד 4-6 תווים על המסך הראשי." },
+                { icon: User, title: "בחרו שם", desc: "השם שלכם יופיע בלוח התוצאות החי." },
+                { icon: Sparkles, title: "התחילו לשחק", desc: "ענו מהר, צברו נקודות וזכו בתואר!" },
+              ].map((s, i) => (
+                <li key={i} className="flex items-start gap-3 bg-white/40 rounded-lg p-2.5 border border-game-border-gold/30">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-game-gold text-game-dark-gold font-bold text-xs shrink-0">
+                    {i + 1}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5 text-game-dark-gold font-semibold">
+                      <s.icon className="w-3.5 h-3.5" />
+                      {s.title}
+                    </div>
+                    <p className="text-xs text-game-dark-gold/70 mt-0.5">{s.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {/* Form */}
+            <div className="space-y-3 mb-4">
+              {codeLocked ? (
+                <div className="bg-game-cream/60 border-2 border-double border-game-border-gold rounded-md text-center py-2 font-mono tracking-widest text-xl text-game-dark-gold">
+                  {gameCode}
+                </div>
+              ) : (
+                <Input
+                  value={gameCode}
+                  onChange={e => setGameCode(e.target.value.toUpperCase())}
+                  placeholder="קוד משחק"
+                  className="bg-white/60 border-game-border-gold/40 text-game-dark-gold text-center text-lg h-12 font-mono tracking-widest"
+                  maxLength={6}
+                  onKeyDown={e => e.key === "Enter" && handleJoin()}
+                />
+              )}
               <Input
-                value={gameCode}
-                onChange={e => setGameCode(e.target.value.toUpperCase())}
-                placeholder="קוד משחק"
-                className="bg-white/60 border-game-border-gold/40 text-game-dark-gold text-center text-lg h-12 font-mono tracking-widest"
-                maxLength={6}
+                autoFocus={codeLocked}
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="השם שלך"
+                className="bg-white/60 border-game-border-gold/40 text-game-dark-gold text-center text-lg h-12"
                 onKeyDown={e => e.key === "Enter" && handleJoin()}
               />
+            </div>
+
+            <Button
+              variant="gold"
+              size="lg"
+              className="w-full gap-2"
+              onClick={handleJoin}
+              disabled={!name.trim() || !gameCode.trim() || joining}
+            >
+              {joining ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wifi className="w-5 h-5" />}
+              {joining ? "מתחבר..." : "הצטרפות למשחק"}
+            </Button>
+
+            {!gameCode && !codeLocked && (
+              <p className="text-xs text-center text-game-dark-gold/60 mt-3">
+                אין לכם קוד? בקשו אותו מהמארגן או חזרו ל
+                <Link to="/" className="text-game-dark-gold underline mx-1">דף הבית</Link>
+              </p>
             )}
-            <Input
-              autoFocus={codeLocked}
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="השם שלך"
-              className="bg-white/60 border-game-border-gold/40 text-game-dark-gold text-center text-lg h-12"
-              onKeyDown={e => e.key === "Enter" && handleJoin()}
-            />
           </div>
-          
-          <Button
-            variant="gold"
-            size="lg"
-            className="w-full gap-2"
-            onClick={handleJoin}
-            disabled={!name.trim() || !gameCode.trim() || joining}
-          >
-            {joining ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wifi className="w-5 h-5" />}
-            {joining ? "מתחבר..." : "הצטרפות למשחק"}
-          </Button>
+
+          {/* Share with friends — only when there's a code */}
+          {gameCode && (
+            <ShareCard code={gameCode} url={shareUrl} />
+          )}
         </motion.div>
       </div>
     );
