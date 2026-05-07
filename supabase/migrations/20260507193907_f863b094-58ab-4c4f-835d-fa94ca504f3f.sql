@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Authenticated can read system alerts" ON public.system_alerts;
