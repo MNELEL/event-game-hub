@@ -37,7 +37,6 @@ export const PRESET_CONFETTI: Record<string, string[]> = {
   ocean:     ["#0284c7", "#06b6d4", "#38bdf8", "#0ea5e9", "#7dd3fc"],
   forest:    ["#2d7a3a", "#4ade80", "#86efac", "#fbbf24", "#a3e635"],
   sunset:    ["#9333ea", "#ec4899", "#f97316", "#fbbf24", "#e879f9"],
-  scifi:     ["#00c8ff", "#0066aa", "#ff6a00", "#ffffff", "#7dd3fc"],
   medical:   ["#00d4ff", "#00a8cc", "#ffffff", "#38bdf8", "#7dd3fc"],
 };
 

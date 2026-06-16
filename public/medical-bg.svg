@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0d1520" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur3">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="blur8">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+  </defs>
+
+  <!-- Base dark background -->
+  <rect width="1200" height="800" fill="#0a1018"/>
+
+  <!-- Subtle grid lines like a medical monitor -->
+  <g stroke="#00d4ff" stroke-opacity="0.04" stroke-width="1">
+    <!-- Horizontal -->
+    <line x1="0" y1="100" x2="1200" y2="100"/>
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="0" y1="400" x2="1200" y2="400"/>
+    <line x1="0" y1="500" x2="1200" y2="500"/>
+    <line x1="0" y1="600" x2="1200" y2="600"/>
+    <line x1="0" y1="700" x2="1200" y2="700"/>
+    <!-- Vertical -->
+    <line x1="150" y1="0" x2="150" y2="800"/>
+    <line x1="300" y1="0" x2="300" y2="800"/>
+    <line x1="450" y1="0" x2="450" y2="800"/>
+    <line x1="600" y1="0" x2="600" y2="800"/>
+    <line x1="750" y1="0" x2="750" y2="800"/>
+    <line x1="900" y1="0" x2="900" y2="800"/>
+    <line x1="1050" y1="0" x2="1050" y2="800"/>
+  </g>
+
+  <!-- Center glow -->
+  <rect width="1200" height="800" fill="url(#glow)"/>
+
+  <!-- Scan line — horizontal sweep effect -->
+  <rect x="0" y="380" width="1200" height="2" fill="#00d4ff" opacity="0.06"/>
+
+  <!-- Corner brackets — medical UI style -->
+  <!-- Top-left -->
+  <g stroke="#00d4ff" stroke-opacity="0.25" stroke-width="1.5" fill="none">
+    <polyline points="30,60 30,30 60,30"/>
+    <polyline points="1140,30 1170,30 1170,60"/>
+    <polyline points="30,740 30,770 60,770"/>
+    <polyline points="1140,770 1170,770 1170,740"/>
+  </g>
+
+  <!-- Medical cross symbols (faint) -->
+  <g fill="#00d4ff" opacity="0.05">
+    <rect x="94" y="90" width="12" height="40"/>
+    <rect x="82" y="102" width="36" height="16"/>
+    <rect x="1094" y="650" width="12" height="40"/>
+    <rect x="1082" y="662" width="36" height="16"/>
+  </g>
+
+  <!-- Heartbeat / ECG line (bottom) -->
+  <polyline
+    points="0,750 120,750 150,750 165,720 180,780 195,730 210,770 225,750 400,750 420,750 435,720 450,780 465,730 480,770 495,750 700,750 715,750 730,720 745,780 760,730 775,770 790,750 1000,750 1015,750 1030,720 1045,780 1060,730 1075,770 1090,750 1200,750"
+    fill="none"
+    stroke="#00d4ff"
+    stroke-width="1.5"
+    stroke-opacity="0.2"
+  />
+
+  <!-- Circular scan rings (like MRI) -->
+  <circle cx="600" cy="400" r="300" fill="none" stroke="#00d4ff" stroke-opacity="0.03" stroke-width="1"/>
+  <circle cx="600" cy="400" r="200" fill="none" stroke="#00d4ff" stroke-opacity="0.04" stroke-width="1"/>
+  <circle cx="600" cy="400" r="100" fill="none" stroke="#00d4ff" stroke-opacity="0.05" stroke-width="1"/>
+
+  <!-- HUD text elements -->
+  <g font-family="monospace" font-size="10" fill="#00d4ff" opacity="0.2">
+    <text x="35" y="25">MEGA MOACH v2.0</text>
+    <text x="35" y="790">DIAGNOSTIC MODE ■ ACTIVE</text>
+    <text x="950" y="25">RES: 1920×1080</text>
+    <text x="1050" y="790">FPS: 60</text>
+  </g>
+
+  <!-- Subtle vignette -->
+  <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+    <stop offset="0%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>
+  </radialGradient>
+  <rect width="1200" height="800" fill="url(#vignette)"/>
+</svg>
