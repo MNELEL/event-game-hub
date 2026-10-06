@@ -20,6 +20,7 @@ const Install = lazy(() => import("./pages/Install"));
 const OfflineGame = lazy(() => import("./pages/OfflineGame"));
 const About = lazy(() => import("./pages/About"));
 const Events = lazy(() => import("./pages/Events"));
+const Siyum = lazy(() => import("./pages/Siyum"));
 const KahootHebrew = lazy(() => import("./pages/KahootHebrew"));
 const BrandingPreview = lazy(() => import("./pages/BrandingPreview"));
 const YemotSetup = lazy(() => import("./pages/YemotSetup"));
@@ -65,6 +66,7 @@ const AppRoutes = () => {
         <Route path="/offline" element={<OfflineGame />} />
         <Route path="/about" element={<About />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/siyum" element={<Siyum />} />
         <Route path="/kahoot-hebrew" element={<KahootHebrew />} />
         <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
         <Route path="/yemot-setup" element={<ProtectedRoute><YemotSetup /></ProtectedRoute>} />
