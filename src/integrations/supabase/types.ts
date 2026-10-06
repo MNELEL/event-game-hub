@@ -88,6 +88,7 @@ export type Database = {
           about_description: string
           background_image_url: string | null
           created_at: string
+          event_at: string | null
           full_name: string
           hero_image_url: string | null
           hero_subtitle: string
@@ -97,6 +98,7 @@ export type Database = {
           is_active: boolean
           lobby_subtitle: string
           logo_url: string | null
+          music_lead_minutes: number
           name: string
           owner_id: string | null
           phone: string
@@ -110,6 +112,7 @@ export type Database = {
           about_description?: string
           background_image_url?: string | null
           created_at?: string
+          event_at?: string | null
           full_name?: string
           hero_image_url?: string | null
           hero_subtitle?: string
@@ -119,6 +122,7 @@ export type Database = {
           is_active?: boolean
           lobby_subtitle?: string
           logo_url?: string | null
+          music_lead_minutes?: number
           name?: string
           owner_id?: string | null
           phone?: string
@@ -132,6 +136,7 @@ export type Database = {
           about_description?: string
           background_image_url?: string | null
           created_at?: string
+          event_at?: string | null
           full_name?: string
           hero_image_url?: string | null
           hero_subtitle?: string
@@ -141,6 +146,7 @@ export type Database = {
           is_active?: boolean
           lobby_subtitle?: string
           logo_url?: string | null
+          music_lead_minutes?: number
           name?: string
           owner_id?: string | null
           phone?: string
@@ -605,6 +611,7 @@ export type Database = {
           about_description: string
           background_image_url: string | null
           created_at: string
+          event_at: string | null
           full_name: string
           hero_image_url: string | null
           hero_subtitle: string
@@ -614,6 +621,7 @@ export type Database = {
           is_active: boolean
           lobby_subtitle: string
           logo_url: string | null
+          music_lead_minutes: number
           name: string
           owner_id: string | null
           phone: string
