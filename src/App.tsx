@@ -9,6 +9,7 @@ import { BrandingProvider } from "@/hooks/useBranding";
 import { useBackgroundMusicLoader } from "@/hooks/useBackgroundMusicLoader";
 import { useThemeLoader } from "@/hooks/useThemeLoader";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { RouteSeo } from "@/components/RouteSeo";
 const Index = lazy(() => import("./pages/Index"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -49,6 +50,7 @@ const AppRoutes = () => {
   useThemeLoader();
   return (
     <Suspense fallback={<RouteFallback />}>
+      <RouteSeo />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/app" element={<Index />} />
