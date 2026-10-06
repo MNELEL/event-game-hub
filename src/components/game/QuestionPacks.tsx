@@ -32,9 +32,9 @@ export function QuestionPacks({ onAdd, existingTexts, defaultTimeLimit }: Props)
     <Card className="p-6 space-y-4">
       <div className="flex items-center gap-2">
         <Package className="w-5 h-5 text-primary" />
-        <h2 className="font-display text-xl font-bold">חבילות שאלות מוכנות</h2>
+        <h2 className="font-display text-xl font-bold">מאגר שאלות ידועות ומאושרות</h2>
       </div>
-      <p className="text-sm text-muted-foreground">הוסיפו חבילה שלמה למאגר בלחיצה אחת. שאלות שכבר קיימות לא יוכפלו.</p>
+      <p className="text-sm text-muted-foreground">הוסיפו חבילה שלמה למאגר בלחיצה אחת. השאלות מאושרות מראש ותמיד זמינות למשחק, ואפשר לערוך או לשנות אותן בלשונית "שאלות". שאלות שכבר קיימות לא יוכפלו.</p>
       <div className="grid gap-3 sm:grid-cols-2">
         {QUESTION_PACKS.map((p) => (
           <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border-2 border-double border-border p-3">

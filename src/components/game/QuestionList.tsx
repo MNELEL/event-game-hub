@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Question, DEFAULT_CATEGORIES } from "@/types/game";
-import { Trash2, Search, Filter, Pencil, Sparkles } from "lucide-react";
+import { Trash2, Search, Filter, Pencil, Sparkles, CheckCircle2, Flag } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -23,7 +23,7 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
   const [filterDifficulty, setFilterDifficulty] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [view, setView] = useState<"all" | "picked" | "unpicked">("all");
+  const [view, setView] = useState<"all" | "picked" | "unpicked" | "pending" | "flagged">("all");
 
   const categoryIds = Array.from(new Set([...DEFAULT_CATEGORIES.map(c => c.id), ...questions.map(q => q.category)]));
   const pickedCount = questions.filter(q => q.inNextGame).length;
@@ -34,7 +34,7 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
     const matchDiff = filterDifficulty === "all" || (filterDifficulty === "none" ? !q.difficulty : q.difficulty === filterDifficulty);
     const d = q.createdAt ? q.createdAt.slice(0, 10) : "";
     const matchDate = (!fromDate || (d && d >= fromDate)) && (!toDate || (d && d <= toDate));
-    const matchView = view === "all" || (view === "picked" ? q.inNextGame : !q.inNextGame);
+    const matchView = view === "all" || (view === "pending" || view === "flagged" ? q.reviewStatus === view : view === "picked" ? q.inNextGame : !q.inNextGame);
     return matchSearch && matchCategory && matchDiff && matchDate && matchView;
   });
 
@@ -62,7 +62,7 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
-        {([["all", `כל השאלות (${questions.length})`], ["picked", `נבחרו למשחק הבא (${pickedCount})`], ["unpicked", `לא נבחרו (${questions.length - pickedCount})`]] as const).map(([v, l]) => (
+        {([["pending", `ממתינות לאישור (${questions.filter(q => q.reviewStatus === "pending").length})`], ["flagged", `סומנו כשגויות (${questions.filter(q => q.reviewStatus === "flagged").length})`], ["all", `כל השאלות (${questions.length})`], ["picked", `נבחרו למשחק הבא (${pickedCount})`], ["unpicked", `לא נבחרו (${questions.length - pickedCount})`]] as const).map(([v, l]) => (
           <Button key={v} size="sm" variant={view === v ? "default" : "outline"} onClick={() => setView(v)}>{l}</Button>
         ))}
         {pickedCount > 0 && (
@@ -117,14 +117,36 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{q.text}</p>
+                {(view === "pending" || view === "flagged" || q.reviewStatus !== "approved") && (
+                  <p className="text-sm mt-1">
+                    תשובה מסומנת כנכונה: <span className="font-bold text-primary">{q.options[q.correctAnswer]}</span>
+                    <span className="text-muted-foreground"> · שאר התשובות: {q.options.filter((_, i) => i !== q.correctAnswer).join(" / ")}</span>
+                  </p>
+                )}
+                {q.reviewStatus === "flagged" && q.reviewNote && <p className="text-xs text-destructive mt-1">הערה: {q.reviewNote}</p>}
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant="secondary" className="text-xs">{getCategoryName(q.category)}</Badge>
                   <Badge variant="outline" className="text-xs">{typeLabels[q.type]}</Badge>
                   {q.difficulty && <Badge variant="outline" className="text-xs">{diffLabels[q.difficulty]}</Badge>}
                   {q.source === "ai" && <Badge variant="outline" className="text-xs gap-1"><Sparkles className="w-3 h-3" />AI</Badge>}
+                  {q.reviewStatus === "pending" && <Badge variant="outline" className="text-xs border-warning text-warning">ממתינה לאישור</Badge>}
+                  {q.reviewStatus === "flagged" && <Badge variant="destructive" className="text-xs">תשובה שגויה</Badge>}
                   <span className="text-xs text-muted-foreground">{q.timeLimit}s · {q.points}pts</span>
                 </div>
               </div>
+              {q.reviewStatus !== "approved" && (
+                <Button variant="outline" size="sm" className="gap-1" onClick={() => onUpdate(q.id, { reviewStatus: "approved", reviewNote: "" })}>
+                  <CheckCircle2 className="w-4 h-4 text-success" />התשובה נכונה – אשר
+                </Button>
+              )}
+              {q.reviewStatus !== "flagged" && (
+                <Button variant="ghost" size="sm" className="gap-1 text-destructive" onClick={() => {
+                  const note = window.prompt("מה שגוי בתשובה? (לא חובה)") ?? "";
+                  onUpdate(q.id, { reviewStatus: "flagged", reviewNote: note, inNextGame: false });
+                }}>
+                  <Flag className="w-4 h-4" />ניקוד שגוי
+                </Button>
+              )}
               <Button variant="ghost" size="icon" onClick={() => setEditingQuestion({ ...q })}>
                 <Pencil className="w-4 h-4" />
               </Button>

@@ -20,6 +20,8 @@ export type Question = {
   difficulty?: "easy" | "medium" | "hard";
   source?: string;
   inNextGame?: boolean;
+  reviewStatus?: "approved" | "pending" | "flagged";
+  reviewNote?: string;
   createdAt?: string;
 };
 

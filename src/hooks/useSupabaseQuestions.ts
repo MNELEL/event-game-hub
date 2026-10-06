@@ -27,6 +27,8 @@ function dbToQuestion(row: any): Question {
     difficulty: row.difficulty || undefined,
     source: row.source || "manual",
     inNextGame: !!row.in_next_game,
+    reviewStatus: row.review_status || "approved",
+    reviewNote: row.review_note || undefined,
     createdAt: row.created_at,
   };
 }
@@ -47,6 +49,8 @@ function questionToDb(q: Question, index: number) {
     difficulty: q.difficulty ?? null,
     source: q.source ?? "manual",
     in_next_game: q.inNextGame ?? false,
+    review_status: q.reviewStatus ?? "approved",
+    review_note: q.reviewNote ?? null,
   };
 }
 
@@ -183,6 +187,8 @@ export function useSupabaseQuestions() {
     if (updates.points !== undefined) dbUpdates.points = updates.points;
     if (updates.mediaUrl !== undefined) dbUpdates.media_url = updates.mediaUrl;
     if (updates.inNextGame !== undefined) dbUpdates.in_next_game = updates.inNextGame;
+    if (updates.reviewStatus !== undefined) dbUpdates.review_status = updates.reviewStatus;
+    if (updates.reviewNote !== undefined) dbUpdates.review_note = updates.reviewNote;
     if (updates.difficulty !== undefined) dbUpdates.difficulty = updates.difficulty;
     if (updates.type !== undefined) dbUpdates.media_type = updates.type === "text" ? "none" : updates.type;
 

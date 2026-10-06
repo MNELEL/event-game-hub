@@ -42,11 +42,11 @@ export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (
     let n = 0;
     for (const i of [...selected].sort((a, b) => a - b)) {
       const g = results[i];
-      await onAdd({ id: crypto.randomUUID().slice(0, 8), type: "text", category: g.category, text: g.text, options: g.options, correctAnswer: g.correctAnswer, timeLimit: defaultTimeLimit, points: 100, difficulty, source: "ai", inNextGame: addToGame });
+      await onAdd({ id: crypto.randomUUID().slice(0, 8), type: "text", category: g.category, text: g.text, options: g.options, correctAnswer: g.correctAnswer, timeLimit: defaultTimeLimit, points: 100, difficulty, source: "ai", inNextGame: addToGame, reviewStatus: "pending" });
       n++;
     }
     setSaving(false);
-    toast.success(addToGame ? `נוספו ${n} שאלות למאגר ולמשחק הבא` : `נוספו ${n} שאלות למאגר`);
+    toast.success(`נוספו ${n} שאלות – ממתינות לאישור בלשונית "שאלות" לפני שישמשו במשחק`);
     setResults([]); setSelected(new Set());
   };
 
@@ -65,7 +65,7 @@ export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (
           <Input value={eventType} onChange={(e) => setEventType(e.target.value)} maxLength={100} placeholder="למשל: בת מצווה, ערב גיבוש, יום הולדת" />
         </label>
         <div className="flex flex-wrap gap-1">
-          {["בת מצווה", "בר מצווה", "חתונה", "יום הולדת", "ערב גיבוש", "כנס", "משפחתי"].map((t) => (
+          {["בת מצווה", "בר מצווה", "חתונה", "סיום מסכת", "מסיבת סיום", "יום הולדת", "כנס משפחתי"].map((t) => (
             <Button key={t} type="button" size="sm" variant={eventType === t ? "default" : "outline"} onClick={() => setEventType(t)}>{t}</Button>
           ))}
         </div>

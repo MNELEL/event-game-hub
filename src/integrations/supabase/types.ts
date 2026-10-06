@@ -428,6 +428,8 @@ export type Database = {
           order_index: number
           owner_id: string | null
           points: number
+          review_note: string | null
+          review_status: string
           source: string
           text: string
           time_limit: number
@@ -446,6 +448,8 @@ export type Database = {
           order_index?: number
           owner_id?: string | null
           points?: number
+          review_note?: string | null
+          review_status?: string
           source?: string
           text: string
           time_limit?: number
@@ -464,6 +468,8 @@ export type Database = {
           order_index?: number
           owner_id?: string | null
           points?: number
+          review_note?: string | null
+          review_status?: string
           source?: string
           text?: string
           time_limit?: number
