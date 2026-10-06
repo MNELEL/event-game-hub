@@ -16,6 +16,8 @@ export type BrandingValues = {
   logoUrl: string;
   heroImageUrl: string;
   backgroundImageUrl: string;
+  seoTitle: string;
+  seoDescription: string;
 };
 
 const fallback: BrandingValues = {
@@ -32,6 +34,8 @@ const fallback: BrandingValues = {
   logoUrl: "",
   heroImageUrl: "",
   backgroundImageUrl: "",
+  seoTitle: "",
+  seoDescription: "",
 };
 
 type Ctx = {
@@ -63,6 +67,8 @@ function rowToValues(row: any): BrandingValues {
     logoUrl: row.logo_url ?? "",
     heroImageUrl: row.hero_image_url ?? "",
     backgroundImageUrl: row.background_image_url ?? "",
+    seoTitle: row.seo_title ?? "",
+    seoDescription: row.seo_description ?? "",
   };
 }
 
@@ -110,6 +116,8 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
         logo_url: v.logoUrl || null,
         hero_image_url: v.heroImageUrl || null,
         background_image_url: v.backgroundImageUrl || null,
+        seo_title: v.seoTitle.trim() || null,
+        seo_description: v.seoDescription.trim() || null,
       })
       .eq("is_active", true);
     if (error) return { error: error.message };

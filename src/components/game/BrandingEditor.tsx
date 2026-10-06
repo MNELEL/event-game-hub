@@ -24,6 +24,8 @@ const FIELDS: Array<{
   { key: "heroSubtitle", label: "כותרת משנה - דף בית" },
   { key: "lobbySubtitle", label: "כותרת משנה - לובי" },
   { key: "aboutDescription", label: "תיאור בדף האודות", textarea: true },
+  { key: "seoTitle", label: "כותרת האתר (בלשונית הדפדפן ובגוגל)", hint: "ריק = ברירת מחדל" },
+  { key: "seoDescription", label: "תיאור מטא (מופיע בתוצאות החיפוש)", hint: "ריק = ברירת מחדל", textarea: true },
 ];
 
 export function BrandingEditor() {
