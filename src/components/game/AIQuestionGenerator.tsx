@@ -40,7 +40,7 @@ export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (
     let n = 0;
     for (const i of [...selected].sort((a, b) => a - b)) {
       const g = results[i];
-      await onAdd({ id: crypto.randomUUID().slice(0, 8), type: "text", category: g.category, text: g.text, options: g.options, correctAnswer: g.correctAnswer, timeLimit: defaultTimeLimit, points: 1000 });
+      await onAdd({ id: crypto.randomUUID().slice(0, 8), type: "text", category: g.category, text: g.text, options: g.options, correctAnswer: g.correctAnswer, timeLimit: defaultTimeLimit, points: 100 });
       n++;
     }
     setSaving(false);
