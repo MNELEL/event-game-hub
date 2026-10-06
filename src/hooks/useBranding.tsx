@@ -100,7 +100,7 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
   useEffect(() => { load(); }, [load]);
 
   const save = useCallback(async (v: BrandingValues) => {
-    const { error } = await (supabase as any)
+    const { data, error } = await (supabase as any)
       .from("branding")
       .update({
         name: v.name,
@@ -119,8 +119,10 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
         seo_title: v.seoTitle.trim() || null,
         seo_description: v.seoDescription.trim() || null,
       })
-      .eq("is_active", true);
+      .eq("is_active", true)
+      .select("id");
     if (error) return { error: error.message };
+    if (!data || data.length === 0) return { error: "אין לך הרשאה לשמור את המיתוג – רק בעל האתר יכול לערוך אותו" };
     setValues(v);
     try { localStorage.setItem("branding_cache", JSON.stringify(v)); } catch {}
     return { error: null };
