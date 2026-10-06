@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Question, DEFAULT_CATEGORIES } from "@/types/game";
-import { Trash2, Search, Filter, Pencil, Sparkles } from "lucide-react";
+import { Trash2, Search, Filter, Pencil, Sparkles, CheckCircle2, Flag } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -62,7 +62,7 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
-        {([["all", `כל השאלות (${questions.length})`], ["picked", `נבחרו למשחק הבא (${pickedCount})`], ["unpicked", `לא נבחרו (${questions.length - pickedCount})`]] as const).map(([v, l]) => (
+        {([["pending", `ממתינות לאישור (${questions.filter(q => q.reviewStatus === "pending").length})`], ["flagged", `סומנו כשגויות (${questions.filter(q => q.reviewStatus === "flagged").length})`], ["all", `כל השאלות (${questions.length})`], ["picked", `נבחרו למשחק הבא (${pickedCount})`], ["unpicked", `לא נבחרו (${questions.length - pickedCount})`]] as const).map(([v, l]) => (
           <Button key={v} size="sm" variant={view === v ? "default" : "outline"} onClick={() => setView(v)}>{l}</Button>
         ))}
         {pickedCount > 0 && (

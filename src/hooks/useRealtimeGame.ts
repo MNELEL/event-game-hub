@@ -111,7 +111,8 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
   // Create game session in DB
   const createGame = useCallback(async () => {
     const code = generateGameCode();
-    let gameQuestions = [...questions];
+    // Only approved questions may be used in a game
+    let gameQuestions = questions.filter(q => (q.reviewStatus ?? "approved") === "approved");
     const picked = gameQuestions.filter(q => q.inNextGame);
     if (picked.length > 0) {
       // Host hand-picked questions for this game: use exactly those
