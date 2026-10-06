@@ -24,7 +24,7 @@ export const DEFAULT_DEMO_QUESTIONS: DemoQuestion[] = [
     media: {
       type: "image",
       src: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&q=70",
-      alt: "מבנה ידוע",
+      alt: "תמונה של מבנה מפורסם — נחשו מהו",
     },
     options: ["מגדל אייפל", "פירמידות גיזה", "כיפת הסלע", "טאג' מהאל"],
     correct: 3,
