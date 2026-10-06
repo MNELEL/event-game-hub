@@ -19,6 +19,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Install = lazy(() => import("./pages/Install"));
 const OfflineGame = lazy(() => import("./pages/OfflineGame"));
 const About = lazy(() => import("./pages/About"));
+const Events = lazy(() => import("./pages/Events"));
 const BrandingPreview = lazy(() => import("./pages/BrandingPreview"));
 const YemotSetup = lazy(() => import("./pages/YemotSetup"));
 const IvrGuide = lazy(() => import("./pages/IvrGuide"));
@@ -62,6 +63,7 @@ const AppRoutes = () => {
         <Route path="/install" element={<Install />} />
         <Route path="/offline" element={<OfflineGame />} />
         <Route path="/about" element={<About />} />
+        <Route path="/events" element={<Events />} />
         <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
         <Route path="/yemot-setup" element={<ProtectedRoute><YemotSetup /></ProtectedRoute>} />
         <Route path="/ivr-guide" element={<ProtectedRoute><IvrGuide /></ProtectedRoute>} />

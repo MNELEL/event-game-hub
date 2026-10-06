@@ -18,8 +18,9 @@ import { useBranding } from "@/hooks/useBranding";
 import { BrandingEditor } from "@/components/game/BrandingEditor";
 import { BackgroundMusicManager } from "@/components/game/BackgroundMusicManager";
 import { DemoQuestionsEditor } from "@/components/admin/DemoQuestionsEditor";
+import { AnnouncementsEditor } from "@/components/admin/AnnouncementsEditor";
 import { AIQuestionGenerator } from "@/components/game/AIQuestionGenerator";
-import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette, Music, Sparkles } from "lucide-react";
+import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette, Music, Sparkles, Megaphone } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -106,6 +107,10 @@ const Admin = () => {
               <Music className="w-4 h-4" />
               מוזיקה
             </TabsTrigger>
+            <TabsTrigger value="announcements" className="gap-2 font-display">
+              <Megaphone className="w-4 h-4" />
+              מודעות
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2 font-display">
               <Settings className="w-4 h-4" />
               הגדרות
@@ -156,6 +161,10 @@ const Admin = () => {
 
           <TabsContent value="music">
             <BackgroundMusicManager />
+          </TabsContent>
+
+          <TabsContent value="announcements">
+            <AnnouncementsEditor />
           </TabsContent>
 
           <TabsContent value="settings">
