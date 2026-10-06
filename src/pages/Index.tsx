@@ -74,6 +74,7 @@ const Index = () => {
           )}
           <h1 className="font-display text-7xl md:text-8xl font-bold text-game-gold text-shadow-game mb-2">
             {branding.name}
+            <span className="sr-only"> — חידון טריוויה אינטראקטיבי לאירועים</span>
           </h1>
           <p className="text-xl md:text-2xl text-game-dark-gold font-body font-medium">
             חידון בת המצווה החגיגי — כמה אתם באמת מכירים את חיוש?
