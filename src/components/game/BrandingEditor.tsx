@@ -28,6 +28,14 @@ const FIELDS: Array<{
   { key: "seoDescription", label: "תיאור מטא (מופיע בתוצאות החיפוש)", hint: "ריק = ברירת מחדל", textarea: true },
 ];
 
+function toLocalInput(iso: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function BrandingEditor() {
   const { branding, save, refresh, loading } = useBranding();
   const [draft, setDraft] = useState<BrandingValues>(branding);
@@ -104,6 +112,31 @@ export function BrandingEditor() {
             aspect="tall"
           />
         </div>
+      </div>
+
+      <div className="rounded-xl border-2 border-double border-border p-4 bg-card/50 space-y-3">
+        <h3 className="font-display text-lg text-foreground">מועד המשחק ומוזיקת פתיחה</h3>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Label htmlFor="eventAt" className="mb-1 block">תאריך ושעת תחילת המשחק</Label>
+            <Input id="eventAt" type="datetime-local" value={toLocalInput(draft.eventAt)}
+              onChange={(e) => setDraft({ ...draft, eventAt: e.target.value ? new Date(e.target.value).toISOString() : "" })} />
+          </div>
+          <div>
+            <Label htmlFor="musicLead" className="mb-1 block">כמה זמן לפני ההתחלה להתחיל את המוזיקה בלובי</Label>
+            <select id="musicLead" className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={draft.musicLeadMinutes} onChange={(e) => setDraft({ ...draft, musicLeadMinutes: Number(e.target.value) })}>
+              {[0, 5, 10, 15, 20, 30, 45, 60, 90, 120].map((m) => (
+                <option key={m} value={m}>{m === 0 ? "רק בשעת ההתחלה" : `${m} דקות לפני`}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {draft.eventAt
+            ? `המשחק מתוכנן ל-${new Date(draft.eventAt).toLocaleString("he-IL", { dateStyle: "full", timeStyle: "short" })}. המוזיקה בלובי תתחיל ${draft.musicLeadMinutes ? `${draft.musicLeadMinutes} דקות לפני` : "בשעת ההתחלה"}.`
+            : "לא נקבע מועד – המוזיקה תתחיל מיד כשנפתח הלובי."}
+        </p>
       </div>
 
       {[

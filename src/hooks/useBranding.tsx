@@ -18,6 +18,8 @@ export type BrandingValues = {
   backgroundImageUrl: string;
   seoTitle: string;
   seoDescription: string;
+  eventAt: string;
+  musicLeadMinutes: number;
 };
 
 const fallback: BrandingValues = {
@@ -36,6 +38,8 @@ const fallback: BrandingValues = {
   backgroundImageUrl: "",
   seoTitle: "",
   seoDescription: "",
+  eventAt: "",
+  musicLeadMinutes: 10,
 };
 
 type Ctx = {
@@ -69,6 +73,8 @@ function rowToValues(row: any): BrandingValues {
     backgroundImageUrl: row.background_image_url ?? "",
     seoTitle: row.seo_title ?? "",
     seoDescription: row.seo_description ?? "",
+    eventAt: row.event_at ?? "",
+    musicLeadMinutes: row.music_lead_minutes ?? 10,
   };
 }
 
@@ -118,6 +124,8 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
         background_image_url: v.backgroundImageUrl || null,
         seo_title: v.seoTitle.trim() || null,
         seo_description: v.seoDescription.trim() || null,
+        event_at: v.eventAt ? new Date(v.eventAt).toISOString() : null,
+        music_lead_minutes: Math.max(0, Math.min(180, Number(v.musicLeadMinutes) || 0)),
       })
       .eq("is_active", true)
       .select("id");
