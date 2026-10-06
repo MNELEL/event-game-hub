@@ -18,6 +18,7 @@ import { useBranding } from "@/hooks/useBranding";
 import { BrandingEditor } from "@/components/game/BrandingEditor";
 import { BackgroundMusicManager } from "@/components/game/BackgroundMusicManager";
 import { DemoQuestionsEditor } from "@/components/admin/DemoQuestionsEditor";
+import { AIQuestionGenerator } from "@/components/game/AIQuestionGenerator";
 import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette, Music, Sparkles } from "lucide-react";
 
 const Admin = () => {
@@ -130,7 +131,8 @@ const Admin = () => {
             />
           </TabsContent>
 
-          <TabsContent value="add">
+          <TabsContent value="add" className="space-y-6">
+            <AIQuestionGenerator onAdd={store.addQuestion} defaultTimeLimit={store.settings.defaultTimeLimit} />
             <QuestionEditor onAdd={store.addQuestion} />
           </TabsContent>
 
