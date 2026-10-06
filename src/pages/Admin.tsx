@@ -20,6 +20,7 @@ import { BackgroundMusicManager } from "@/components/game/BackgroundMusicManager
 import { DemoQuestionsEditor } from "@/components/admin/DemoQuestionsEditor";
 import { AnnouncementsEditor } from "@/components/admin/AnnouncementsEditor";
 import { AIQuestionGenerator } from "@/components/game/AIQuestionGenerator";
+import { QuestionPacks } from "@/components/game/QuestionPacks";
 import { Play, HelpCircle, Settings, List, Plus, Home, LogOut, Loader2, FileDown, Gamepad2, Palette, Music, Sparkles, Megaphone } from "lucide-react";
 
 const Admin = () => {
@@ -138,6 +139,7 @@ const Admin = () => {
 
           <TabsContent value="add" className="space-y-6">
             <AIQuestionGenerator onAdd={store.addQuestion} defaultTimeLimit={store.settings.defaultTimeLimit} />
+            <QuestionPacks onAdd={store.addQuestion} existingTexts={store.questions.map(q => q.text)} defaultTimeLimit={store.settings.defaultTimeLimit} />
             <QuestionEditor onAdd={store.addQuestion} />
           </TabsContent>
 

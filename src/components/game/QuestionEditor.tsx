@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Question, QuestionType, DEFAULT_CATEGORIES } from "@/types/game";
-import { Plus } from "lucide-react";
+import { Plus, Trash2, RotateCcw } from "lucide-react";
 
 type Props = { onAdd: (q: Question) => void };
 
@@ -18,6 +18,15 @@ export function QuestionEditor({ onAdd }: Props) {
   const [timeLimit, setTimeLimit] = useState(15);
   const [points, setPoints] = useState(100);
   const [mediaUrl, setMediaUrl] = useState("");
+
+  const addOption = () => options.length < 4 && setOptions([...options, ""]);
+  const removeOption = (i: number) => {
+    if (options.length <= 2) return;
+    setOptions(options.filter((_, j) => j !== i));
+    if (correctAnswer === i) setCorrectAnswer(0);
+    else if (correctAnswer > i) setCorrectAnswer(correctAnswer - 1);
+  };
+  const resetForm = () => { setText(""); setOptions(["", "", "", ""]); setCorrectAnswer(0); setMediaUrl(""); };
 
   const handleAdd = () => {
     if (!text.trim() || options.some(o => !o.trim())) return;
@@ -102,14 +111,26 @@ export function QuestionEditor({ onAdd }: Props) {
               onClick={e => e.stopPropagation()}
             />
             {correctAnswer === i && <span className="text-success font-bold text-sm">✓ נכונה</span>}
+            <Button type="button" variant="ghost" size="icon" aria-label={`מחיקת תשובה ${i + 1}`} disabled={options.length <= 2}
+              onClick={e => { e.stopPropagation(); removeOption(i); }}>
+              <Trash2 className="w-4 h-4 text-destructive" />
+            </Button>
           </div>
         ))}
+        <Button type="button" variant="outline" size="sm" onClick={addOption} disabled={options.length >= 4} className="gap-1">
+          <Plus className="w-4 h-4" /> הוספת תשובה
+        </Button>
       </div>
 
-      <Button onClick={handleAdd} size="lg" className="w-full gap-2" disabled={!text.trim() || options.some(o => !o.trim())}>
-        <Plus className="w-5 h-5" />
-        הוספת שאלה
-      </Button>
+      <div className="flex gap-2">
+        <Button onClick={handleAdd} size="lg" className="flex-1 gap-2" disabled={!text.trim() || options.some(o => !o.trim())}>
+          <Plus className="w-5 h-5" />
+          הוספת שאלה למאגר
+        </Button>
+        <Button type="button" variant="outline" size="lg" onClick={resetForm} className="gap-2">
+          <RotateCcw className="w-4 h-4" /> ניקוי
+        </Button>
+      </div>
     </Card>
   );
 }

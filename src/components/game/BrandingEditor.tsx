@@ -106,8 +106,15 @@ export function BrandingEditor() {
         </div>
       </div>
 
+      {[
+        { title: "פרטים כלליים", keys: ["name", "shortName", "fullName", "phone", "iconPrimary", "iconFestive"] },
+        { title: "טקסטים במסכים", keys: ["tagline", "heroSubtitle", "lobbySubtitle", "aboutDescription"] },
+        { title: "גוגל ושיתוף בוואטסאפ", keys: ["seoTitle", "seoDescription"] },
+      ].map((sec) => (
+      <div key={sec.title} className="rounded-xl border-2 border-double border-border p-4 bg-card/50 space-y-3">
+      <h3 className="font-display text-lg text-foreground">{sec.title}</h3>
       <div className="grid gap-4 md:grid-cols-2">
-        {FIELDS.map((f) => (
+        {FIELDS.filter((f) => sec.keys.includes(f.key as string)).map((f) => (
           <div key={f.key} className={f.textarea ? "md:col-span-2" : ""}>
             <Label htmlFor={f.key} className="mb-1 block">
               {f.label}
@@ -130,8 +137,14 @@ export function BrandingEditor() {
           </div>
         ))}
       </div>
+      </div>
+      ))}
 
-      <div className="sticky bottom-4 flex justify-end">
+      <div className="sticky bottom-4 flex justify-end gap-2">
+        <Button variant="outline" size="lg" onClick={() => setDraft(branding)} disabled={!dirty || saving}>
+          <RotateCcw className="w-4 h-4 ml-1" />
+          ביטול שינויים
+        </Button>
         <Button size="lg" onClick={handleSave} disabled={!dirty || saving}>
           {saving ? <Loader2 className="w-4 h-4 ml-1 animate-spin" /> : <Save className="w-4 h-4 ml-1" />}
           שמור שינויים
