@@ -20,6 +20,7 @@ export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (
   const [results, setResults] = useState<Gen[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
+  const [addToGame, setAddToGame] = useState(true);
 
   const generate = async () => {
     setLoading(true); setError(""); setResults([]);
@@ -41,11 +42,11 @@ export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (
     let n = 0;
     for (const i of [...selected].sort((a, b) => a - b)) {
       const g = results[i];
-      await onAdd({ id: crypto.randomUUID().slice(0, 8), type: "text", category: g.category, text: g.text, options: g.options, correctAnswer: g.correctAnswer, timeLimit: defaultTimeLimit, points: 100 });
+      await onAdd({ id: crypto.randomUUID().slice(0, 8), type: "text", category: g.category, text: g.text, options: g.options, correctAnswer: g.correctAnswer, timeLimit: defaultTimeLimit, points: 100, difficulty, source: "ai", inNextGame: addToGame });
       n++;
     }
     setSaving(false);
-    toast.success(`נוספו ${n} שאלות למאגר`);
+    toast.success(addToGame ? `נוספו ${n} שאלות למאגר ולמשחק הבא` : `נוספו ${n} שאלות למאגר`);
     setResults([]); setSelected(new Set());
   };
 
@@ -104,6 +105,10 @@ export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (
               </div>
             </div>
           ))}
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox checked={addToGame} onCheckedChange={(v) => setAddToGame(!!v)} />
+            לסמן גם לשימוש במשחק הבא
+          </label>
           <Button onClick={save} disabled={saving || selected.size === 0} className="gap-2">
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}הוסף {selected.size} שאלות למאגר
           </Button>

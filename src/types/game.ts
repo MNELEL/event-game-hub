@@ -17,6 +17,10 @@ export type Question = {
   mediaUrl?: string;
   timeLimit: number; // seconds
   points: number;
+  difficulty?: "easy" | "medium" | "hard";
+  source?: string;
+  inNextGame?: boolean;
+  createdAt?: string;
 };
 
 export type Player = {

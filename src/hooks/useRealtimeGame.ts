@@ -112,6 +112,11 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
   const createGame = useCallback(async () => {
     const code = generateGameCode();
     let gameQuestions = [...questions];
+    const picked = gameQuestions.filter(q => q.inNextGame);
+    if (picked.length > 0) {
+      // Host hand-picked questions for this game: use exactly those
+      gameQuestions = settings.shuffleQuestions ? picked.sort(() => Math.random() - 0.5) : picked;
+    } else {
     if (settings.selectedCategories.length > 0) {
       gameQuestions = gameQuestions.filter(q => settings.selectedCategories.includes(q.category));
     }
@@ -119,6 +124,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
       gameQuestions.sort(() => Math.random() - 0.5);
     }
     gameQuestions = gameQuestions.slice(0, settings.questionsPerGame);
+    }
 
     const { data: { user } } = await supabase.auth.getUser();
 

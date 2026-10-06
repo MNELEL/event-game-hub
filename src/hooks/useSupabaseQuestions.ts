@@ -24,6 +24,10 @@ function dbToQuestion(row: any): Question {
     timeLimit: row.time_limit,
     points: row.points,
     mediaUrl: row.media_url || undefined,
+    difficulty: row.difficulty || undefined,
+    source: row.source || "manual",
+    inNextGame: !!row.in_next_game,
+    createdAt: row.created_at,
   };
 }
 
@@ -40,6 +44,9 @@ function questionToDb(q: Question, index: number) {
     media_url: q.mediaUrl || null,
     media_type: q.type === "text" ? "none" : q.type,
     order_index: index,
+    difficulty: q.difficulty ?? null,
+    source: q.source ?? "manual",
+    in_next_game: q.inNextGame ?? false,
   };
 }
 
@@ -175,6 +182,8 @@ export function useSupabaseQuestions() {
     if (updates.timeLimit !== undefined) dbUpdates.time_limit = updates.timeLimit;
     if (updates.points !== undefined) dbUpdates.points = updates.points;
     if (updates.mediaUrl !== undefined) dbUpdates.media_url = updates.mediaUrl;
+    if (updates.inNextGame !== undefined) dbUpdates.in_next_game = updates.inNextGame;
+    if (updates.difficulty !== undefined) dbUpdates.difficulty = updates.difficulty;
     if (updates.type !== undefined) dbUpdates.media_type = updates.type === "text" ? "none" : updates.type;
 
     await supabase.from("questions").update(dbUpdates).eq("id", questionId);
