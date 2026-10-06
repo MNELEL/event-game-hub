@@ -160,6 +160,14 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
             {branding.name}
           </motion.h1>
 
+          {branding.eventAt && (
+            <p className="font-serif text-lg text-game-gold/80 mt-2">
+              המשחק יתחיל ב-{new Date(branding.eventAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}
+              {!musicDue && ` · המוזיקה תתחיל ב-${new Date(musicStartAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}`}
+            </p>
+          )}
+
+
           {/* Subtitle reveal */}
           <motion.p
             className="font-serif text-xl text-game-gold/70 mt-2"
