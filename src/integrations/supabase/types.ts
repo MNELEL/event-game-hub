@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          created_at: string
+          details: string | null
+          event_date: string | null
+          id: string
+          is_published: boolean
+          link: string | null
+          owner_id: string
+          phone: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          event_date?: string | null
+          id?: string
+          is_published?: boolean
+          link?: string | null
+          owner_id?: string
+          phone?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          event_date?: string | null
+          id?: string
+          is_published?: boolean
+          link?: string | null
+          owner_id?: string
+          phone?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       background_music: {
         Row: {
           created_at: string
@@ -380,13 +419,16 @@ export type Database = {
           category: string
           correct_answer: number
           created_at: string
+          difficulty: string | null
           id: string
+          in_next_game: boolean
           media_type: string | null
           media_url: string | null
           options: Json
           order_index: number
           owner_id: string | null
           points: number
+          source: string
           text: string
           time_limit: number
           updated_at: string
@@ -395,13 +437,16 @@ export type Database = {
           category?: string
           correct_answer?: number
           created_at?: string
+          difficulty?: string | null
           id?: string
+          in_next_game?: boolean
           media_type?: string | null
           media_url?: string | null
           options?: Json
           order_index?: number
           owner_id?: string | null
           points?: number
+          source?: string
           text: string
           time_limit?: number
           updated_at?: string
@@ -410,13 +455,16 @@ export type Database = {
           category?: string
           correct_answer?: number
           created_at?: string
+          difficulty?: string | null
           id?: string
+          in_next_game?: boolean
           media_type?: string | null
           media_url?: string | null
           options?: Json
           order_index?: number
           owner_id?: string | null
           points?: number
+          source?: string
           text?: string
           time_limit?: number
           updated_at?: string
