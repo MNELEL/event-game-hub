@@ -16,6 +16,8 @@ export type BrandingValues = {
   logoUrl: string;
   heroImageUrl: string;
   backgroundImageUrl: string;
+  seoTitle: string;
+  seoDescription: string;
 };
 
 const fallback: BrandingValues = {
@@ -32,6 +34,8 @@ const fallback: BrandingValues = {
   logoUrl: "",
   heroImageUrl: "",
   backgroundImageUrl: "",
+  seoTitle: "",
+  seoDescription: "",
 };
 
 type Ctx = {
@@ -63,6 +67,8 @@ function rowToValues(row: any): BrandingValues {
     logoUrl: row.logo_url ?? "",
     heroImageUrl: row.hero_image_url ?? "",
     backgroundImageUrl: row.background_image_url ?? "",
+    seoTitle: row.seo_title ?? "",
+    seoDescription: row.seo_description ?? "",
   };
 }
 
@@ -94,7 +100,7 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
   useEffect(() => { load(); }, [load]);
 
   const save = useCallback(async (v: BrandingValues) => {
-    const { error } = await (supabase as any)
+    const { data, error } = await (supabase as any)
       .from("branding")
       .update({
         name: v.name,
@@ -110,9 +116,13 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
         logo_url: v.logoUrl || null,
         hero_image_url: v.heroImageUrl || null,
         background_image_url: v.backgroundImageUrl || null,
+        seo_title: v.seoTitle.trim() || null,
+        seo_description: v.seoDescription.trim() || null,
       })
-      .eq("is_active", true);
+      .eq("is_active", true)
+      .select("id");
     if (error) return { error: error.message };
+    if (!data || data.length === 0) return { error: "אין לך הרשאה לשמור את המיתוג – רק בעל האתר יכול לערוך אותו" };
     setValues(v);
     try { localStorage.setItem("branding_cache", JSON.stringify(v)); } catch {}
     return { error: null };

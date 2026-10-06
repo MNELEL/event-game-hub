@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
+import { useBranding } from "@/hooks/useBranding";
 
 const BASE = "https://megatrivia.lovable.app";
 
@@ -15,7 +16,17 @@ const META: Record<string, { title: string; description: string; noindex?: boole
 
 export function RouteSeo() {
   const { pathname } = useLocation();
-  const m = META[pathname] ?? { ...META["/"], noindex: true };
+  const { branding } = useBranding();
+  const base = META[pathname] ?? { ...META["/"], noindex: true };
+  const seoTitle = branding.seoTitle?.trim();
+  const seoDesc = branding.seoDescription?.trim();
+  const isHome = pathname === "/" || !META[pathname];
+  const prefix = base.title.split(" | ")[0];
+  const m = {
+    ...base,
+    title: seoTitle ? (isHome || !base.title.includes(" | ") ? seoTitle : `${prefix} | ${seoTitle}`) : base.title,
+    description: seoDesc && isHome ? seoDesc : base.description,
+  };
   const url = `${BASE}${pathname}`;
   return (
     <Helmet>

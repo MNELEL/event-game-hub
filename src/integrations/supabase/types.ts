@@ -61,6 +61,8 @@ export type Database = {
           name: string
           owner_id: string | null
           phone: string
+          seo_description: string | null
+          seo_title: string | null
           short_name: string
           tagline: string
           updated_at: string
@@ -81,6 +83,8 @@ export type Database = {
           name?: string
           owner_id?: string | null
           phone?: string
+          seo_description?: string | null
+          seo_title?: string | null
           short_name?: string
           tagline?: string
           updated_at?: string
@@ -101,6 +105,8 @@ export type Database = {
           name?: string
           owner_id?: string | null
           phone?: string
+          seo_description?: string | null
+          seo_title?: string | null
           short_name?: string
           tagline?: string
           updated_at?: string
@@ -557,6 +563,8 @@ export type Database = {
           name: string
           owner_id: string | null
           phone: string
+          seo_description: string | null
+          seo_title: string | null
           short_name: string
           tagline: string
           updated_at: string

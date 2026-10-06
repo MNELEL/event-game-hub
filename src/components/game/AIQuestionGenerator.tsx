@@ -12,6 +12,7 @@ type Gen = { text: string; options: string[]; correctAnswer: number; category: s
 
 export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (q: Question) => Promise<void>; defaultTimeLimit?: number }) {
   const [topic, setTopic] = useState("");
+  const [eventType, setEventType] = useState("");
   const [count, setCount] = useState(5);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (
 
   const generate = async () => {
     setLoading(true); setError(""); setResults([]);
-    const { data, error } = await supabase.functions.invoke("generate-questions", { body: { topic, count, difficulty } });
+    const { data, error } = await supabase.functions.invoke("generate-questions", { body: { topic, eventType, count, difficulty } });
     setLoading(false);
     if (error || data?.error) {
       let msg = data?.error;
@@ -58,6 +59,16 @@ export function AIQuestionGenerator({ onAdd, defaultTimeLimit = 15 }: { onAdd: (
       </div>
       <p className="text-sm text-muted-foreground">כתבו נושא (למשל "תולדות ירושלים") או הדביקו טקסט, והמערכת תיצור שאלות עם 4 תשובות.</p>
       <Textarea value={topic} onChange={(e) => setTopic(e.target.value)} rows={4} maxLength={6000} placeholder="נושא או טקסט חופשי..." />
+      <div className="space-y-2">
+        <label className="text-sm">סוג האירוע
+          <Input value={eventType} onChange={(e) => setEventType(e.target.value)} maxLength={100} placeholder="למשל: בת מצווה, ערב גיבוש, יום הולדת" />
+        </label>
+        <div className="flex flex-wrap gap-1">
+          {["בת מצווה", "בר מצווה", "חתונה", "יום הולדת", "ערב גיבוש", "כנס", "משפחתי"].map((t) => (
+            <Button key={t} type="button" size="sm" variant={eventType === t ? "default" : "outline"} onClick={() => setEventType(t)}>{t}</Button>
+          ))}
+        </div>
+      </div>
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-sm">כמות
           <Input type="number" min={1} max={20} value={count} onChange={(e) => setCount(Math.min(20, Math.max(1, Number(e.target.value) || 1)))} className="w-24" />

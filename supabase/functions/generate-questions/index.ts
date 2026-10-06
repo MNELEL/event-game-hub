@@ -43,6 +43,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const topic = String(body.topic ?? "").trim().slice(0, 6000);
+    const eventType = String(body.eventType ?? "").trim().slice(0, 100);
     const count = Math.min(Math.max(Number(body.count) || 5, 1), 20);
     const difficulty = ["easy", "medium", "hard"].includes(body.difficulty) ? body.difficulty : "medium";
     if (topic.length < 2) return json({ error: "יש להזין נושא או טקסט" }, 400);
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
 
     const diffHe = { easy: "קלה", medium: "בינונית", hard: "קשה" }[difficulty as "easy"];
     const instructions =
-      `אתה כותב שאלות טריוויה בעברית תקנית לאירועים. צור בדיוק ${count} שאלות ברמת קושי ${diffHe}. ` +
+      `אתה כותב שאלות טריוויה בעברית תקנית לאירועים. צור בדיוק ${count} שאלות ברמת קושי ${diffHe}${eventType ? ` המתאימות לאירוע מסוג "${eventType}" (טון, שפה ותכנים מתאימים לקהל)` : ""}. ` +
       `לכל שאלה בדיוק 4 תשובות קצרות (עד 8 מילים), תשובה נכונה אחת בלבד ומסיחים סבירים. ` +
       `correctAnswer הוא אינדקס 0-3 של התשובה הנכונה; פזר את מיקום התשובה הנכונה. ` +
       `category: שם קטגוריה קצר בעברית. אם ניתן טקסט מקור – בסס את השאלות רק עליו. הקפד על עובדות נכונות.`;
