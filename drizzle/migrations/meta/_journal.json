@@ -15,6 +15,13 @@
       "when": 1791309355296,
       "tag": "0001_restrict_games_settings_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791309856545,
+      "tag": "0002_branding_seo_fields",
+      "breakpoints": true
     }
   ]
 }
