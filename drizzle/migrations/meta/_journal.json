@@ -8,6 +8,13 @@
       "when": 1791309266998,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791309355296,
+      "tag": "0001_restrict_games_settings_reads",
+      "breakpoints": true
     }
   ]
 }
