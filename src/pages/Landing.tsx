@@ -9,7 +9,7 @@ import {
 import InteractiveQuestionDemo from "@/components/landing/InteractiveQuestionDemo";
 
 const audiences = [
-  "חתונות", "בר/בת מצווה", "ימי הולדת", "גיבושי חברה", "כנסים", "מסיבות רווקות/ים",
+  "חתונות", "בר/בת מצווה", "ימי הולדת", "גיבושי חברה", "כנסים", "מסיבות סיום",
 ];
 
 const steps = [
