@@ -306,6 +306,7 @@ export default function Landing() {
         <div className="mt-2 flex justify-center gap-4">
           <button onClick={() => navigate("/about")} className="hover:text-game-dark-gold">אודות</button>
           <button onClick={() => navigate("/install")} className="hover:text-game-dark-gold">התקנה</button>
+          <button onClick={() => navigate("/kahoot-hebrew")} className="hover:text-game-dark-gold">קהוט בעברית</button>
           <button onClick={() => navigate("/host")} className="hover:text-game-dark-gold">כניסת מפעיל</button>
         </div>
       </footer>
