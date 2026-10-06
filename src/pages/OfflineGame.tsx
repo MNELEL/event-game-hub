@@ -86,7 +86,7 @@ const OfflineGame = () => {
             <WifiOff className="w-5 h-5 text-game-dark-gold/60" />
             <span className="text-game-dark-gold/60 text-sm">מצב אופליין</span>
           </div>
-          <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">{branding.iconPrimary} {branding.name}</h1>
+          <h1 className="font-serif text-3xl text-game-dark-gold text-center mb-2">{branding.iconPrimary} {branding.name} — משחק טריוויה אופליין</h1>
           <div className="w-24 mx-auto border-t-2 border-double border-game-border-gold mb-4" />
           <p className="text-game-dark-gold/60 text-center mb-4">
             {store.questions.length} שאלות שמורות במכשיר
@@ -139,7 +139,7 @@ const OfflineGame = () => {
     return (
       <div className="min-h-screen game-gradient relative overflow-hidden" dir="rtl">
         <div className="absolute top-4 left-4 z-50">
-          <Button variant="ghost" size="icon" className="text-game-dark-gold/50 hover:text-game-dark-gold" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" className="text-game-dark-gold/50 hover:text-game-dark-gold" aria-label="חזרה לדף הבית" onClick={() => navigate("/")}>
             <Home className="w-5 h-5" />
           </Button>
         </div>

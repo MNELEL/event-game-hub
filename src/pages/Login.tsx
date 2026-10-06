@@ -47,7 +47,7 @@ const Login = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="font-display text-4xl text-game-dark-gold text-center mb-2">{branding.iconPrimary} {branding.name}</h1>
+        <h1 className="font-display text-4xl text-game-dark-gold text-center mb-2">{branding.iconPrimary} {branding.name} — כניסת מארחים</h1>
         <p className="text-game-dark-gold/70 text-center mb-8">
           כניסה לממשק ניהול
         </p>
