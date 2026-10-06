@@ -11,7 +11,7 @@ export const QUESTION_PACKS: QuestionPack[] = [
       { text: "מה שוברים בסוף החופה?", options: ["צלחת", "כוס", "בקבוק", "קערה"], correctAnswer: 1, difficulty: "easy" },
       { text: "כמה ברכות נאמרות בשבע ברכות?", options: ["5", "6", "7", "8"], correctAnswer: 2, difficulty: "easy" },
       { text: "איך נקרא החוזה שהחתן נותן לכלה?", options: ["כתובה", "שטר", "תנאים", "גט"], correctAnswer: 0, difficulty: "easy" },
-      { text: "מה נוהגים לזרוק על החתן והכלה ביציאה מהחופה?", options: ["סוכריות", "אורז", "פרחים", "כל התשובות"], correctAnswer: 3, difficulty: "medium" },
+      { text: "כמה ימים נמשכים ימי שבע ברכות?", options: ["3", "5", "7", "8"], correctAnswer: 2, difficulty: "easy" },
       { text: "באיזה חודש עברי לא נהוג להתחתן בין י\"ז בתמוז לט' באב?", options: ["חשוון", "אדר", "תמוז-אב", "ניסן"], correctAnswer: 2, difficulty: "medium" },
       { text: "מה שם הטקס שבו החתן מכסה את פני הכלה?", options: ["קבלת פנים", "הינומה (בדקן)", "יחוד", "שבע ברכות"], correctAnswer: 1, difficulty: "medium" },
     ],
@@ -20,6 +20,7 @@ export const QUESTION_PACKS: QuestionPack[] = [
     id: "family", name: "כנס משפחתי", icon: "👨‍👩‍👧‍👦", description: "שאלות שוברות קרח לכל הגילאים",
     questions: [
       { text: "כמה ימים יש בשנה מעוברת עברית בערך?", options: ["354", "365", "384", "400"], correctAnswer: 2, difficulty: "hard" },
+      { text: "מי היו שלושת האבות?", options: ["אברהם, יצחק ויעקב", "משה, אהרן ומרים", "דוד, שלמה ושאול", "ראובן, שמעון ולוי"], correctAnswer: 0, difficulty: "easy" },
       { text: "איך קוראים לבן של הדוד שלי?", options: ["אחיין", "בן דוד", "גיס", "נכד"], correctAnswer: 1, difficulty: "easy" },
       { text: "מה הצבע של השמיים ביום בהיר?", options: ["ירוק", "כחול", "אדום", "צהוב"], correctAnswer: 1, difficulty: "easy" },
       { text: "איזה מאכל מסורתי אוכלים בשבת בבוקר?", options: ["חמין", "סופגניות", "מצה", "לביבות"], correctAnswer: 0, difficulty: "easy" },

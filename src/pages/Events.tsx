@@ -20,6 +20,10 @@ const Events = () => {
           <h1 className="font-display text-3xl flex items-center gap-2"><Megaphone className="h-7 w-7 text-primary" />לוח משחקים פתוחים</h1>
           <Link to="/" aria-label="חזרה לדף הבית"><Home className="h-5 w-5 text-muted-foreground" /></Link>
         </div>
+        <Link to="/siyum" className="block rounded-lg border-4 border-double border-primary/40 bg-card p-4 hover:bg-accent">
+          <div className="font-bold text-lg">📜 חידון סיום – למסיבות סיום</div>
+          <div className="text-sm text-muted-foreground">סיום מסכת, סיום שנה וסיום בתלמוד תורה – שאלות וניקוד מותאמים לסוג הסיום</div>
+        </Link>
         <p className="text-muted-foreground">משחקי טריוויה שמנחים פרסמו. בחרו משחק, התקשרו או לחצו על הקישור כדי להצטרף.</p>
         {items === null && <p className="text-muted-foreground">טוען...</p>}
         {items?.length === 0 && <p className="text-muted-foreground">אין כרגע משחקים מפורסמים.</p>}
