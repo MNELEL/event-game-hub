@@ -50,6 +50,13 @@
       "when": 1791312313161,
       "tag": "0006_restrict_public_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791312972936,
+      "tag": "0007_branding_event_schedule",
+      "breakpoints": true
     }
   ]
 }

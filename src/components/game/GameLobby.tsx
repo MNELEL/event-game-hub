@@ -29,11 +29,20 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
   const { branding } = useBranding();
   const navigate = useNavigate();
 
-  // Start lobby background music on mount
+  // Start lobby music immediately, or only from (event time - lead minutes) when an event time is set
+  const musicStartAt = branding.eventAt ? new Date(branding.eventAt).getTime() - (branding.musicLeadMinutes || 0) * 60000 : 0;
+  const [now, setNow] = useState(Date.now());
+  const musicDue = !musicStartAt || now >= musicStartAt;
   useEffect(() => {
+    if (musicDue) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [musicDue]);
+  useEffect(() => {
+    if (!musicDue) return;
     SoundEffects.startMusic('lobby');
     return () => SoundEffects.stopMusic();
-  }, []);
+  }, [musicDue]);
 
   useEffect(() => {
     if (players.length > prevCount.current) {
@@ -150,6 +159,14 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
           >
             {branding.name}
           </motion.h1>
+
+          {branding.eventAt && (
+            <p className="font-serif text-lg text-game-gold/80 mt-2">
+              המשחק יתחיל ב-{new Date(branding.eventAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}
+              {!musicDue && ` · המוזיקה תתחיל ב-${new Date(musicStartAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}`}
+            </p>
+          )}
+
 
           {/* Subtitle reveal */}
           <motion.p
