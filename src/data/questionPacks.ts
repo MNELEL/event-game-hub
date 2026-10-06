@@ -6,6 +6,16 @@ export type QuestionPack = { id: string; name: string; icon: string; description
 
 export const QUESTION_PACKS: QuestionPack[] = [
   {
+    id: "siyum", name: "מסיבת סיום", icon: "📜", description: "סיום מסכת וסיום שנה",
+    questions: [
+      { text: "מה אומרים בסיום מסכת?", options: ["הדרן עלך", "חזק ונתחזק", "לשנה הבאה", "מזל טוב"], correctAnswer: 0, difficulty: "easy" },
+      { text: "באיזו מסכת פותח התלמוד הבבלי?", options: ["שבת", "ברכות", "בבא קמא", "פסחים"], correctAnswer: 1, difficulty: "easy" },
+      { text: "כמה סדרים יש במשנה?", options: ["4", "5", "6", "7"], correctAnswer: 2, difficulty: "easy" },
+      { text: "כמה פרקים יש בפרקי אבות?", options: ["4", "5", "6", "10"], correctAnswer: 2, difficulty: "medium" },
+      { text: "כמה דפים בערך יש בש\"ס בבלי?", options: ["1,200", "2,711", "4,000", "900"], correctAnswer: 1, difficulty: "hard" },
+    ],
+  },
+  {
     id: "wedding", name: "חתונה", icon: "💍", description: "מסורת, מנהגים ושאלות כיפיות על חתונות",
     questions: [
       { text: "מה שוברים בסוף החופה?", options: ["צלחת", "כוס", "בקבוק", "קערה"], correctAnswer: 1, difficulty: "easy" },
