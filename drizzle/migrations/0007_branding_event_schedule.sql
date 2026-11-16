@@ -1,2 +1,3 @@
-ALTER TABLE public.branding ADD COLUMN IF NOT EXISTS event_at timestamptz;
-ALTER TABLE public.branding ADD COLUMN IF NOT EXISTS music_lead_minutes integer NOT NULL DEFAULT 10;
+-- Lovable Test/Live retirement: current Live database accepted as baseline.
+-- ALTER TABLE public.branding ADD COLUMN IF NOT EXISTS event_at timestamptz;
+-- ALTER TABLE public.branding ADD COLUMN IF NOT EXISTS music_lead_minutes integer NOT NULL DEFAULT 10;
