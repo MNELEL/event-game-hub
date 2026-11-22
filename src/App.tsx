@@ -22,6 +22,7 @@ const About = lazy(() => import("./pages/About"));
 const Events = lazy(() => import("./pages/Events"));
 const Siyum = lazy(() => import("./pages/Siyum"));
 const KahootHebrew = lazy(() => import("./pages/KahootHebrew"));
+const TriviaQuiz = lazy(() => import("./pages/TriviaQuiz"));
 const BrandingPreview = lazy(() => import("./pages/BrandingPreview"));
 const YemotSetup = lazy(() => import("./pages/YemotSetup"));
 const IvrGuide = lazy(() => import("./pages/IvrGuide"));
@@ -68,6 +69,7 @@ const AppRoutes = () => {
         <Route path="/events" element={<Events />} />
         <Route path="/siyum" element={<Siyum />} />
         <Route path="/kahoot-hebrew" element={<KahootHebrew />} />
+        <Route path="/trivia-quiz" element={<TriviaQuiz />} />
         <Route path="/branding-preview" element={<ProtectedRoute><BrandingPreview /></ProtectedRoute>} />
         <Route path="/yemot-setup" element={<ProtectedRoute><YemotSetup /></ProtectedRoute>} />
         <Route path="/ivr-guide" element={<ProtectedRoute><IvrGuide /></ProtectedRoute>} />
