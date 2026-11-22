@@ -5,7 +5,6 @@ export const defaultQuestions: Question[] = [
   { id: "g1", type: "text", category: "general", text: "מהי בירת צרפת?", options: ["לונדון", "פריז", "ברלין", "מדריד"], correctAnswer: 1, timeLimit: 15, points: 100 },
   { id: "g2", type: "text", category: "general", text: "כמה ימים יש בשנה מעוברת?", options: ["365", "366", "364", "367"], correctAnswer: 1, timeLimit: 15, points: 100 },
   { id: "g3", type: "text", category: "general", text: "מה הצבע שמתקבל מערבוב אדום וצהוב?", options: ["ירוק", "סגול", "כתום", "חום"], correctAnswer: 2, timeLimit: 15, points: 100 },
-  { id: "g4", type: "text", category: "general", text: "כמה שחקנים יש בקבוצת כדורגל?", options: ["9", "10", "11", "12"], correctAnswer: 2, timeLimit: 15, points: 100 },
   { id: "g5", type: "text", category: "general", text: "מהי היבשת הגדולה בעולם?", options: ["אפריקה", "אירופה", "אסיה", "אמריקה"], correctAnswer: 2, timeLimit: 15, points: 100 },
 
   // מדע וטבע
@@ -28,16 +27,6 @@ export const defaultQuestions: Question[] = [
   { id: "geo3", type: "text", category: "geography", text: "באיזו מדינה נמצאת מגדל אייפל?", options: ["אנגליה", "איטליה", "צרפת", "ספרד"], correctAnswer: 2, timeLimit: 10, points: 50 },
   { id: "geo4", type: "text", category: "geography", text: "מהי המדינה הקטנה ביותר בעולם?", options: ["מונקו", "ותיקן", "סן מרינו", "ליכטנשטיין"], correctAnswer: 1, timeLimit: 20, points: 150 },
   { id: "geo5", type: "text", category: "geography", text: "כמה יבשות יש בעולם?", options: ["5", "6", "7", "8"], correctAnswer: 2, timeLimit: 10, points: 50 },
-
-  // בידור ותרבות
-  { id: "e1", type: "text", category: "entertainment", text: "מי כתב את 'הנסיך הקטן'?", options: ["ויקטור הוגו", "סנט-אקזופרי", "ז'ול ורן", "אלכסנדר דיומא"], correctAnswer: 1, timeLimit: 20, points: 150 },
-  { id: "e2", type: "text", category: "entertainment", text: "באיזו שנה יצא הסרט 'טיטאניק'?", options: ["1995", "1997", "1999", "2001"], correctAnswer: 1, timeLimit: 15, points: 100 },
-  { id: "e3", type: "text", category: "entertainment", text: "מי ציירה את 'מונה ליזה'?", options: ["מיכלאנג'לו", "רפאל", "לאונרדו דה וינצ'י", "בוטיצ'לי"], correctAnswer: 2, timeLimit: 15, points: 100 },
-
-  // ספורט
-  { id: "sp1", type: "text", category: "sports", text: "באיזו מדינה המציאו את הכדורגל המודרני?", options: ["ברזיל", "אנגליה", "ספרד", "איטליה"], correctAnswer: 1, timeLimit: 15, points: 100 },
-  { id: "sp2", type: "text", category: "sports", text: "כמה טבעות יש בסמל האולימפי?", options: ["3", "4", "5", "6"], correctAnswer: 2, timeLimit: 10, points: 50 },
-  { id: "sp3", type: "text", category: "sports", text: "מי זכה הכי הרבה פעמים במונדיאל?", options: ["ארגנטינה", "גרמניה", "ברזיל", "איטליה"], correctAnswer: 2, timeLimit: 15, points: 100 },
 
   // אוכל ומטבח
   { id: "f1", type: "text", category: "food", text: "מהי המדינה ממנה מגיעה הפיצה?", options: ["צרפת", "יוון", "איטליה", "ספרד"], correctAnswer: 2, timeLimit: 10, points: 50 },

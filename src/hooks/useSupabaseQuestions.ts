@@ -135,9 +135,7 @@ export function useSupabaseQuestions() {
 
   const seedDefaultQuestions = async (): Promise<boolean> => {
     const rows = defaultQuestions.map((q, i) => questionToDb(q, i));
-    // Remove id field so DB generates UUIDs
-    const cleanRows = rows.map(({ id, ...rest }) => rest);
-    const { error } = await supabase.from("questions").insert(cleanRows);
+    const { error } = await supabase.from("questions").insert(rows);
     if (!error) {
       await loadQuestions();
       return true;

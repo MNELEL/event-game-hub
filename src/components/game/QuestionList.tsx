@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Question, DEFAULT_CATEGORIES } from "@/types/game";
+import { Question, QuestionType, DEFAULT_CATEGORIES } from "@/types/game";
 import { Trash2, Search, Filter, Pencil, Check, Clock, Star, GripVertical, BarChart2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
@@ -70,7 +70,7 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
     setEditingQuestion(null);
   };
 
-  const isPoll = editingQuestion?.type === "poll";
+  const isPoll = editingQuestion?.correctAnswer === -1;
 
   return (
     <div className="space-y-4">
@@ -133,7 +133,7 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
                     <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${categoryColor[q.category] ?? "bg-muted text-muted-foreground"}`}>
                       {getCategoryName(q.category)}
                     </span>
-                    {q.type === "poll" && (
+                    {q.correctAnswer === -1 && (
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 flex items-center gap-1">
                         <BarChart2 className="w-3 h-3" />סקר
                       </span>
@@ -175,7 +175,7 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
         <SheetContent side="bottom" className="h-[92dvh] rounded-t-3xl overflow-y-auto" dir="rtl">
           <SheetHeader className="pb-4 border-b border-border">
             <SheetTitle className="flex items-center gap-2 text-right">
-              {editingQuestion?.type === "poll" ? (
+              {isPoll ? (
                 <><BarChart2 className="w-5 h-5 text-purple-500" />עריכת סקר</>
               ) : (
                 <><Pencil className="w-5 h-5 text-primary" />עריכת שאלה</>
@@ -190,7 +190,12 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-muted-foreground">סוג</Label>
-                  <Select value={editingQuestion.type} onValueChange={v => setEditingQuestion({ ...editingQuestion, type: v as any })}>
+                  <Select value={isPoll ? "poll" : editingQuestion.type} onValueChange={v => setEditingQuestion({
+                    ...editingQuestion,
+                    type: v === "poll" ? "text" : v as QuestionType,
+                    correctAnswer: v === "poll" ? -1 : isPoll ? 0 : editingQuestion.correctAnswer,
+                    points: v === "poll" ? 0 : isPoll ? 100 : editingQuestion.points,
+                  })}>
                     <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="text">טקסט</SelectItem>
@@ -228,7 +233,7 @@ export function QuestionList({ questions, onRemove, onUpdate }: Props) {
               </div>
 
               {/* Media URL */}
-              {editingQuestion.type !== "text" && editingQuestion.type !== "poll" && (
+              {editingQuestion.type !== "text" && !isPoll && (
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-muted-foreground">כתובת מדיה</Label>
                   <Input value={editingQuestion.mediaUrl || ""} onChange={e => setEditingQuestion({ ...editingQuestion, mediaUrl: e.target.value })} placeholder="https://..." dir="ltr" className="rounded-xl" />

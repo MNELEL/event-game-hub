@@ -355,7 +355,7 @@ const PlayerJoin = () => {
                   <motion.button
                     key={i}
                     className={`bg-gradient-to-br ${color.bg} rounded-3xl h-32 flex flex-col items-center justify-center gap-2 shadow-xl ${color.shadow} border ${color.border} active:scale-95 select-none`}
-                    whileTap={{ scale: 0.88, brightness: 1.2 }}
+                    whileTap={{ scale: 0.88, filter: "brightness(1.2)" }}
                     whileHover={{ scale: 1.03 }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

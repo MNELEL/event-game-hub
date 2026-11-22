@@ -245,7 +245,7 @@ export function useRealtimeGame(questions: Question[], settings: GameSettings) {
 
   const resetGame = useCallback(async () => {
     if (gameDbId) {
-      await supabase.from("games").update({ status: "finished" }).eq("id", gameDbId).catch(() => {});
+      await Promise.resolve(supabase.from("games").update({ status: "finished" }).eq("id", gameDbId)).catch(() => {});
     }
     const code = generateGameCode();
     setGameDbId(null);
