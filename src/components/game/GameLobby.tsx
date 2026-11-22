@@ -176,7 +176,7 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.6 }}
           >
-            חידון בת המצווה של חיוש ✨
+            {branding.lobbySubtitle} ✨
           </motion.p>
 
           {/* Gold ornamental line */}

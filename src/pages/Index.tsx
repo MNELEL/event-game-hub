@@ -77,7 +77,7 @@ const Index = () => {
             <span className="sr-only"> — חידון טריוויה אינטראקטיבי לאירועים</span>
           </h1>
           <p className="text-xl md:text-2xl text-game-dark-gold font-body font-medium">
-            חידון בת המצווה החגיגי — כמה אתם באמת מכירים את חיוש?
+            {branding.heroSubtitle}
           </p>
         </motion.div>
 
@@ -87,7 +87,7 @@ const Index = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          חוויה אינטראקטיבית מיוחדת לכבוד בת המצווה — שאלות על חיוש, על המשפחה ועל החברים.
+          חוויה אינטראקטיבית לאירועים ושמחות — שאלות על בעלי השמחה, על המשפחה ועל החברים.
           <br />
           כולם משחקים מהטלפון, צוברים נקודות ומקבלים תארים בסוף הערב!
         </motion.p>
@@ -154,7 +154,7 @@ const Index = () => {
           transition={{ delay: 0.9 }}
         >
           {[
-            { icon: BookOpen, title: "שאלות על חיוש", desc: "כמה אתם מכירים את בת המצווה שלנו?" },
+            { icon: BookOpen, title: "שאלות אישיות", desc: "כמה אתם מכירים את בעלי השמחה?" },
             { icon: Users, title: "כל האורחים משחקים", desc: "סורקים QR ומצטרפים מהטלפון" },
             { icon: Zap, title: "ערב בלתי נשכח", desc: "אנימציות, צלילים, תארים ומלכת הערב" },
           ].map((feature, i) => (

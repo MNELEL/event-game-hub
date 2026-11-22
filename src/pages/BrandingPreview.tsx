@@ -58,7 +58,7 @@ function QuestionPreview() {
     <div className="game-gradient rounded-xl p-5 min-h-[260px]" dir="rtl">
       <div className="parchment-card rounded-lg p-3 mb-3 text-center">
         <div className="text-xs text-game-dark-gold/60 mb-1">שאלה 3 / 10</div>
-        <div className="font-display text-game-dark-gold font-bold">איזה צבע הכי אהוב על חיוש?</div>
+        <div className="font-display text-game-dark-gold font-bold">איזה צבע הכי אהוב על בעלי השמחה?</div>
       </div>
       <div className="grid grid-cols-2 gap-2">
         {answers.map((c, i) => (

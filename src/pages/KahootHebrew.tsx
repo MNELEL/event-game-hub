@@ -55,7 +55,7 @@ export default function KahootHebrew() {
           </h1>
           <p className="text-lg md:text-xl text-game-dark-gold/75 leading-relaxed max-w-2xl mx-auto mb-8">
             אם ניסיתם להפעיל קהוט בכיתה, בגיבוש צוות או באירוע משפחתי ונתקלתם בממשק אנגלי,
-            בדרישה לאינטרנט יציב ובמיתוג שלא שלכם — חידון חיוש נבנה בדיוק בשבילכם:
+            בדרישה לאינטרנט יציב ובמיתוג שלא שלכם — מגה טריוויה נבנה בדיוק בשבילכם:
             פלטפורמת טריוויה ישראלית, בעברית מלאה, שעובדת גם אופליין.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -100,7 +100,7 @@ export default function KahootHebrew() {
       {/* HIGHLIGHTS */}
       <section className="relative z-10 max-w-6xl mx-auto px-6 py-12">
         <h2 className="font-display text-3xl md:text-4xl font-bold text-game-dark-gold text-center mb-10">
-          מה מקבלים בחידון חיוש
+          מה מקבלים במגה טריוויה
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {highlights.map((h, i) => (

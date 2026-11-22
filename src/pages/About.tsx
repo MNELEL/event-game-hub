@@ -66,7 +66,7 @@ const About = () => {
               {branding.iconPrimary} אודות {branding.name}
             </motion.h1>
             <p className="text-lg text-game-dark-gold font-body">
-              חידון בת המצווה החגיגי של חיוש ✨
+              {branding.tagline} ✨
             </p>
           </div>
 
@@ -79,7 +79,7 @@ const About = () => {
           >
             {branding.aboutDescription}
             על המשפחה, על החברים ועל הרגעים הכי חשובים. המנחה מציג את המשחק על מסך גדול,
-            וכל האורחים מצטרפים מהטלפון. ערב בלתי נשכח לחיוש ולכל האורחים.
+            וכל האורחים מצטרפים מהטלפון. ערב בלתי נשכח לבעלי השמחה ולכל האורחים.
           </motion.p>
 
           {/* Features Grid */}
