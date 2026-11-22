@@ -13,6 +13,7 @@ import { PhonePlayersList } from "./PhonePlayersList";
 import { PhonePlayerRow } from "@/hooks/usePhonePlayers";
 
 type Props = {
+  gameTitle?: string;
   gameCode: string;
   players: Player[];
   phonePlayers: PhonePlayerRow[];
@@ -24,10 +25,11 @@ type Props = {
   onCancelGrace?: () => void;
 };
 
-export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPlayer, onStart, questionsCount, graceCountdown, onCancelGrace }: Props) {
+export function GameLobby({ gameTitle, gameCode, players, phonePlayers, gameStatus, onAddPlayer, onStart, questionsCount, graceCountdown, onCancelGrace }: Props) {
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
   const { branding } = useBranding();
+  const title = gameTitle || branding.name;
   const navigate = useNavigate();
 
   // Start lobby music immediately, or only from (event time - lead minutes) when an event time is set
@@ -153,12 +155,12 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
           )}
           {/* Title with letter-by-letter reveal */}
           <motion.h1
-            className="font-serif text-6xl md:text-8xl font-bold text-game-dark-gold text-shadow-game"
+            className="font-serif text-4xl md:text-6xl font-bold text-game-dark-gold text-shadow-game break-words"
             initial={{ opacity: 0, y: 30, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
           >
-            {branding.name}
+            {title}
           </motion.h1>
 
           {branding.eventAt && (
@@ -367,10 +369,10 @@ export function GameLobby({ gameCode, players, phonePlayers, gameStatus, onAddPl
               size="xl"
               onClick={handleStart}
               disabled={questionsCount === 0}
-              className="gap-3 text-xl px-12"
+              className="gap-3 text-xl px-6 h-auto min-h-14 py-3 max-w-full whitespace-normal break-words"
             >
               <Play className="w-6 h-6" />
-              התחל משחק!
+              התחל {title}
             </Button>
           </motion.div>
         )}

@@ -108,6 +108,7 @@ const PlayerJoin = () => {
     if (codeFromUrl) setGameCode(codeFromUrl);
   }, [codeFromUrl]);
   const { state, joinGame, submitAnswer, reconnect } = usePlayerGame();
+  const gameHeading = <h1 className="font-serif text-2xl text-game-dark-gold text-center mb-4 break-words">{state.gameTitle}</h1>;
   const { toast } = useToast();
 
   // Sync local timer with server time and run local countdown.
@@ -295,16 +296,17 @@ const PlayerJoin = () => {
         <BrandedBackdrop logo />
         <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {gameHeading}
           <CheckCircle className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-3xl text-game-dark-gold mb-2">שלום {state.playerName}! 👋</h2>
           {startInFuture ? (
             <div className="mb-6">
               <p className="text-game-dark-gold/70 text-base mb-1">המשחק יתחיל ב</p>
               <p className="font-mono text-3xl font-bold text-game-gold direction-ltr">
-                {startAt!.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                {startAt?.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
               </p>
               <p className="text-sm text-game-dark-gold/60 mt-1">
-                {startAt!.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
+                {startAt?.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
               </p>
             </div>
           ) : (
@@ -327,6 +329,7 @@ const PlayerJoin = () => {
         <BrandedBackdrop logo />
         <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="w-full max-w-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {gameHeading}
           {/* Timer bar */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
@@ -373,6 +376,7 @@ const PlayerJoin = () => {
               {answerLabels.map((label, i) => (
                 <motion.button
                   key={i}
+                  aria-label={`${state.gameTitle} — תשובה ${label}`}
                   className={`${answerClasses[i]} rounded-2xl h-28 text-4xl font-display font-bold text-white shadow-lg active:scale-95 transition-transform border border-white/20`}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
@@ -398,6 +402,7 @@ const PlayerJoin = () => {
         <BrandedBackdrop logo />
         <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {gameHeading}
           <Trophy className="w-16 h-16 text-game-gold mx-auto mb-4" />
           <h2 className="font-serif text-2xl text-game-dark-gold mb-2">
             {state.gameStatus === "results" ? "תוצאות" : "טבלת מובילים"}
@@ -415,6 +420,7 @@ const PlayerJoin = () => {
         <BrandedBackdrop logo />
         <ConnectionStatusBanner disconnected={state.disconnected} reconnecting={state.reconnecting} onReconnect={reconnect} />
         <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {gameHeading}
           <motion.div
             animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -433,6 +439,7 @@ const PlayerJoin = () => {
   return (
     <div className="min-h-screen game-gradient flex items-center justify-center p-4" dir="rtl">
       <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        {gameHeading}
         <p className="text-game-dark-gold/60 font-serif text-xl">המשחק מתחיל בקרוב...</p>
       </motion.div>
     </div>

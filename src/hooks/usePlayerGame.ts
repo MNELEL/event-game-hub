@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getGameTitle } from "@/lib/gameTitle";
 
 type GameStatus = "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished";
 
@@ -7,6 +8,7 @@ type PlayerGameState = {
   gameId: string | null;
   playerId: string | null;
   playerName: string;
+  gameTitle: string;
   secretToken: string | null;
   gameStatus: GameStatus;
   currentQuestionIndex: number;
@@ -71,6 +73,7 @@ export function usePlayerGame() {
     gameId: null,
     playerId: null,
     playerName: "",
+    gameTitle: getGameTitle(null),
     secretToken: null,
     gameStatus: "lobby",
     currentQuestionIndex: 0,
@@ -104,6 +107,7 @@ export function usePlayerGame() {
       answerSubmitted: s.answerSubmitted,
       startAt: s.startAt,
       playerName: s.playerName,
+      gameTitle: s.gameTitle,
     };
     setSnapshot(snap);
     saveSnapshot(snap);
@@ -131,7 +135,7 @@ export function usePlayerGame() {
 
     const { data: gameRow } = await supabase
       .from("games")
-      .select("start_at")
+      .select("start_at, settings")
       .eq("id", row.game_id)
       .maybeSingle();
 
@@ -150,6 +154,7 @@ export function usePlayerGame() {
         gameId: row.game_id,
         playerId: row.player_id,
         playerName: name,
+        gameTitle: getGameTitle(gameRow?.settings),
         secretToken: row.secret_token,
         gameStatus: row.status as GameStatus,
         currentQuestionIndex: row.current_question_index,
@@ -173,7 +178,7 @@ export function usePlayerGame() {
   const refetchGameState = useCallback(async (gameId: string) => {
     const { data, error } = await supabase
       .from("games")
-      .select("status, current_question_index, time_remaining, question_ids, start_at")
+      .select("status, current_question_index, time_remaining, question_ids, start_at, settings")
       .eq("id", gameId)
       .maybeSingle();
     if (error || !data) return false;
@@ -182,6 +187,7 @@ export function usePlayerGame() {
       const next: PlayerGameState = {
         ...prev,
         gameStatus: row.status as GameStatus,
+        gameTitle: getGameTitle(row.settings),
         currentQuestionIndex: row.current_question_index,
         timeRemaining: row.time_remaining,
         questionIds: row.question_ids || prev.questionIds,
@@ -215,6 +221,7 @@ export function usePlayerGame() {
       gameId: saved.gameId,
       playerId: saved.playerId,
       playerName: saved.playerName,
+      gameTitle: snap?.gameTitle ?? getGameTitle(null),
       secretToken: saved.secretToken,
       connected: true,
       gameStatus: (snap?.gameStatus as GameStatus) ?? prev.gameStatus,
@@ -292,6 +299,7 @@ export function usePlayerGame() {
             const next: PlayerGameState = {
               ...prev,
               gameStatus: game.status as GameStatus,
+              gameTitle: getGameTitle(game.settings),
               currentQuestionIndex: newQuestionIndex,
               timeRemaining: game.time_remaining,
               startAt: game.start_at ?? prev.startAt,
@@ -404,6 +412,7 @@ export function usePlayerGame() {
     setSnapshot(null);
     setState({
       gameId: null, playerId: null, playerName: "", secretToken: null,
+      gameTitle: getGameTitle(null),
       gameStatus: "lobby", currentQuestionIndex: 0, timeRemaining: 15,
       questionCount: 0, questionIds: [], connected: false, answerSubmitted: false,
       startAt: null, disconnected: false, reconnecting: false,
@@ -418,6 +427,7 @@ export function usePlayerGame() {
     return {
       ...state,
       gameStatus: (snapshot.gameStatus as GameStatus) ?? state.gameStatus,
+      gameTitle: snapshot.gameTitle ?? state.gameTitle,
       currentQuestionIndex: snapshot.currentQuestionIndex ?? state.currentQuestionIndex,
       timeRemaining: snapshot.timeRemaining ?? state.timeRemaining,
       questionCount: snapshot.questionCount ?? state.questionCount,

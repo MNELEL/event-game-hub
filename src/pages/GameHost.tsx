@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { shouldAutoStart } from "@/lib/autoStart";
+import { getGameTitle } from "@/lib/gameTitle";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const GameHost = () => {
   const { questions, settings, loading: questionsLoading } = useSupabaseQuestions();
   const game = useRealtimeGame(questions, settings);
   const { gameState } = game;
+  const gameTitle = getGameTitle(gameState.settings);
   const [gameReady, setGameReady] = useState(false);
   const [graceCountdown, setGraceCountdown] = useState<number | null>(null);
   const [startAt, setStartAt] = useState<string | null>(null);
@@ -213,6 +215,7 @@ const GameHost = () => {
             variant={locked ? "destructive" : "outline"}
             size="sm"
             onClick={toggleLock}
+            aria-label={`${locked ? "פתח" : "נעל"} את ${gameTitle}`}
             className="gap-1"
             title={locked ? "המשחק נעול — מתקשרים חדשים לא יוכלו להצטרף" : "נעל מתקשרים חדשים"}
           >
@@ -220,6 +223,10 @@ const GameHost = () => {
           </Button>
         )}
       </div>
+
+      {gameState.status !== "lobby" && (
+        <h1 className="mx-auto max-w-2xl px-6 pt-24 text-center font-serif text-2xl text-game-dark-gold break-words">{gameTitle}</h1>
+      )}
 
       <HostLiveStatusPanel
         gameStatus={gameState.status as "lobby" | "playing" | "question" | "results" | "leaderboard" | "finished"}
@@ -250,6 +257,7 @@ const GameHost = () => {
           <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }} transition={{ duration: 0.4 }}>
             <StartAtDebugPanel startAt={startAt} now={nowTick} />
             <GameLobby
+              gameTitle={gameTitle}
               gameCode={gameState.gameCode}
               players={gameState.players}
               phonePlayers={phonePlayers}

@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Run a real question-pack game and verify its custom name in host/player lobby, controls and gameplay (5 correct answers, 500 points)
 - [x] Restore full site version from the complete branch, reapply Haredi question cleanup
 - [x] WhatsApp share preview, share and contact buttons using the live link
 - [x] Publish to live site
