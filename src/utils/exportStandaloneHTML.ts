@@ -70,7 +70,7 @@ function render() {
   renderProgress();
   
   let html = '<div class="question-card">';
-  html += '<div class="q-meta"><span class="badge">' + (categories[q.category] || q.category) + '</span><span class="badge">' + q.points + ' נק׳</span></div>';
+  html += '<div class="q-meta"><span class="badge">' + escapeHtml(String(categories[q.category] || q.category || '')) + '</span><span class="badge">' + escapeHtml(String(Number(q.points) || 0)) + ' נק׳</span></div>';
   html += '<div class="q-text">' + escapeHtml(q.text) + '</div>';
   if (q.type === 'image' && q.mediaUrl) html += '<img src="' + escapeHtml(q.mediaUrl) + '" style="max-width:100%;border-radius:8px;margin-bottom:12px">';
   html += '<div class="options">';
