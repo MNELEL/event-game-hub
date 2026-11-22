@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Sparkles, Users, QrCode, Smartphone, Trophy, Palette,
   ShieldCheck, WifiOff, BarChart3, PartyPopper, Check,
-  Phone, Mail, ArrowLeft, PlayCircle,
+  Phone, Mail, ArrowLeft, PlayCircle, LogIn, Gamepad2, RotateCcw,
   MessageCircle,
 } from "lucide-react";
 import { whatsappChatUrl } from "@/lib/whatsapp";
@@ -65,6 +66,12 @@ const faqs = [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  let savedCode = "";
+  try {
+    const raw = localStorage.getItem("player_session_v1");
+    savedCode = raw ? (JSON.parse(raw).code || "") : "";
+  } catch { /* ignore */ }
 
   return (
     <main className="min-h-screen game-gradient relative overflow-hidden" dir="rtl">
@@ -90,7 +97,7 @@ export default function Landing() {
       <header className="relative z-20 max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-2 font-display text-2xl text-game-dark-gold">
           <span className="text-3xl">👑</span>
-          <span>Trivia Live</span>
+          <span>מגה טריוויה</span>
         </div>
         <nav className="hidden md:flex items-center gap-6 text-sm text-game-dark-gold/80">
           <a href="#how" className="hover:text-game-dark-gold">איך זה עובד</a>
@@ -99,10 +106,30 @@ export default function Landing() {
           <a href="#pricing" className="hover:text-game-dark-gold">מחירים</a>
           <a href="#faq" className="hover:text-game-dark-gold">שאלות</a>
         </nav>
-        <Button variant="gold" size="sm" onClick={() => navigate("/play")} className="gap-1">
-          <PlayCircle className="w-4 h-4" /> נסו דמו
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate(user ? "/admin" : "/login")} className="gap-1">
+            <LogIn className="w-4 h-4" /> {user ? "ממשק ניהול" : "כניסה / הרשמה"}
+          </Button>
+          <Button variant="gold" size="sm" onClick={() => navigate("/play")} className="gap-1">
+            <PlayCircle className="w-4 h-4" /> הצטרפות
+          </Button>
+        </div>
       </header>
+
+      {(savedCode || user) && (
+        <div className="relative z-20 max-w-3xl mx-auto px-6 flex flex-col sm:flex-row gap-3 justify-center">
+          {savedCode && (
+            <Button variant="game" size="lg" onClick={() => navigate(`/play?code=${savedCode}`)} className="gap-2">
+              <RotateCcw className="w-5 h-5" /> חזרה למשחק שלך ({savedCode})
+            </Button>
+          )}
+          {user && (
+            <Button variant="gold" size="lg" onClick={() => navigate("/host")} className="gap-2">
+              <Gamepad2 className="w-5 h-5" /> המשך למסך המנחה
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* HERO */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 pt-10 pb-20 text-center">
@@ -119,7 +146,10 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <Button variant="game" size="xl" onClick={() => navigate("/play")} className="gap-2 text-xl px-10 py-6">
-              <PartyPopper className="w-6 h-6" /> נסו דמו חינם
+              <PartyPopper className="w-6 h-6" /> הצטרפות למשחק
+            </Button>
+            <Button variant="gold" size="xl" onClick={() => navigate(user ? "/host" : "/login")} className="gap-2 text-xl px-10 py-6">
+              <Gamepad2 className="w-6 h-6" /> התחלת משחק חדש
             </Button>
             <Button variant="gold" size="xl" onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })} className="gap-2 text-xl px-10 py-6">
               הזמינו עכשיו <ArrowLeft className="w-5 h-5" />
@@ -307,12 +337,13 @@ export default function Landing() {
 
       {/* FOOTER */}
       <footer className="relative z-10 max-w-6xl mx-auto px-6 py-10 text-center text-sm text-game-dark-gold/60 border-t border-game-border-gold/30">
-        <p>© {new Date().getFullYear()} Trivia Live · משחק טריוויה לאירועים</p>
+        <p>© {new Date().getFullYear()} מגה טריוויה · משחק טריוויה לאירועים</p>
         <div className="mt-2 flex justify-center gap-4">
           <button onClick={() => navigate("/about")} className="hover:text-game-dark-gold">אודות</button>
           <button onClick={() => navigate("/install")} className="hover:text-game-dark-gold">התקנה</button>
           <button onClick={() => navigate("/kahoot-hebrew")} className="hover:text-game-dark-gold">קהוט בעברית</button>
-          <button onClick={() => navigate("/host")} className="hover:text-game-dark-gold">כניסת מפעיל</button>
+          <button onClick={() => navigate("/app")} className="hover:text-game-dark-gold">פורטל המשחק</button>
+          <button onClick={() => navigate("/login")} className="hover:text-game-dark-gold">כניסה / הרשמה</button>
         </div>
       </footer>
     </main>
