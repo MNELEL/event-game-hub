@@ -121,6 +121,7 @@ export function BrandingEditor() {
             <Label htmlFor="eventAt" className="mb-1 block">תאריך ושעת תחילת המשחק</Label>
             <Input id="eventAt" type="datetime-local" value={toLocalInput(draft.eventAt)}
               onChange={(e) => setDraft({ ...draft, eventAt: e.target.value ? new Date(e.target.value).toISOString() : "" })} />
+            <p className="text-xs text-muted-foreground mt-1">כשמסך המארח פתוח בלובי, המשחק יתחיל לבד בשעה הזו.</p>
           </div>
           <div>
             <Label htmlFor="musicLead" className="mb-1 block">כמה זמן לפני ההתחלה להתחיל את המוזיקה בלובי</Label>

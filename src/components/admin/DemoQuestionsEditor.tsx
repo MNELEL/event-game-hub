@@ -85,7 +85,7 @@ export function DemoQuestionsEditor() {
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() || "bin";
-      const path = `${qid}/${Date.now()}.${ext}`;
+      const path = `${qid}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error } = await supabase.storage.from("demo-media").upload(path, file, {
         cacheControl: "3600",
         upsert: false,

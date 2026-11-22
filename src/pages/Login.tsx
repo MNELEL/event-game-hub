@@ -11,7 +11,8 @@ import { useBranding } from "@/hooks/useBranding";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
+  const [mode, setMode] = useState<"in" | "up">("in");
   const { toast } = useToast();
   const { branding } = useBranding();
   const [email, setEmail] = useState("");
@@ -21,6 +22,17 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    if (mode === "up") {
+      const { error } = await signUp(email, password);
+      setLoading(false);
+      if (error) {
+        toast({ title: "ההרשמה נכשלה", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "נרשמת בהצלחה", description: "שלחנו לך מייל לאישור. אחרי האישור אפשר להיכנס." });
+        setMode("in");
+      }
+      return;
+    }
     const { error } = await signIn(email, password);
     setLoading(false);
 
@@ -71,9 +83,12 @@ const Login = () => {
             minLength={6}
           />
           <Button variant="gold" size="lg" className="w-full gap-2" type="submit" disabled={loading}>
-            <LogIn className="w-5 h-5" />
-            {loading ? "טוען..." : "כניסה"}
+            {mode === "up" ? <UserPlus className="w-5 h-5" /> : <LogIn className="w-5 h-5" />}
+            {loading ? "טוען..." : mode === "up" ? "הרשמה" : "כניסה"}
           </Button>
+          <button type="button" onClick={() => setMode(m => (m === "in" ? "up" : "in"))} className="w-full text-sm text-game-dark-gold underline">
+            {mode === "in" ? "אין לך חשבון? להרשמה" : "יש לך כבר חשבון? לכניסה"}
+          </button>
         </form>
 
         <div className="relative my-6">

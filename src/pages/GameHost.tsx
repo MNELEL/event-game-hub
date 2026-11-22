@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { shouldAutoStart } from "@/lib/autoStart";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -64,6 +65,16 @@ const GameHost = () => {
     setLocked(next);
     await supabase.from("games").update({ locked: next }).eq("id", game.gameDbId);
   };
+
+  // Auto-start the game when the scheduled branding date/time arrives.
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (!shouldAutoStart(branding.eventAt, nowTick, gameState.status, autoStartedRef.current)) return;
+    autoStartedRef.current = true;
+    if (game.gameDbId) supabase.from("games").update({ start_at: new Date().toISOString() }).eq("id", game.gameDbId);
+    game.startGame();
+    setTimeout(() => game.showQuestion(), 100);
+  }, [nowTick, branding.eventAt, gameState.status, game]);
 
   // Reset readiness on every question change / status switch
   useEffect(() => {
