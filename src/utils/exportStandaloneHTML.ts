@@ -3,14 +3,15 @@ import { Question, DEFAULT_CATEGORIES } from "@/types/game";
 export function exportStandaloneHTML(questions: Question[], title: string) {
   const getCategoryName = (id: string) => DEFAULT_CATEGORIES.find(c => c.id === id)?.name || id;
 
-  const questionsJSON = JSON.stringify(questions);
+  const safeTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const questionsJSON = JSON.stringify(questions).replace(/<\/script>/gi, '<\\/script>');
 
   const html = `<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${title}</title>
+<title>${safeTitle}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;min-height:100vh}
@@ -48,7 +49,7 @@ button.btn{padding:12px 32px;border:none;border-radius:12px;font-size:1rem;font-
 </head>
 <body>
 <div class="container">
-  <h1>🧠 ${title}</h1>
+  <h1>🧠 ${safeTitle}</h1>
   <div class="score-bar">ניקוד: <span id="score">0</span> | שאלה <span id="qnum">1</span> מתוך <span id="qtotal">0</span></div>
   <div class="progress" id="progress"></div>
   <div id="game"></div>

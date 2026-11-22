@@ -5,9 +5,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,29 +28,33 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Downgrade Capacitor to v6
-        run: npm install @capacitor/core@6 @capacitor/android@6 @capacitor/cli@6
-
       - name: Build Vite
         run: npm run build
 
       - name: Capacitor add & sync
         run: |
-          npx cap add android
+          npx cap add android || echo "android already exists"
           npx cap sync android
 
-      - name: Add Netzfree CA certificate (if exists)
+      - name: Add Netzfree CA certificate
         run: |
-          if [ -f "public/root_ca_bundle.crt" ]; then
-            mkdir -p android/app/src/main/res/raw
-            cp public/root_ca_bundle.crt android/app/src/main/res/raw/netzfree_ca.crt
-            mkdir -p android/app/src/main/res/xml
-            printf '<?xml version="1.0" encoding="utf-8"?>\n<network-security-config>\n  <base-config>\n    <trust-anchors>\n      <certificates src="system" />\n      <certificates src="@raw/netzfree_ca" />\n    </trust-anchors>\n  </base-config>\n</network-security-config>\n' > android/app/src/main/res/xml/network_security_config.xml
-            sed -i 's/<application/<application android:networkSecurityConfig="@xml\/network_security_config"/' android/app/src/main/AndroidManifest.xml
-            echo "Netzfree CA certificate added"
-          else
-            echo "No CA certificate found, skipping"
-          fi
+          mkdir -p android/app/src/main/res/raw
+          cp public/root_ca_bundle.crt android/app/src/main/res/raw/netzfree_ca.crt
+
+          mkdir -p android/app/src/main/res/xml
+          cat > android/app/src/main/res/xml/network_security_config.xml << 'XMLEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <network-security-config>
+              <base-config>
+                  <trust-anchors>
+                      <certificates src="system" />
+                      <certificates src="@raw/netzfree_ca" />
+                  </trust-anchors>
+              </base-config>
+          </network-security-config>
+          XMLEOF
+
+          sed -i 's/<application/<application android:networkSecurityConfig="@xml\/network_security_config"/' android/app/src/main/AndroidManifest.xml
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew

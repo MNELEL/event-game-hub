@@ -1,4 +1,4 @@
-# Tasks
-- [x] Fix preview type errors.
-- [x] Review every bank question for Haredi suitability and remove unsuitable questions.
-- [x] Verify the bank counts, default-data regression test, and public preview after changes.
+# Roadmap
+- [x] Restore full site version from the complete branch, reapply Haredi question cleanup
+- [x] WhatsApp share preview, share and contact buttons using the live link
+- [ ] Publish to live site

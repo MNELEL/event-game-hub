@@ -1,15 +1,22 @@
 import { createRoot } from "react-dom/client";
-import { inject } from '@vercel/analytics';
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 
-inject();
+// In Lovable preview iframes, unregister any leftover SW so the editor preview
+// isn't trapped on a stale build. PWA installation is unaffected on real users.
+if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+  const isInIframe = (() => {
+    try { return window.self !== window.top; } catch { return true; }
+  })();
+  const isPreviewHost =
+    window.location.hostname.includes("id-preview--") ||
+    window.location.hostname.includes("lovableproject.com");
+  if (isInIframe || isPreviewHost) {
+    navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister()));
+  }
+}
 
-// Initialize theme before render to avoid flash
-try {
-  const saved = localStorage.getItem("hayoush_theme");
-  const valid = ["parchment","dark","ocean","forest","sunset"];
-  document.documentElement.setAttribute("data-theme", valid.includes(saved || "") ? saved! : "parchment");
-} catch {}
-
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider><App /></HelmetProvider>,
+);
