@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ArrowRight, Target, Zap, Trophy, PieChart as PieIcon, Download, Image } from "lucide-react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
 import html2canvas from "html2canvas";
+import { useBranding } from "@/hooks/useBranding";
 
 type Props = {
   players: Player[];
@@ -27,6 +28,7 @@ const CHART_COLORS = [
 
 export function GameStatsPanel({ players, questions, onClose }: Props) {
   const statsRef = useRef<HTMLDivElement>(null);
+  const { branding } = useBranding();
 
   const exportAsImage = useCallback(async () => {
     if (!statsRef.current) return;
@@ -58,14 +60,14 @@ export function GameStatsPanel({ players, questions, onClose }: Props) {
     if (printWindow) {
       printWindow.document.write(`
         <html dir="rtl">
-          <head><title>סטטיסטיקות החגיגה של חיוש</title>
+          <head><title>סטטיסטיקות ${String(branding.name ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[c])}</title>
             <style>
               body { margin: 0; display: flex; justify-content: center; background: #f5eed6; }
               img { max-width: 100%; height: auto; }
               @media print { body { margin: 0; } }
             </style>
           </head>
-          <body><img src="${imgData}" /></body>
+          <body><img src="${String(imgData).startsWith('data:image/') ? String(imgData).replace(/"/g, '&quot;') : ''}" /></body>
         </html>
       `);
       printWindow.document.close();

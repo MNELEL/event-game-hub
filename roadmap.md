@@ -1,0 +1,11 @@
+# Roadmap
+- [x] Run a real question-pack game and verify its custom name in host/player lobby, controls and gameplay (5 correct answers, 500 points)
+- [x] Restore full site version from the complete branch, reapply Haredi question cleanup
+- [x] WhatsApp share preview, share and contact buttons using the live link
+- [x] Publish to live site
+- [x] Sign-up on login page works
+- [x] Run a game from a question pack
+- [x] Uploaded file URLs load without collisions
+- [x] Publish and verify WhatsApp preview (name, description, image, game link)
+- [x] Branding: game date/time, auto-start game at start time
+- [x] Pack page: pick pack, approve/remove questions per pack

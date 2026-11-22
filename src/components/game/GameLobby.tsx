@@ -3,34 +3,49 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Player } from "@/types/game";
-import { Play, UserPlus, Users, Monitor, Phone, QrCode, Copy, Check } from "lucide-react";
+import { Play, UserPlus, Users, Monitor, Phone, QrCode, MessageCircle } from "lucide-react";
+import { whatsappShareUrl, gameInviteText } from "@/lib/whatsapp";
+import { useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { SoundEffects } from "@/hooks/useSoundEffects";
+import { useBranding } from "@/hooks/useBranding";
+import { PhonePlayersList } from "./PhonePlayersList";
+import { PhonePlayerRow } from "@/hooks/usePhonePlayers";
 
 type Props = {
+  gameTitle?: string;
   gameCode: string;
   players: Player[];
+  phonePlayers: PhonePlayerRow[];
+  gameStatus: string;
   onAddPlayer: (name: string) => Player | Promise<Player | null>;
   onStart: () => void;
   questionsCount: number;
+  graceCountdown?: number | null;
+  onCancelGrace?: () => void;
 };
 
-export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCount }: Props) {
+export function GameLobby({ gameTitle, gameCode, players, phonePlayers, gameStatus, onAddPlayer, onStart, questionsCount, graceCountdown, onCancelGrace }: Props) {
   const [newPlayerName, setNewPlayerName] = useState("");
   const prevCount = useRef(players.length);
-  const [copied, setCopied] = useState(false);
+  const { branding } = useBranding();
+  const title = gameTitle || branding.name;
+  const navigate = useNavigate();
 
-  const copyGameCode = () => {
-    navigator.clipboard.writeText(gameCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // Start lobby background music on mount
+  // Start lobby music immediately, or only from (event time - lead minutes) when an event time is set
+  const musicStartAt = branding.eventAt ? new Date(branding.eventAt).getTime() - (branding.musicLeadMinutes || 0) * 60000 : 0;
+  const [now, setNow] = useState(Date.now());
+  const musicDue = !musicStartAt || now >= musicStartAt;
   useEffect(() => {
+    if (musicDue) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [musicDue]);
+  useEffect(() => {
+    if (!musicDue) return;
     SoundEffects.startMusic('lobby');
     return () => SoundEffects.stopMusic();
-  }, []);
+  }, [musicDue]);
 
   useEffect(() => {
     if (players.length > prevCount.current) {
@@ -53,6 +68,13 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {branding.backgroundImageUrl && (
+        <div
+          className="absolute inset-0 bg-center bg-cover opacity-15 pointer-events-none"
+          style={{ backgroundImage: `url(${branding.backgroundImageUrl})` }}
+          aria-hidden="true"
+        />
+      )}
       {/* Floating leaves background */}
       {[...Array(8)].map((_, i) => (
         <motion.div
@@ -99,7 +121,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             ✦ 🌿 ✦
           </motion.div>
 
-          {/* Brain icon with glow pulse */}
+          {/* Crown icon with glow pulse */}
           <motion.div
             className="text-8xl md:text-9xl mb-2 inline-block"
             initial={{ scale: 0, rotateY: 180 }}
@@ -117,19 +139,37 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
               }}
               transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              🧠
+              👑
             </motion.span>
           </motion.div>
 
+          {branding.logoUrl && (
+            <motion.img
+              src={branding.logoUrl}
+              alt={branding.name}
+              className="mx-auto mb-4 h-28 w-28 object-contain drop-shadow-lg"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 120 }}
+            />
+          )}
           {/* Title with letter-by-letter reveal */}
           <motion.h1
-            className="font-serif text-6xl md:text-8xl font-bold text-game-dark-gold text-shadow-game"
+            className="font-serif text-4xl md:text-6xl font-bold text-game-dark-gold text-shadow-game break-words"
             initial={{ opacity: 0, y: 30, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
           >
-            החגיגה של חיוש
+            {title}
           </motion.h1>
+
+          {branding.eventAt && (
+            <p className="font-serif text-lg text-game-gold/80 mt-2">
+              המשחק יתחיל ב-{new Date(branding.eventAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}
+              {!musicDue && ` · המוזיקה תתחיל ב-${new Date(musicStartAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}`}
+            </p>
+          )}
+
 
           {/* Subtitle reveal */}
           <motion.p
@@ -138,7 +178,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.6 }}
           >
-            חידון ידע אינטראקטיבי
+            {branding.lobbySubtitle} ✨
           </motion.p>
 
           {/* Gold ornamental line */}
@@ -183,7 +223,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
-                {window.location.host}/play
+                {window.location.host}/playlay
               </motion.div>
             </motion.div>
 
@@ -200,7 +240,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 animate={{ boxShadow: ["0 0 8px hsl(35 55% 53% / 0.15)", "0 0 20px hsl(35 55% 53% / 0.3)", "0 0 8px hsl(35 55% 53% / 0.15)"] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
-                03-7737970
+                {branding.phone}
               </motion.div>
             </motion.div>
 
@@ -219,7 +259,7 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
                 transition={{ duration: 2.5, repeat: Infinity }}
               >
                 <QRCodeSVG
-                  value={`${window.location.origin}/play?code=${gameCode}`}
+                  value={`${window.location.origin}/play?code=${gameCode}&auto=1`}
                   size={120}
                   bgColor="transparent"
                   fgColor="hsl(35, 60%, 25%)"
@@ -229,15 +269,8 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             </motion.div>
           </div>
 
-          <p className="text-game-dark-gold/50 text-xs mt-4 flex items-center justify-center gap-2">
+          <p className="text-game-dark-gold/50 text-xs mt-4">
             קוד משחק: <span className="text-game-gold font-bold text-lg">{gameCode}</span>
-            <button
-              onClick={copyGameCode}
-              className="inline-flex items-center gap-1 bg-game-gold/20 hover:bg-game-gold/40 text-game-dark-gold text-xs px-2 py-1 rounded-lg transition-colors border border-game-border-gold/30"
-            >
-              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-              {copied ? "הועתק!" : "העתק"}
-            </button>
           </p>
         </motion.div>
 
@@ -256,9 +289,16 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 text-game-dark-gold/60">
+          <div className="flex items-center gap-2 text-game-dark-gold/60 flex-wrap">
             <Users className="w-4 h-4" />
-            <span className="text-sm">{players.length} שחקנים מחוברים</span>
+            <span className="text-sm">
+              {players.length + phonePlayers.length} שחקנים מחוברים
+              {phonePlayers.length > 0 && (
+                <span className="text-game-dark-gold/50">
+                  {" "}· {players.length} באתר · {phonePlayers.length} בטלפון
+                </span>
+              )}
+            </span>
           </div>
 
           <AnimatePresence>
@@ -281,20 +321,79 @@ export function GameLobby({ gameCode, players, onAddPlayer, onStart, questionsCo
           </AnimatePresence>
         </div>
 
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button
-            variant="gold"
-            size="xl"
-            onClick={handleStart}
-            disabled={questionsCount === 0}
-            className="gap-3 text-xl px-12"
+        <PhonePlayersList phonePlayers={phonePlayers} gameStatus={gameStatus} currentQuestionIndex={0} />
+
+        {graceCountdown && graceCountdown > 0 ? (
+          <motion.div
+            className="parchment-card rounded-xl p-5 mb-4 text-center"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
           >
-            <Play className="w-6 h-6" />
-            התחל משחק!
-          </Button>
-        </motion.div>
+            <p className="font-serif text-game-dark-gold text-lg mb-2">המשחק יתחיל ב</p>
+            {(() => {
+              const startAt = new Date(Date.now() + graceCountdown * 1000);
+              const dateStr = startAt.toLocaleDateString("he-IL", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              });
+              const timeStr = startAt.toLocaleTimeString("he-IL", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              });
+              return (
+                <>
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-4xl font-bold text-game-gold direction-ltr"
+                  >
+                    {timeStr}
+                  </motion.div>
+                  <p className="text-base text-game-dark-gold/80 mt-1">{dateStr}</p>
+                  <p className="text-xs text-game-dark-gold/50 mt-2">
+                    בעוד {graceCountdown} שניות · מתקשרים יכולים עדיין להצטרף
+                  </p>
+                </>
+              );
+            })()}
+            <Button variant="gold" size="sm" onClick={onCancelGrace} className="mt-3">
+              דלג והתחל מיד
+            </Button>
+          </motion.div>
+        ) : (
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="gold"
+              size="xl"
+              onClick={handleStart}
+              disabled={questionsCount === 0}
+              className="gap-3 text-xl px-6 h-auto min-h-14 py-3 max-w-full whitespace-normal break-words"
+            >
+              <Play className="w-6 h-6" />
+              התחל {title}
+            </Button>
+          </motion.div>
+        )}
 
         <p className="text-game-dark-gold/50 text-sm mt-3">{questionsCount} שאלות מוכנות</p>
+
+        {!graceCountdown && (
+          <div className="mt-4 parchment-card parchment-border-double rounded-xl px-5 py-3 inline-block">
+            <p className="text-game-dark-gold font-serif text-base md:text-lg font-bold mb-1">
+              ✨ כל האורחים מוזמנים להוציא טלפונים ולהתחבר ✨
+            </p>
+            <div className="text-game-dark-gold/80 text-sm flex items-center justify-center gap-2">
+              <Phone className="w-4 h-4" />
+              <span>חייגו</span>
+              <span dir="ltr" className="font-mono font-bold text-base">077-2267604</span>
+            </div>
+            <a href={whatsappShareUrl(gameInviteText(gameCode))} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-game-dark-gold underline">
+              <MessageCircle className="w-4 h-4" /> שתפו את ההזמנה בוואטסאפ
+            </a>
+          </div>
+        )}
       </motion.div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Question, DEFAULT_CATEGORIES } from "@/types/game";
 import { SoundEffects } from "@/hooks/useSoundEffects";
@@ -9,6 +9,7 @@ type Props = {
   totalQuestions: number;
   timeRemaining: number;
   onTimeUp: () => void;
+  onReady?: () => void;
 };
 
 const answerClasses = [
@@ -33,25 +34,49 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 };
 
-export function GameQuestionDisplay({ question, questionNumber, totalQuestions, timeRemaining, onTimeUp }: Props) {
+export function GameQuestionDisplay({ question, questionNumber, totalQuestions, timeRemaining, onTimeUp, onReady }: Props) {
   const category = DEFAULT_CATEGORIES.find(c => c.id === question.category);
   const percentage = (timeRemaining / question.timeLimit) * 100;
-  const hasPlayedReveal = useRef(false);
+  const [animationsDone, setAnimationsDone] = useState(false);
+  const startedRef = useRef(false);
 
+  // Reveal sound on mount; reset readiness state when the question changes.
+  // Fallback: even if onAnimationComplete never fires (reduced-motion, tab
+  // hidden during entrance, layout glitch, etc.), force-start after 2.5s so
+  // the timer never gets stuck.
   useEffect(() => {
-    if (!hasPlayedReveal.current) {
-      SoundEffects.questionReveal();
-      hasPlayedReveal.current = true;
-    }
-  }, []);
+    SoundEffects.questionReveal();
+    startedRef.current = false;
+    setAnimationsDone(false);
+    const fallback = setTimeout(() => {
+      if (!startedRef.current) {
+        console.warn("[GameQuestionDisplay] animation-complete fallback fired");
+        setAnimationsDone(true);
+      }
+    }, 2500);
+    return () => {
+      clearTimeout(fallback);
+      SoundEffects.stopHourglass();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question.id]);
+
+  // Start hourglass + timer ONLY after the entrance animation of the last
+  // answer card finishes — guaranteeing the question is fully visible first.
+  useEffect(() => {
+    if (!animationsDone || startedRef.current) return;
+    startedRef.current = true;
+    SoundEffects.startHourglass(question.timeLimit);
+    onReady?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animationsDone]);
 
   useEffect(() => {
     if (timeRemaining <= 0) {
+      SoundEffects.stopHourglass();
       SoundEffects.timeUp();
     } else if (timeRemaining <= 3) {
       SoundEffects.timerUrgent();
-    } else if (timeRemaining <= 5) {
-      SoundEffects.timerTick();
     }
   }, [timeRemaining]);
 
@@ -197,6 +222,10 @@ export function GameQuestionDisplay({ question, questionNumber, totalQuestions, 
               stiffness: 250,
               damping: 18,
             }}
+            onAnimationComplete={() => {
+              // Mark ready only after the LAST answer card's entrance ends.
+              if (i === question.options.length - 1) setAnimationsDone(true);
+            }}
             whileHover={{
               scale: 1.05,
               y: -6,
@@ -217,6 +246,9 @@ export function GameQuestionDisplay({ question, questionNumber, totalQuestions, 
             >
               {answerShapes[i]}
             </motion.span>
+            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-white/25 text-white font-display text-xl font-bold border border-white/40">
+              {i + 1}
+            </span>
             <span className="font-display text-xl md:text-2xl text-white font-bold">
               {opt}
             </span>

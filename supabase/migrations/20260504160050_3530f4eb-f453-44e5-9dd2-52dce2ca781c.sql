@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.join_phone_player(text) FROM PUBLIC, anon, authenticated;
