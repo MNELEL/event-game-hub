@@ -55,12 +55,16 @@ Deno.serve(async (req) => {
         receivedLen: secret.length,
         receivedPreview: secret ? secret.slice(0, 4) + "…" + secret.slice(-4) : "(empty)",
         envLen: SECRET_ENV.length,
-        allParams: Object.fromEntries(params.entries()),
+        paramKeys: Array.from(params.keys()),
       });
       return ymResp([{ kind: "hangup", text: "שגיאת אבטחה. אנא פנה למנהל המערכת." }]);
     }
 
-    console.log("[yemot-ivr] ←", Object.fromEntries(params.entries()));
+    console.log("[yemot-ivr] ←", {
+      keys: Array.from(params.keys()).filter((k) => k !== "secret"),
+      ApiCallId: params.get("ApiCallId") ?? undefined,
+      ApiExtension: params.get("ApiExtension") ?? undefined,
+    });
 
     const phone = cleanPhone(
       params.get("ApiPhone") || params.get("Phone") || params.get("ApiCallerId") || ""

@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.submit_phone_answer(text, integer, integer) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.submit_phone_answer(text, integer, integer) TO service_role;
